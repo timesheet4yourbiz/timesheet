@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timesheet - WorkTime System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <style>
+        .timesheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
+        .week-nav { display: flex; align-items: center; gap: 1rem; background: var(--card-bg); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); }
+        .btn-nav { padding: 0.5rem 1rem; cursor: pointer; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 4px; font-weight: 500; }
+        .btn-nav:hover { background: #e5e7eb; }
+        .btn-save { padding: 0.5rem 1.5rem; background: var(--primary-color); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .btn-save:disabled { background: var(--text-muted); cursor: not-allowed; }
+        .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th, td { padding: 0.75rem; border: 1px solid var(--border-color); text-align: center; }
+        th { background: var(--bg-color); font-weight: 600; }
+        .col-task { text-align: left; min-width: 200px; }
+        .time-input { width: 70px; padding: 0.5rem; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; font-family: monospace; }
+        .time-input:focus { border-color: var(--primary-color); outline: none; }
+        .total-cell { font-weight: bold; background: #f8fafc; }
+        .btn-add-row { margin-top: 1rem; padding: 0.5rem 1rem; background: #16a34a; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"><h2>WorkTime</h2></div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="tracker.html" class="nav-item">Time Tracker</a>
+                <a href="timesheet.html" class="nav-item active">Timesheet</a>
+                <a href="employees.html" class="nav-item">Employees</a>
+                <a href="departments.html" class="nav-item">Departments</a>
+                <a href="projects.html" class="nav-item">Projects</a>
+                <a href="tasks.html" class="nav-item">Tasks</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <h3>Timesheet</h3>
+                <div class="user-info"><span id="userEmail">Loading...</span></div>
+            </header>
+
+            <div class="content-area">
+                <div class="timesheet-header">
+                    <div class="week-nav">
+                        <button id="prevWeek" class="btn-nav">&lt; Prev</button>
+                        <strong id="weekLabel">Loading Week...</strong>
+                        <button id="nextWeek" class="btn-nav">Next &gt;</button>
+                        <button id="thisWeek" class="btn-nav">This Week</button>
+                    </div>
+                    <button id="saveBtn" class="btn-save">Save Timesheet</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="timesheetTable">
+                        <thead>
+                            <tr id="daysHeader">
+                                <th class="col-task">Project / Task</th>
+                                <th>Mon<br><small>-</small></th>
+                                <th>Tue<br><small>-</small></th>
+                                <th>Wed<br><small>-</small></th>
+                                <th>Thu<br><small>-</small></th>
+                                <th>Fri<br><small>-</small></th>
+                                <th>Sat<br><small>-</small></th>
+                                <th>Sun<br><small>-</small></th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timesheetBody">
+                            <!-- Rows will be populated here -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td class="col-task total-cell" style="text-align: right;">Daily Total:</td>
+                                <td class="total-cell" id="tot-0">00:00</td>
+                                <td class="total-cell" id="tot-1">00:00</td>
+                                <td class="total-cell" id="tot-2">00:00</td>
+                                <td class="total-cell" id="tot-3">00:00</td>
+                                <td class="total-cell" id="tot-4">00:00</td>
+                                <td class="total-cell" id="tot-5">00:00</td>
+                                <td class="total-cell" id="tot-6">00:00</td>
+                                <td class="total-cell" id="tot-week">00:00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <button id="addRowBtn" class="btn-add-row">+ Add Task Row</button>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="../js/timesheet.js"></script>
+</body>
+</html>
