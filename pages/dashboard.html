@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - WorkTime System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>WorkTime</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">Dashboard</a>
+                <a href="#" class="nav-item">Time Tracker</a>
+                <a href="#" class="nav-item">Timesheet</a>
+                <a href="#" class="nav-item">Employees</a>
+                <a href="#" class="nav-item">Projects</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h3 id="pageTitle">Dashboard</h3>
+                <div class="user-info">
+                    <span id="userEmail">Loading...</span>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="card">
+                    <h2>Welcome to WorkTime!</h2>
+                    <p>Sistem ini sedang dibangunkan secara berperingkat.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="../js/dashboard.js"></script>
+</body>
+</html>
