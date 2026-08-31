@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - WorkTime System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <style>
+        .filter-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .filter-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .filter-group input, .filter-group select { padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; }
+        .btn-action { padding: 0.5rem 1.5rem; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-generate { background: var(--primary-color); }
+        .btn-export { background: #16a34a; }
+        .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem; border-bottom: 1px solid var(--border-color); text-align: left; }
+        th { background: var(--bg-color); font-weight: 600; }
+        .summary-box { padding: 1rem; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 1rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"><h2>WorkTime</h2></div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="tracker.html" class="nav-item">Time Tracker</a>
+                <a href="timesheet.html" class="nav-item">Timesheet</a>
+                <a href="attendance.html" class="nav-item">Attendance</a>
+                <a href="approvals.html" class="nav-item">Approvals</a>
+                <a href="employees.html" class="nav-item">Employees</a>
+                <a href="projects.html" class="nav-item">Projects</a>
+                <a href="reports.html" class="nav-item active">Reports</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <h3>Reports</h3>
+                <div class="user-info"><span id="userEmail">Loading...</span></div>
+            </header>
+
+            <div class="content-area">
+                <div class="filter-card">
+                    <h2>Time Entries Report</h2>
+                    <div class="filter-grid" style="margin-top: 1rem;">
+                        <div class="filter-group">
+                            <label>Date From</label>
+                            <input type="date" id="dateFrom">
+                        </div>
+                        <div class="filter-group">
+                            <label>Date To</label>
+                            <input type="date" id="dateTo">
+                        </div>
+                        <div class="filter-group">
+                            <label>Employee</label>
+                            <select id="empSelect"><option value="">All Employees</option></select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Project</label>
+                            <select id="projSelect"><option value="">All Projects</option></select>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button id="generateBtn" class="btn-action btn-generate">Generate Report</button>
+                        <button id="exportBtn" class="btn-action btn-export" style="display: none;">Export to CSV</button>
+                    </div>
+                </div>
+
+                <div id="summaryBox" class="summary-box" style="display: none;">
+                    Total Tracked Time: <span id="totalHours">00:00</span>
+                </div>
+
+                <div class="table-container">
+                    <table id="reportTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Employee</th>
+                                <th>Project</th>
+                                <th>Task</th>
+                                <th>Duration</th>
+                                <th>Source</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportList">
+                            <tr><td colspan="6" style="text-align: center;">Select filters and click Generate Report</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="../js/reports.js"></script>
+</body>
+</html>
