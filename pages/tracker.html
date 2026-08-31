@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Tracker - WorkTime System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <style>
+        .timer-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; }
+        .timer-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 0.5rem; }
+        .timer-group select { padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; }
+        .timer-display { font-size: 2.5rem; font-weight: bold; font-family: monospace; color: var(--text-main); min-width: 180px; text-align: center; }
+        .btn-timer { padding: 0.75rem 2rem; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-start { background-color: #16a34a; }
+        .btn-start:hover { background-color: #15803d; }
+        .btn-stop { background-color: #dc2626; }
+        .btn-stop:hover { background-color: #b91c1c; }
+        .btn-timer:disabled { background-color: var(--text-muted); cursor: not-allowed; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-color); font-weight: 600; }
+        .error-banner { display: none; background: #fee2e2; color: #dc2626; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>WorkTime</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="tracker.html" class="nav-item active">Time Tracker</a>
+                <a href="#" class="nav-item">Timesheet</a>
+                <a href="employees.html" class="nav-item">Employees</a>
+                <a href="departments.html" class="nav-item">Departments</a>
+                <a href="projects.html" class="nav-item">Projects</a>
+                <a href="tasks.html" class="nav-item">Tasks</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h3>Time Tracker</h3>
+                <div class="user-info">
+                    <span id="userEmail">Loading...</span>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div id="errorBanner" class="error-banner"></div>
+
+                <!-- Timer Controls -->
+                <div class="timer-card">
+                    <div class="timer-group">
+                        <select id="projectSelect">
+                            <option value="">-- Select Project --</option>
+                        </select>
+                    </div>
+                    <div class="timer-group">
+                        <select id="taskSelect" disabled>
+                            <option value="">-- Select Task --</option>
+                        </select>
+                    </div>
+                    <div class="timer-display" id="timerDisplay">00:00:00</div>
+                    <div>
+                        <button id="timerBtn" class="btn-timer btn-start" disabled>START</button>
+                    </div>
+                </div>
+
+                <!-- Recent Entries -->
+                <div class="card">
+                    <h2>Recent Time Entries</h2>
+                    <div style="overflow-x: auto;">
+                        <table id="entriesTable">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Task</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody id="entriesList">
+                                <tr><td colspan="5">Loading entries...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="../js/timer.js"></script>
+</body>
+</html>
