@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Build Query
         let query = supabase.from('time_entries').select(`
             work_date, total_minutes, entry_source,
-            employees!inner(id, full_name),
+            employees!employee_id!inner(id, full_name),
             tasks!inner(id, task_name, project_id, projects!inner(project_name))
         `).order('work_date', { ascending: false });
 
