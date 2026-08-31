@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - WorkTime System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <style>
+        .attendance-card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; margin-bottom: 2rem; }
+        .time-display { font-size: 3rem; font-weight: bold; font-family: monospace; color: var(--primary-color); margin-bottom: 0.5rem; }
+        .date-display { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 2rem; }
+        .action-buttons { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+        .btn-attendance { padding: 1rem 3rem; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.2s; min-width: 200px; }
+        .btn-clock-in { background-color: #16a34a; }
+        .btn-clock-in:hover { background-color: #15803d; }
+        .btn-clock-out { background-color: #dc2626; }
+        .btn-clock-out:hover { background-color: #b91c1c; }
+        .btn-attendance:disabled { background-color: var(--text-muted); cursor: not-allowed; }
+        .status-badge { display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; margin-bottom: 1rem; background: #f3f4f6; }
+        
+        .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 1rem; border-bottom: 1px solid var(--border-color); text-align: center; }
+        th { background: var(--bg-color); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"><h2>WorkTime</h2></div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="tracker.html" class="nav-item">Time Tracker</a>
+                <a href="timesheet.html" class="nav-item">Timesheet</a>
+                <a href="attendance.html" class="nav-item active">Attendance</a>
+                <a href="employees.html" class="nav-item">Employees</a>
+                <a href="departments.html" class="nav-item">Departments</a>
+                <a href="projects.html" class="nav-item">Projects</a>
+                <a href="tasks.html" class="nav-item">Tasks</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <h3>Attendance</h3>
+                <div class="user-info"><span id="userEmail">Loading...</span></div>
+            </header>
+
+            <div class="content-area">
+                <div class="attendance-card">
+                    <div class="status-badge" id="todayStatus">Status: Checking...</div>
+                    <div class="time-display" id="liveTime">00:00:00</div>
+                    <div class="date-display" id="liveDate">Loading date...</div>
+                    
+                    <div class="action-buttons">
+                        <button id="clockInBtn" class="btn-attendance btn-clock-in" disabled>Clock In</button>
+                        <button id="clockOutBtn" class="btn-attendance btn-clock-out" disabled>Clock Out</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>My Attendance History</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Clock In</th>
+                                    <th>Clock Out</th>
+                                    <th>Worked Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceHistory">
+                                <tr><td colspan="5">Loading history...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="../js/attendance.js"></script>
+</body>
+</html>
