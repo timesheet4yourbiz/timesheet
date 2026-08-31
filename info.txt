@@ -1,6 +1,1 @@
-sb_secret_WHi6_jHAMK9r39kq4s2fCA_pcjb6nQq
-
-
-sb_publishable_YJib5aDM3gt49N6j25XLLw_LGdoNxvy
-https://gevftxdqyrejnjovurjt.supabase.co
 
