@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approvals - WorkTime System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <style>
+        .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 1rem; border-bottom: 1px solid var(--border-color); text-align: left; }
+        th { background: var(--bg-color); font-weight: 600; }
+        .btn-sm { padding: 0.4rem 0.8rem; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-submit { background: var(--primary-color); }
+        .btn-approve { background: #16a34a; }
+        .btn-reject { background: #dc2626; }
+        .badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; background: #e5e7eb; }
+        .status-DRAFT { background: #e5e7eb; color: #374151; }
+        .status-SUBMITTED { background: #fef08a; color: #854d0e; }
+        .status-APPROVED { background: #dcfce7; color: #166534; }
+        .status-REJECTED { background: #fee2e2; color: #991b1b; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 2rem; border-radius: 8px; width: 400px; max-width: 90%; }
+        .modal-content textarea { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; margin-top: 0.5rem; margin-bottom: 1rem; resize: vertical; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"><h2>WorkTime</h2></div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="tracker.html" class="nav-item">Time Tracker</a>
+                <a href="timesheet.html" class="nav-item">Timesheet</a>
+                <a href="attendance.html" class="nav-item">Attendance</a>
+                <a href="approvals.html" class="nav-item active">Approvals</a>
+                <a href="employees.html" class="nav-item">Employees</a>
+                <a href="projects.html" class="nav-item">Projects</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <h3>Approvals</h3>
+                <div class="user-info"><span id="userEmail">Loading...</span></div>
+            </header>
+
+            <div class="content-area">
+                
+                <!-- Action for Employee -->
+                <div class="card">
+                    <h2>Submit Timesheet for Approval</h2>
+                    <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem;">
+                        <input type="date" id="weekSelect" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                        <button id="submitWeekBtn" class="btn-sm btn-submit">Submit Week</button>
+                    </div>
+                    <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">Select any date in the week you want to submit.</small>
+                </div>
+
+                <!-- Approval List -->
+                <div class="card">
+                    <h2>Timesheet Submissions</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Week Start</th>
+                                    <th>Status</th>
+                                    <th>Submitted At</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="approvalList">
+                                <tr><td colspan="5">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <h3>Reject Timesheet</h3>
+            <label>Reason (Required):</label>
+            <textarea id="rejectReason" rows="3" placeholder="Explain why this is rejected..."></textarea>
+            <div style="display: flex; gap: 1rem;">
+                <button id="confirmRejectBtn" class="btn-sm btn-reject" style="flex: 1;">Confirm Reject</button>
+                <button id="cancelRejectBtn" class="btn-sm" style="flex: 1; background: var(--text-muted);">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/approvals.js"></script>
+</body>
+</html>
