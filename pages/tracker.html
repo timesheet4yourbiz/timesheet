@@ -3,102 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Tracker - WorkTime System</title>
+    <title>Time Tracker - WorkTime</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/dashboard.css">
     <style>
-        .timer-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; }
-        .timer-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 0.5rem; }
-        .timer-group select { padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; }
-        .timer-display { font-size: 2.5rem; font-weight: bold; font-family: monospace; color: var(--text-main); min-width: 180px; text-align: center; }
-        .btn-timer { padding: 0.75rem 2rem; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.2s; }
-        .btn-start { background-color: #16a34a; }
-        .btn-start:hover { background-color: #15803d; }
-        .btn-stop { background-color: #dc2626; }
-        .btn-stop:hover { background-color: #b91c1c; }
-        .btn-timer:disabled { background-color: var(--text-muted); cursor: not-allowed; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); }
-        th { background-color: var(--bg-color); font-weight: 600; }
-        .error-banner { display: none; background: #fee2e2; color: #dc2626; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; font-weight: 500; }
+        /* CSS Khusus untuk Time Tracker Bar */
+        .tracker-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .tracker-selects {
+            display: flex;
+            flex: 1;
+            gap: 1rem;
+            min-width: 300px;
+        }
+        .tracker-selects select {
+            flex: 1;
+            padding: 0.6rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            background-color: #f8fafc;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .tracker-selects select:focus {
+            border-color: var(--primary-color);
+            background-color: white;
+        }
+        .timer-display {
+            font-size: 1.5rem; /* Saiz fon dikecilkan agar kemas */
+            font-weight: 600;
+            font-variant-numeric: tabular-nums; /* Elak nombor bergoyang bila berubah */
+            color: var(--text-main);
+            min-width: 120px;
+            text-align: center;
+            letter-spacing: -0.02em;
+        }
+        .btn-start {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem 2rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .btn-start:hover {
+            background-color: var(--primary-hover);
+        }
+        .btn-start.stop-mode {
+            background-color: #ef4444; /* Merah untuk butang Stop */
+        }
+        .btn-start.stop-mode:hover {
+            background-color: #dc2626;
+        }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- Sidebar Navigation -->
+        <!-- Sidebar Seragam Dengan Ikon -->
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>WorkTime</h2>
-            </div>
+            <div class="sidebar-header"><h2>WorkTime</h2></div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item">Dashboard</a>
-                <a href="tracker.html" class="nav-item active">Time Tracker</a>
-                <a href="#" class="nav-item">Timesheet</a>
-                <a href="employees.html" class="nav-item">Employees</a>
-                <a href="departments.html" class="nav-item">Departments</a>
-                <a href="projects.html" class="nav-item">Projects</a>
-                <a href="tasks.html" class="nav-item">Tasks</a>
+                <a href="dashboard.html" class="nav-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    Dashboard
+                </a>
+                <a href="tracker.html" class="nav-item active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Time Tracker
+                </a>
+                <a href="timesheet.html" class="nav-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Timesheet
+                </a>
+                <a href="attendance.html" class="nav-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+                    Attendance
+                </a>
+                <a href="approvals.html" class="nav-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                    Approvals
+                </a>
+                <a href="employees.html" class="nav-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    Employees
+                </a>
+                <a href="departments.html" class="nav-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                    Departments
+                </a>
+                <a href="projects.html" class="nav-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    Projects
+                </a>
+                <a href="tasks.html" class="nav-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    Tasks
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    Reports
+                </a>
             </nav>
             <div class="sidebar-footer">
                 <button id="logoutBtn" class="btn-logout">Logout</button>
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <header class="topbar">
                 <h3>Time Tracker</h3>
-                <div class="user-info">
-                    <span id="userEmail">Loading...</span>
-                </div>
+                <div class="user-info"><span id="userEmail">Loading...</span></div>
             </header>
 
             <div class="content-area">
-                <div id="errorBanner" class="error-banner"></div>
-
-                <!-- Timer Controls -->
-                <div class="timer-card">
-                    <div class="timer-group">
+                
+                <!-- Sleek Tracker Bar -->
+                <div class="tracker-bar">
+                    <div class="tracker-selects">
                         <select id="projectSelect">
-                            <option value="">-- Select Project --</option>
+                            <option value="">Select Project...</option>
                         </select>
-                    </div>
-                    <div class="timer-group">
-                        <select id="taskSelect" disabled>
-                            <option value="">-- Select Task --</option>
+                        <select id="taskSelect">
+                            <option value="">Select Task...</option>
                         </select>
                     </div>
                     <div class="timer-display" id="timerDisplay">00:00:00</div>
-                    <div>
-                        <button id="timerBtn" class="btn-timer btn-start" disabled>START</button>
-                    </div>
+                    <button id="startBtn" class="btn-start">START</button>
                 </div>
 
-                <!-- Recent Entries -->
-                <div class="card">
-                    <h2>Recent Time Entries</h2>
+                <!-- Recent Entries Table -->
+                <div class="card" style="padding: 0;">
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; border-radius: 8px 8px 0 0;">
+                        <h2 style="font-size: 1rem; color: #475569; text-transform: uppercase; margin: 0;">Recent Time Entries</h2>
+                    </div>
                     <div style="overflow-x: auto;">
-                        <table id="entriesTable">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
                             <thead>
-                                <tr>
-                                    <th>Project</th>
-                                    <th>Task</th>
-                                    <th>Start Time</th>
-                                    <th>End Time</th>
-                                    <th>Duration</th>
+                                <tr style="border-bottom: 1px solid var(--border-color); color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">
+                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Project</th>
+                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Task</th>
+                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Start Time</th>
+                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">End Time</th>
+                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Duration</th>
                                 </tr>
                             </thead>
-                            <tbody id="entriesList">
-                                <tr><td colspan="5">Loading entries...</td></tr>
+                            <tbody id="recentEntriesList">
+                                <tr><td colspan="5" style="padding: 1.5rem; text-align: center;">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
+
             </div>
         </main>
     </div>
 
-    <script type="module" src="../js/timer.js"></script>
+    <script type="module" src="../js/tracker.js"></script>
 </body>
 </html>
