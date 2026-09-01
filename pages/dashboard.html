@@ -81,7 +81,27 @@
                             <p style="text-align: center; color: var(--text-muted);">Loading data...</p>
                         </div>
                     </div>
-
+<!-- Team Activities Section -->
+                <div class="card" style="margin-top: 1.5rem; padding: 0;">
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; border-radius: 8px 8px 0 0;">
+                        <h2 style="font-size: 1rem; color: #475569; text-transform: uppercase;">Team Activities</h2>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border-color); color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">
+                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Team Member</th>
+                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Latest Activity</th>
+                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Total Tracked (This Week)</th>
+                                    <th style="padding: 1rem 1.5rem; width: 250px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="teamActivitiesList">
+                                <tr><td colspan="4" style="padding: 1.5rem; text-align: center;">Loading team activities...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 </div>
     <script type="module" src="../js/dashboard.js"></script>
 </body>
