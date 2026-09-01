@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('prevWeek').addEventListener('click', () => { currentMonday.setDate(currentMonday.getDate() - 7); updateWeekUI(); });
     document.getElementById('nextWeek').addEventListener('click', () => { currentMonday.setDate(currentMonday.getDate() + 7); updateWeekUI(); });
     document.getElementById('thisWeek').addEventListener('click', () => { currentMonday = getMonday(new Date()); updateWeekUI(); });
+
+    const copyLastWeekBtn = document.getElementById('copyLastWeekBtn');
+    copyLastWeekBtn.addEventListener('click', copyLastWeekTasks);
     
     const copyLastWeekBtn = document.getElementById('copyLastWeekBtn');
     copyLastWeekBtn.addEventListener('click', copyLastWeekTasks);
