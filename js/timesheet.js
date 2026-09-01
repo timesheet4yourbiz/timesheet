@@ -30,7 +30,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('nextWeek').addEventListener('click', () => { currentMonday.setDate(currentMonday.getDate() + 7); updateWeekUI(); });
     document.getElementById('thisWeek').addEventListener('click', () => { currentMonday = getMonday(new Date()); updateWeekUI(); });
 
-const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
+    // Butang Add Row & Copy
+    const addRowBtn = document.getElementById('addRowBtn');
+    if(addRowBtn) addRowBtn.addEventListener('click', addEmptyRow);
+
+    const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
     copyLastWeekSelect.addEventListener('change', async (e) => {
         const mode = e.target.value;
         if (!mode) return;
@@ -129,21 +133,25 @@ const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
         }
         
         cells += '<td class="total-cell row-total">00:00</td>';
-    cells += '<td style="text-align: center;"><button class="btn-del-row" type="button" style="background: transparent; border: none; cursor: pointer; font-size: 1.2rem; color: #dc2626;" title="Delete Task">🗑️</button></td>';
-    tr.innerHTML = cells;
+        cells += '<td style="text-align: center;"><button class="btn-del-row" type="button" style="background: transparent; border: none; cursor: pointer; font-size: 1.2rem; color: #dc2626;" title="Delete Task">🗑️</button></td>';
+        tr.innerHTML = cells;
 
-// Hidupkan fungsi delete
-        tr.querySelector('.btn-del-row').addEventListener('click', () => {
-            tr.remove(); // Padam baris dari skrin
-            calculateTotals(); // Kira semula masa keseluruhan
+        // Hidupkan fungsi delete dan hapuskan baris dari database jika ada
+        tr.querySelector('.btn-del-row').addEventListener('click', async () => {
+            const selectedTask = tr.querySelector('.task-select').value;
+            tr.remove();
+            calculateTotals();
+            
+            if (selectedTask) {
+                await supabase.from('time_entries')
+                    .delete()
+                    .eq('employee_id', currentEmpId)
+                    .eq('task_id', selectedTask)
+                    .eq('entry_source', 'TIMESHEET')
+                    .gte('work_date', weekDates[0])
+                    .lte('work_date', weekDates[6]);
+            }
         });
-
-
-        
-        tr.querySelector('.btn-del-row').addEventListener('click', () => {
-        tr.remove();
-        calculateTotals();
-    });
         
         tr.querySelectorAll('.day-input').forEach(input => {
             input.addEventListener('change', (e) => {
@@ -190,14 +198,21 @@ const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
                 rowTotal += mins;
                 dailyTotals[index] += mins;
             });
-            row.querySelector('.row-total').textContent = formatMinutes(rowTotal) || '00:00';
+            const rowTotalEl = row.querySelector('.row-total');
+            if (rowTotalEl) rowTotalEl.textContent = formatMinutes(rowTotal) || '00:00';
             weekTotal += rowTotal;
         });
 
         for (let i = 0; i < 7; i++) {
-            document.getElementById(`tot-${i}`).textContent = formatMinutes(dailyTotals[i]) || '00:00';
+            const totEl = document.getElementById(`tot-${i}`);
+            if (totEl) totEl.textContent = formatMinutes(dailyTotals[i]) || '00:00';
         }
-        document.getElementById('tot-week').textContent = formatMinutes(weekTotal) || '00:00';
+        
+        const weekTotEl = document.getElementById('tot-week');
+        if (weekTotEl) weekTotEl.textContent = formatMinutes(weekTotal) || '00:00';
+        
+        const mainWeekTotal = document.getElementById('weekTotal');
+        if (mainWeekTotal) mainWeekTotal.textContent = formatMinutes(weekTotal) || '00:00';
     }
 
     async function saveTimesheet() {
@@ -208,7 +223,7 @@ const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
 
         document.querySelectorAll('#timesheetBody tr').forEach(row => {
             let taskId = row.querySelector('.task-select').value;
-            if (!taskId) return; // Skip baris tanpa task
+            if (!taskId) return; 
             
             row.querySelectorAll('.day-input').forEach((input, index) => {
                 let mins = timeToMinutes(input.value);
@@ -228,7 +243,6 @@ const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
         });
 
         if (entriesToUpsert.length > 0) {
-            // Gunakan UPSERT untuk patuh kepada RULE 17 (Tiada Duplicate)
             const { error } = await supabase.from('time_entries').upsert(entriesToUpsert, { 
                 onConflict: 'employee_id, task_id, work_date, entry_source' 
             });
@@ -241,8 +255,7 @@ const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
         await loadTimesheetData();
     }
 
-
-async function copyLastWeekTasks(mode) {
+    async function copyLastWeekTasks(mode) {
         const lastWeekMonday = new Date(currentMonday);
         lastWeekMonday.setDate(currentMonday.getDate() - 7);
         const lastWeekSunday = new Date(lastWeekMonday);
@@ -266,7 +279,6 @@ async function copyLastWeekTasks(mode) {
 
         if (data && data.length > 0) {
             
-            // ISU 2 FIX: Buang baris "-- Select Task --" yang kosong sebelum tambah task baru
             document.querySelectorAll('.task-select').forEach(select => {
                 if (!select.value) {
                     const row = select.closest('tr');
@@ -283,7 +295,6 @@ async function copyLastWeekTasks(mode) {
                 }
                 
                 if (mode === 'task_time') {
-                    // ISU 1 FIX: Pecahkan string tarikh secara manual untuk elak ralat Timezone
                     const [y, m, d] = entry.work_date.split('-');
                     const entryDate = new Date(y, m - 1, d);
                     let dayIndex = entryDate.getDay() - 1; 
@@ -310,12 +321,10 @@ async function copyLastWeekTasks(mode) {
                 alert("Semua task dari minggu lepas sudah ada di skrin minggu ini.");
             } else {
                 calculateTotals();
-                await saveTimesheet(); // <-- Ini arahan Auto-save
+                await saveTimesheet(); 
             }
         } else {
             alert("Tiada rekod task dijumpai pada minggu lepas.");
         }
     }
-
-    
 });
