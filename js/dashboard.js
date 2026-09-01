@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const colors = ['#3b82f6', '#8b5cf6', '#0ea5e9', '#f59e0b', '#ef4444', '#10b981', '#6366f1', '#ec4899', '#14b8a6', '#f97316'];
+       const colors = ['#3ecf8e', '#6366f1', '#f59e0b', '#3b82f6', '#8b5cf6', '#14b8a6', '#f43f5e', '#10b981'];
         
         const taskData = {};
         const dailyData = { 'Mon': {}, 'Tue': {}, 'Wed': {}, 'Thu': {}, 'Fri': {}, 'Sat': {}, 'Sun': {} };
