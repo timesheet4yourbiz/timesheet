@@ -58,13 +58,21 @@ body {
 }
 
 .nav-item {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Jarak antara ikon dan teks */
     padding: 0.5rem 1rem;
     margin-bottom: 0.2rem;
     color: var(--text-muted);
     text-decoration: none;
+    font-family: 'Inter', -apple-system, sans-serif; /* Paksa fon seragam */
     font-size: 0.85rem;
     border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.nav-item svg {
+    opacity: 0.7;
     transition: all 0.2s ease;
 }
 
@@ -73,10 +81,19 @@ body {
     color: var(--text-main);
 }
 
+.nav-item:hover svg {
+    opacity: 1;
+}
+
 .nav-item.active {
-    background-color: #ecfdf5; /* Tona hijau cair */
+    background-color: #ecfdf5; 
     color: var(--primary-hover);
     font-weight: 500;
+}
+
+.nav-item.active svg {
+    opacity: 1;
+    color: var(--primary-hover); /* Ikon bertukar hijau bila aktif */
 }
 
 .sidebar-footer {
