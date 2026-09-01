@@ -95,10 +95,13 @@
                         </tfoot>
                     </table>
                 </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <div style="display: flex; gap: 1rem; margin-top: 1rem; align-items: center;">
                     <button id="addRowBtn" class="btn-add-row">+ Add Task Row</button>
-                    <button id="copyLastWeekBtn" class="btn-add-row" style="background: #3b82f6;">Copy Last Week Tasks</button>
+                    <select id="copyLastWeekSelect" class="btn-add-row" style="background: white; color: #3b82f6; border: 1px solid #3b82f6; cursor: pointer;">
+                        <option value="" disabled selected>Copy last week ▾</option>
+                        <option value="task_only">Copy activities only</option>
+                        <option value="task_time">Copy activities and time</option>
+                    </select>
                 </div>
                     <button id="copyLastWeekBtn" class="btn-add-row" style="background: #3b82f6;">Copy Last Week Tasks</button>
                 </div>
