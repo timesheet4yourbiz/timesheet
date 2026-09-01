@@ -82,7 +82,8 @@
                         </div>
                     </div>
 <!-- Team Activities Section -->
-                <div class="card" style="margin-top: 1.5rem; padding: 0;">
+              <!-- Team Activities Section -->
+                <div class="card" style="margin-top: 1.5rem; padding: 0; grid-column: 1 / -1; width: 100%;">
                     <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; border-radius: 8px 8px 0 0;">
                         <h2 style="font-size: 1rem; color: #475569; text-transform: uppercase;">Team Activities</h2>
                     </div>
@@ -101,7 +102,23 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+                    <!-- Pagination Controls -->
+                    <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: flex-start; gap: 1.5rem; background: #f8fafc; border-radius: 0 0 8px 8px;">
+                        <div style="display: flex; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; background: white; align-items: center;">
+                            <button id="prevPageBtn" style="padding: 0.4rem 0.8rem; border: none; background: transparent; cursor: pointer; border-right: 1px solid var(--border-color); color: #64748b; font-weight: bold;">&lt;</button>
+                            <div id="pageInfo" style="padding: 0.4rem 1rem; border-right: 1px solid var(--border-color); font-size: 0.85rem; color: #334155; min-width: 80px; text-align: center;">0-0 of 0</div>
+                            <button id="nextPageBtn" style="padding: 0.4rem 0.8rem; border: none; background: transparent; cursor: pointer; color: #64748b; font-weight: bold;">&gt;</button>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <select id="itemsPerPageSelect" style="padding: 0.4rem; border: 1px solid var(--border-color); border-radius: 4px; background: white; font-size: 0.85rem; color: #334155; cursor: pointer;">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            <span style="font-size: 0.85rem; color: #64748b;">Items per page</span>
+                        </div>
+                    </div>
                 </div>
     <script type="module" src="../js/dashboard.js"></script>
 </body>
