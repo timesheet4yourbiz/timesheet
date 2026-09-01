@@ -53,11 +53,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Load Projects List (Foolproof Method - Tiada Ralat 400)
+    // Load Projects List
     async function loadProjects() {
-        // 1. Tarik semua data projek
         const { data: projectsData, error: projError } = await supabase.from('projects').select('*').order('project_name', { ascending: true });
-        // 2. Tarik semua data klien
         const { data: clientsData } = await supabase.from('clients').select('*');
 
         if (projError) {
@@ -72,17 +70,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         projectsList.innerHTML = projectsData.map(proj => {
-            // Logik padanan nama klien secara manual (selamat)
             let clientName = '-';
             if (proj.client_id && clientsData) {
                 const foundClient = clientsData.find(c => c.id === proj.client_id);
                 if (foundClient) clientName = foundClient.client_name;
             } else if (proj.client && typeof proj.client === 'string') {
-                // Tunjuk data lama jika bos guna column 'client' (teks) sebelum ini
                 clientName = proj.client;
             }
 
-            const projStatus = proj.status || 'ACTIVE'; // Fallback jika column status tiada
+            const projStatus = proj.status || 'ACTIVE';
 
             return `
             <tr style="border-bottom: 1px solid var(--border-color); background: white;">
@@ -93,9 +89,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td style="padding: 1rem 1.5rem;">
                     <span style="background: #f1f5f9; color: #475569; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem;">${projStatus}</span>
                 </td>
-                <td style="padding: 1rem 1.5rem;">
+                <td style="padding: 1rem 1.5rem; display: flex; gap: 0.5rem;">
                     <button class="edit-proj-btn" data-id="${proj.id}" data-name="${proj.project_name || ''}" data-client="${proj.client_id || ''}" style="background: none; border: none; cursor: pointer; color: #94a3b8;" title="Edit">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon></svg>
+                    </button>
+                    <button class="delete-proj-btn" data-id="${proj.id}" style="background: none; border: none; cursor: pointer; color: #ef4444;" title="Delete">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </button>
                 </td>
             </tr>
@@ -114,6 +113,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 projectModal.style.display = 'flex';
             });
         });
+
+        // Attach delete listeners
+        document.querySelectorAll('.delete-proj-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const projId = e.currentTarget.getAttribute('data-id');
+                if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+                    const { error } = await supabase.from('projects').delete().eq('id', projId);
+                    if (error) {
+                        console.error("Delete Error:", error);
+                        alert('Error deleting project. Make sure it is not linked to existing tasks/timesheets.');
+                    } else {
+                        await loadProjects(); // Refresh jadual
+                    }
+                }
+            });
+        });
     }
 
     // Save or Update Project
@@ -129,24 +144,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         let errorObj = null;
 
         if (editProjectId) {
-            // Update
             const { error } = await supabase.from('projects')
-                .update({ 
-                    project_name: pName, 
-                    client_id: cId || null 
-                })
+                .update({ project_name: pName, client_id: cId || null })
                 .eq('id', editProjectId);
             errorObj = error;
         } else {
-            // Insert
             const dummyCode = 'PRJ-' + Math.floor(Math.random() * 10000);
             const { error } = await supabase.from('projects')
-                .insert([{ 
-                    project_name: pName, 
-                    project_code: dummyCode,
-                    client_id: cId || null, 
-                    status: 'ACTIVE' 
-                }]);
+                .insert([{ project_name: pName, project_code: dummyCode, client_id: cId || null, status: 'ACTIVE' }]);
             errorObj = error;
         }
 
@@ -155,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (errorObj) {
             console.error(errorObj);
-            alert('Error saving project. Please check console for details.');
+            alert('Error saving project.');
         } else {
             closeModal();
             await loadProjects();
