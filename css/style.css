@@ -93,12 +93,18 @@ body {
     color: var(--primary-hover);
     /* font-weight dibuang dari sini sebab dah seragam di atas */
 }
-
 .nav-item.active svg {
     opacity: 1;
     color: var(--primary-hover);
 }
-
+.nav-section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 1.5rem 1rem 0.5rem 1rem;
+}
 .sidebar-footer {
     padding: 1rem;
     border-top: 1px solid var(--border-color);
