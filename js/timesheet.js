@@ -228,10 +228,7 @@ const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
     }
 
 
-async function copyLastWeekTasks() {
-        copyLastWeekBtn.disabled = true;
-        copyLastWeekBtn.textContent = 'Copying...';
-
+async function copyLastWeekTasks(mode) {
         // 1. Dapatkan tarikh Isnin dan Ahad minggu lepas
         const lastWeekMonday = new Date(currentMonday);
         lastWeekMonday.setDate(currentMonday.getDate() - 7);
@@ -241,10 +238,10 @@ async function copyLastWeekTasks() {
         const startDate = lastWeekMonday.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
         const endDate = lastWeekSunday.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
 
-        // 2. Tarik data timesheet minggu lepas dari pangkalan data
+        // 2. Tarik data timesheet minggu lepas (termasuk total_minutes dan work_date)
         const { data, error } = await supabase
             .from('time_entries')
-            .select('task_id')
+            .select('task_id, work_date, total_minutes')
             .eq('employee_id', currentEmpId)
             .eq('entry_source', 'TIMESHEET')
             .gte('work_date', startDate)
@@ -252,33 +249,55 @@ async function copyLastWeekTasks() {
 
         if (error) {
             alert("Ralat menyalin task: " + error.message);
-        } else if (data && data.length > 0) {
-            // 3. Tapis supaya hanya task ID yang unik diambil
-            const uniqueTaskIds = [...new Set(data.map(entry => entry.task_id))];
+            return;
+        } 
 
-            // 4. Semak task apa yang sudah ada di skrin sekarang untuk elak duplikasi
+        if (data && data.length > 0) {
             const currentSelects = Array.from(document.querySelectorAll('.task-select')).map(select => select.value);
-
-            let addedCount = 0;
-            uniqueTaskIds.forEach(taskId => {
-                // Hanya tambah baris jika task itu wujud dan belum ada di skrin minggu ini
-                if (taskId && !currentSelects.includes(taskId)) {
-                    renderRow(taskId, {}); // Cipta baris dengan masa kosong
-                    addedCount++;
+            
+            // Susun data mengikut task_id
+            const taskDataMap = {};
+            data.forEach(entry => {
+                if (!taskDataMap[entry.task_id]) {
+                    taskDataMap[entry.task_id] = {};
+                }
+                
+                // Jika user pilih "Copy activities and time", kita salin masa sekali
+                if (mode === 'task_time') {
+                    // Cari indeks hari (0 = Isnin, 6 = Ahad)
+                    const entryDate = new Date(entry.work_date);
+                    let dayIndex = entryDate.getDay() - 1; 
+                    if (dayIndex === -1) dayIndex = 6; 
+                    
+                    // Tukar minit ke format HH:MM
+                    const h = Math.floor(entry.total_minutes / 60);
+                    const m = entry.total_minutes % 60;
+                    const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                    
+                    // Padankan dengan tarikh minggu SEMASA
+                    const thisWeekDateKey = weekDates[dayIndex];
+                    taskDataMap[entry.task_id][thisWeekDateKey] = timeStr;
                 }
             });
 
+            // 3. Masukkan baris ke dalam jadual
+            let addedCount = 0;
+            for (const taskId in taskDataMap) {
+                if (!currentSelects.includes(taskId)) {
+                    renderRow(taskId, taskDataMap[taskId]);
+                    addedCount++;
+                }
+            }
+
             if (addedCount === 0) {
-                alert("Semua task dari minggu lepas sudah pun ada di dalam jadual minggu ini.");
+                alert("Semua task dari minggu lepas sudah ada di skrin minggu ini.");
+            } else {
+                calculateTotals(); // Kira semula jumlah keseluruhan jika ada masa disalin
             }
         } else {
             alert("Tiada rekod task dijumpai pada minggu lepas.");
         }
-
-        copyLastWeekBtn.disabled = false;
-        copyLastWeekBtn.textContent = 'Copy Last Week Tasks';
     }
-
 
     
 });
