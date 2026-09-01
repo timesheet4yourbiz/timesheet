@@ -58,42 +58,31 @@
                     </div>
                 </div>
 
-                <!-- Lower Section: Chart & Table (Grid Layout) -->
+                <!-- Weekly Stacked Bar Chart -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div style="position: relative; height: 250px; width: 100%;">
+                        <canvas id="weeklyBarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Lower Section: Pie Chart & Custom Task List -->
                 <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; align-items: start;">
                     
-                    <!-- Corporate Pie Chart -->
-                    <div class="card" id="chartContainer" style="height: 100%;">
-                        <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">Hours by Project (This Month)</h2>
+                    <!-- Doughnut Pie Chart -->
+                    <div class="card" style="height: 100%; display: flex; justify-content: center; align-items: center; position: relative;">
                         <div style="position: relative; height: 250px; width: 100%;">
-                            <canvas id="projectChart"></canvas>
+                            <canvas id="taskPieChart"></canvas>
                         </div>
                     </div>
 
-                    <!-- Recent Activity Table -->
+                    <!-- Custom Task Progress List -->
                     <div class="card" style="height: 100%;">
-                        <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">My Recent Entries</h2>
-                        <div style="overflow-x: auto; border-radius: 8px;">
-                            <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
-                                <thead>
-                                    <tr>
-                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc; color: #475569;">Date</th>
-                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc; color: #475569;">Project</th>
-                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc; color: #475569;">Task</th>
-                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc; color: #475569;">Duration</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="recentActivityList">
-                                    <tr><td colspan="4" style="padding: 1rem; text-align: center;">Loading data...</td></tr>
-                                </tbody>
-                            </table>
+                        <div id="taskStatsList" style="display: flex; flex-direction: column; gap: 0.8rem; overflow-y: auto; max-height: 280px; padding-right: 0.5rem;">
+                            <p style="text-align: center; color: var(--text-muted);">Loading data...</p>
                         </div>
                     </div>
 
                 </div>
-            </div>
-        </main>
-    </div>
-
     <script type="module" src="../js/dashboard.js"></script>
 </body>
 </html>
