@@ -30,7 +30,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('nextWeek').addEventListener('click', () => { currentMonday.setDate(currentMonday.getDate() + 7); updateWeekUI(); });
     document.getElementById('thisWeek').addEventListener('click', () => { currentMonday = getMonday(new Date()); updateWeekUI(); });
     
-    document.getElementById('addRowBtn').addEventListener('click', addEmptyRow);
+    const copyLastWeekBtn = document.getElementById('copyLastWeekBtn');
+    copyLastWeekBtn.addEventListener('click', copyLastWeekTasks);
 
     saveBtn.addEventListener('click', saveTimesheet);
 
@@ -220,4 +221,59 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveBtn.textContent = 'Save Timesheet';
         await loadTimesheetData();
     }
+
+
+async function copyLastWeekTasks() {
+        copyLastWeekBtn.disabled = true;
+        copyLastWeekBtn.textContent = 'Copying...';
+
+        // 1. Dapatkan tarikh Isnin dan Ahad minggu lepas
+        const lastWeekMonday = new Date(currentMonday);
+        lastWeekMonday.setDate(currentMonday.getDate() - 7);
+        const lastWeekSunday = new Date(lastWeekMonday);
+        lastWeekSunday.setDate(lastWeekMonday.getDate() + 6);
+
+        const startDate = lastWeekMonday.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+        const endDate = lastWeekSunday.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+
+        // 2. Tarik data timesheet minggu lepas dari pangkalan data
+        const { data, error } = await supabase
+            .from('time_entries')
+            .select('task_id')
+            .eq('employee_id', currentEmpId)
+            .eq('entry_source', 'TIMESHEET')
+            .gte('work_date', startDate)
+            .lte('work_date', endDate);
+
+        if (error) {
+            alert("Ralat menyalin task: " + error.message);
+        } else if (data && data.length > 0) {
+            // 3. Tapis supaya hanya task ID yang unik diambil
+            const uniqueTaskIds = [...new Set(data.map(entry => entry.task_id))];
+
+            // 4. Semak task apa yang sudah ada di skrin sekarang untuk elak duplikasi
+            const currentSelects = Array.from(document.querySelectorAll('.task-select')).map(select => select.value);
+
+            let addedCount = 0;
+            uniqueTaskIds.forEach(taskId => {
+                // Hanya tambah baris jika task itu wujud dan belum ada di skrin minggu ini
+                if (taskId && !currentSelects.includes(taskId)) {
+                    renderRow(taskId, {}); // Cipta baris dengan masa kosong
+                    addedCount++;
+                }
+            });
+
+            if (addedCount === 0) {
+                alert("Semua task dari minggu lepas sudah pun ada di dalam jadual minggu ini.");
+            }
+        } else {
+            alert("Tiada rekod task dijumpai pada minggu lepas.");
+        }
+
+        copyLastWeekBtn.disabled = false;
+        copyLastWeekBtn.textContent = 'Copy Last Week Tasks';
+    }
+
+
+    
 });
