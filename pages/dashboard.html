@@ -39,22 +39,23 @@
 
             <div class="content-area">
                 <!-- Metrics Grid -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid var(--primary-color);">
-                        <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Total Employees</h4>
-                        <h2 id="metricEmployees" style="font-size: 2rem; color: var(--text-main);">...</h2>
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h4>Total Employees</h4>
+                        <h2 id="metricEmployees">...</h2>
                     </div>
-                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #16a34a;">
-                        <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Active Projects</h4>
-                        <h2 id="metricProjects" style="font-size: 2rem; color: var(--text-main);">...</h2>
+                    <div class="metric-card">
+                        <h4>Active Projects</h4>
+                        <h2 id="metricProjects">...</h2>
                     </div>
-                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #eab308;">
-                        <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Pending Approvals</h4>
-                        <h2 id="metricApprovals" style="font-size: 2rem; color: var(--text-main);">...</h2>
+                    <div class="metric-card">
+                        <h4>Pending Approvals</h4>
+                        <h2 id="metricApprovals">...</h2>
                     </div>
-                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #8b5cf6;">
-                        <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">My Hours (Today)</h4>
-                        <h2 id="metricHours" style="font-size: 2rem; color: var(--text-main);">...</h2>
+                    <div class="metric-card">
+                        <h4>My Hours (Today)</h4>
+                        <h2 id="metricHours">...</h2>
                     </div>
                 </div>
 
