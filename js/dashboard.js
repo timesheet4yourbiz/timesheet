@@ -16,9 +16,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Execution
     await initEmployee();
-    await loadMetrics();
-    await loadRecentActivity();
-    await loadChart();
+    if (currentEmpId) {
+        await loadMetrics();
+        await loadRecentActivity();
+        await loadChart(); // <-- Ini yang akan panggil carta
+    }
 
     // Helper Functions
     async function initEmployee() {
@@ -40,33 +42,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('metricApprovals').textContent = appCount || 0;
 
         // 4. My Hours Today
-        if (currentEmpId) {
-            const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
-            const { data: timeData } = await supabase.from('time_entries')
-                .select('total_minutes')
-                .eq('employee_id', currentEmpId)
-                .eq('work_date', today);
-            
-            let totalMins = 0;
-            if (timeData) timeData.forEach(entry => totalMins += entry.total_minutes);
-            
-            const h = Math.floor(totalMins / 60);
-            const m = totalMins % 60;
-            document.getElementById('metricHours').textContent = `${h}h ${m}m`;
-        } else {
-            document.getElementById('metricHours').textContent = "0h 0m";
-        }
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+        const { data: timeData } = await supabase.from('time_entries')
+            .select('total_minutes')
+            .eq('employee_id', currentEmpId)
+            .eq('work_date', today);
+        
+        let totalMins = 0;
+        if (timeData) timeData.forEach(entry => totalMins += entry.total_minutes);
+        
+        const h = Math.floor(totalMins / 60);
+        const m = totalMins % 60;
+        document.getElementById('metricHours').textContent = `${h}h ${m}m`;
     }
 
     async function loadRecentActivity() {
-        if (!currentEmpId) return;
-        
         const { data, error } = await supabase.from('time_entries').select(`
             work_date, total_minutes,
             tasks!inner(task_name, projects!inner(project_name))
         `)
         .eq('employee_id', currentEmpId)
-        .order('created_at', { ascending: false })
+        .order('work_date', { ascending: false })
         .limit(5);
 
         const list = document.getElementById('recentActivityList');
@@ -92,28 +88,34 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     }
 
-
     async function loadChart() {
-        if (!currentEmpId) return;
+        if (typeof Chart === 'undefined') {
+            console.error("Chart.js failed to load. Please check your internet connection.");
+            return;
+        }
 
+        // Ambil data 30 hari ke belakang supaya carta tak nampak kosong
         const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+        const past30 = new Date(now);
+        past30.setDate(now.getDate() - 30);
+        
+        const startDate = past30.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+        const endDate = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
 
         const { data, error } = await supabase.from('time_entries')
             .select(`total_minutes, tasks!inner(projects!inner(project_name))`)
             .eq('employee_id', currentEmpId)
-            .gte('work_date', startOfMonth)
-            .lte('work_date', endOfMonth);
+            .gte('work_date', startDate)
+            .lte('work_date', endDate);
 
         const ctx = document.getElementById('projectChart');
+        if (!ctx) return;
         
         if (error || !data || data.length === 0) {
-            ctx.parentElement.innerHTML = '<p style="color:var(--text-muted); text-align:center; margin-top:3rem;">No data for this month</p>';
+            ctx.parentElement.innerHTML = '<p style="color:var(--text-muted); text-align:center; margin-top:3rem;">No data for the last 30 days</p>';
             return;
         }
 
-        // Kumpulkan jumlah minit mengikut nama projek
         const projectTotals = {};
         data.forEach(entry => {
             const projName = entry.tasks.projects.project_name;
@@ -121,11 +123,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         const labels = Object.keys(projectTotals);
-        const dataValues = Object.values(projectTotals).map(mins => (mins / 60).toFixed(1)); // Tukar ke Jam
+        const dataValues = Object.values(projectTotals).map(mins => (mins / 60).toFixed(1)); 
 
-        // Kod Warna Korporat (Blue, Emerald, Amber, Purple, Slate, Cyan)
         const corporateColors = ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#64748b', '#0ea5e9'];
 
+        // Hasilkan Carta Pai (Doughnut)
         new Chart(ctx, {
             type: 'doughnut',
             data: {
@@ -140,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '75%', // Ketebalan cincin (75% nampak sangat profesional)
+                cutout: '75%', 
                 plugins: {
                     legend: {
                         position: 'bottom',
