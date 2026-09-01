@@ -128,9 +128,22 @@ const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
             cells += `<td><input type="text" class="time-input day-input" data-day="${i}" value="${val}" placeholder="00:00"></td>`;
         }
         
-        cells += `<td class="total-cell row-total">00:00</td>`;
-        <td style="text-align: center;"><button class="btn-del-row" type="button" style="background: transparent; border: none; cursor: pointer; font-size: 1.2rem; color: #dc2626;" title="Delete Task">🗑️</button></td>
-        tr.innerHTML = cells;
+        cells += '<td class="total-cell row-total">00:00</td>';
+    cells += '<td style="text-align: center;"><button class="btn-del-row" type="button" style="background: transparent; border: none; cursor: pointer; font-size: 1.2rem; color: #dc2626;" title="Delete Task">🗑️</button></td>';
+    tr.innerHTML = cells;
+
+// Hidupkan fungsi delete
+        tr.querySelector('.btn-del-row').addEventListener('click', () => {
+            tr.remove(); // Padam baris dari skrin
+            calculateTotals(); // Kira semula masa keseluruhan
+        });
+
+
+        
+        tr.querySelector('.btn-del-row').addEventListener('click', () => {
+        tr.remove();
+        calculateTotals();
+    });
         
         tr.querySelectorAll('.day-input').forEach(input => {
             input.addEventListener('change', (e) => {
