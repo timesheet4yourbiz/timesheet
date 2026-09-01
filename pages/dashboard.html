@@ -12,17 +12,18 @@
     <div class="app-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>WorkTime</h2>
-            </div>
+            <div class="sidebar-header"><h2>WorkTime</h2></div>
             <nav class="sidebar-nav">
                 <a href="dashboard.html" class="nav-item active">Dashboard</a>
                 <a href="tracker.html" class="nav-item">Time Tracker</a>
                 <a href="timesheet.html" class="nav-item">Timesheet</a>
+                <a href="attendance.html" class="nav-item">Attendance</a>
+                <a href="approvals.html" class="nav-item">Approvals</a>
                 <a href="employees.html" class="nav-item">Employees</a>
                 <a href="departments.html" class="nav-item">Departments</a>
                 <a href="projects.html" class="nav-item">Projects</a>
                 <a href="tasks.html" class="nav-item">Tasks</a>
+                <a href="reports.html" class="nav-item">Reports</a>
             </nav>
             <div class="sidebar-footer">
                 <button id="logoutBtn" class="btn-logout">Logout</button>
@@ -32,16 +33,54 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="topbar">
-                <h3 id="pageTitle">Dashboard</h3>
-                <div class="user-info">
-                    <span id="userEmail">Loading...</span>
-                </div>
+                <h3>Dashboard</h3>
+                <div class="user-info"><span id="userEmail">Loading...</span></div>
             </header>
 
             <div class="content-area">
+                <!-- Metrics Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid var(--primary-color);">
+                        <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Total Employees</h4>
+                        <h2 id="metricEmployees" style="font-size: 2rem; color: var(--text-main);">...</h2>
+                    </div>
+                    
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #16a34a;">
+                        <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Active Projects</h4>
+                        <h2 id="metricProjects" style="font-size: 2rem; color: var(--text-main);">...</h2>
+                    </div>
+                    
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #eab308;">
+                        <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Pending Approvals</h4>
+                        <h2 id="metricApprovals" style="font-size: 2rem; color: var(--text-main);">...</h2>
+                    </div>
+                    
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #8b5cf6;">
+                        <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">My Hours (Today)</h4>
+                        <h2 id="metricHours" style="font-size: 2rem; color: var(--text-main);">...</h2>
+                    </div>
+
+                </div>
+
+                <!-- Recent Activity Table -->
                 <div class="card">
-                    <h2>Welcome to WorkTime!</h2>
-                    <p>Sistem ini sedang dibangunkan secara berperingkat.</p>
+                    <h2>My Recent Timesheet Entries</h2>
+                    <div style="overflow-x: auto; margin-top: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: var(--bg-color);">Date</th>
+                                    <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: var(--bg-color);">Project</th>
+                                    <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: var(--bg-color);">Task</th>
+                                    <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: var(--bg-color);">Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentActivityList">
+                                <tr><td colspan="4" style="padding: 1rem; text-align: center;">Loading data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
