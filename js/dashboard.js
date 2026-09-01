@@ -56,34 +56,123 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('metricHours').textContent = `${h}h ${m}m`;
     }
 
-    async function loadRecentActivity() {
-        const { data, error } = await supabase.from('time_entries').select(`
-            work_date, total_minutes,
-            tasks!inner(task_name, projects!inner(project_name))
-        `)
-        .eq('employee_id', currentEmpId)
-        .order('work_date', { ascending: false })
-        .limit(5);
+    // Panggil fungsi ini di bahagian atas (Execution area)
+    // await loadAdvancedCharts();
 
-        const list = document.getElementById('recentActivityList');
+    async function loadAdvancedCharts() {
+        if (!currentEmpId || typeof Chart === 'undefined') return;
+
+        // 1. Dapatkan Tarikh Isnin hingga Ahad minggu ini
+        const now = new Date();
+        let day = now.getDay(), diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        const currentMonday = new Date(now.setDate(diff));
         
+        const weekDates = [];
+        const shortDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        for (let i = 0; i < 7; i++) {
+            let d = new Date(currentMonday);
+            d.setDate(currentMonday.getDate() + i);
+            weekDates.push(d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' }));
+        }
+
+        // 2. Tarik data dari Supabase untuk minggu ini
+        const { data, error } = await supabase.from('time_entries')
+            .select(`work_date, total_minutes, task_id, tasks!inner(task_name, projects!inner(project_name))`)
+            .eq('employee_id', currentEmpId)
+            .gte('work_date', weekDates[0])
+            .lte('work_date', weekDates[6]);
+
         if (error || !data || data.length === 0) {
-            list.innerHTML = '<tr><td colspan="4" style="padding: 1rem; text-align: center;">No recent activity.</td></tr>';
+            document.getElementById('taskStatsList').innerHTML = '<p style="text-align: center;">No activity this week.</p>';
             return;
         }
 
-        list.innerHTML = data.map(row => {
-            const h = Math.floor(row.total_minutes / 60);
-            const m = row.total_minutes % 60;
-            const duration = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-            
+        // 3. Proses Data & Tetapkan Warna Seragam
+        const colors = ['#3b82f6', '#8b5cf6', '#0ea5e9', '#f59e0b', '#ef4444', '#10b981', '#6366f1', '#ec4899', '#14b8a6', '#f97316'];
+        
+        const taskData = {};
+        const dailyData = { 'Mon': {}, 'Tue': {}, 'Wed': {}, 'Thu': {}, 'Fri': {}, 'Sat': {}, 'Sun': {} };
+        let totalWeekMins = 0;
+        let colorIndex = 0;
+
+        data.forEach(entry => {
+            const taskName = entry.tasks.task_name;
+            const entryDate = new Date(entry.work_date);
+            let dayIdx = entryDate.getDay() - 1;
+            if (dayIdx === -1) dayIdx = 6;
+            const dayStr = shortDays[dayIdx];
+
+            // Assign warna unik untuk setiap task
+            if (!taskData[taskName]) {
+                taskData[taskName] = { mins: 0, color: colors[colorIndex % colors.length] };
+                colorIndex++;
+            }
+
+            taskData[taskName].mins += entry.total_minutes;
+            dailyData[dayStr][taskName] = (dailyData[dayStr][taskName] || 0) + (entry.total_minutes / 60); // Jam untuk bar chart
+            totalWeekMins += entry.total_minutes;
+        });
+
+        // Sort Tasks ikut minit tertinggi
+        const sortedTasks = Object.keys(taskData).sort((a, b) => taskData[b].mins - taskData[a].mins);
+
+        // 4. Render Carta Bar (Stacked)
+        const barDatasets = sortedTasks.map(task => ({
+            label: task,
+            data: shortDays.map(day => dailyData[day][task] || 0),
+            backgroundColor: taskData[task].color,
+            borderWidth: 0
+        }));
+
+        new Chart(document.getElementById('weeklyBarChart'), {
+            type: 'bar',
+            data: { labels: shortDays, datasets: barDatasets },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { stacked: true, grid: { display: false } },
+                    y: { stacked: true, beginAtZero: true }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // 5. Render Carta Pai (Doughnut)
+        new Chart(document.getElementById('taskPieChart'), {
+            type: 'doughnut',
+            data: {
+                labels: sortedTasks,
+                datasets: [{
+                    data: sortedTasks.map(t => taskData[t].mins),
+                    backgroundColor: sortedTasks.map(t => taskData[t].color),
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '55%',
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // 6. Render Senarai Task dengan Progress Bar
+        const listContainer = document.getElementById('taskStatsList');
+        listContainer.innerHTML = sortedTasks.map(task => {
+            const mins = taskData[task].mins;
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            const percent = ((mins / totalWeekMins) * 100).toFixed(2);
+            const color = taskData[task].color;
+
             return `
-                <tr>
-                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-color);">${row.work_date}</td>
-                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-color);"><strong>${row.tasks.projects.project_name}</strong></td>
-                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-color);">${row.tasks.task_name}</td>
-                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-color);"><span style="background: #e5e7eb; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">${duration}</span></td>
-                </tr>
+                <div style="display: flex; align-items: center; font-size: 0.85rem; font-family: sans-serif;">
+                    <div style="width: 40%; text-align: right; padding-right: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${task}">${task}</div>
+                    <div style="width: 15%; text-align: right; padding-right: 1rem; font-weight: bold;">${timeStr}</div>
+                    <div style="width: 35%; display: flex; align-items: center; height: 10px; background: #f1f5f9; border-radius: 2px; overflow: hidden;">
+                        <div style="width: ${percent}%; height: 100%; background: ${color};"></div>
+                    </div>
+                    <div style="width: 10%; text-align: right; color: #64748b;">${percent}%</div>
+                </div>
             `;
         }).join('');
     }
