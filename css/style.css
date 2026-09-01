@@ -1,99 +1,186 @@
-/* Reset & Base Styles */
+/* =========================================================
+   UI GAYA SUPABASE (Minimalist, Flat, Clean Borders)
+========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
 :root {
-    --primary-color: #2563eb;
-    --primary-hover: #1d4ed8;
-    --bg-color: #f3f4f6;
-    --card-bg: #ffffff;
+    --primary-color: #3ecf8e; /* Supabase Emerald Green */
+    --primary-hover: #24b47e;
+    --bg-body: #f8f9fa; /* Latar belakang utama kelabu sangat cerah */
+    --bg-surface: #ffffff; /* Putih bersih untuk Sidebar & Kad */
     --text-main: #1f2937;
     --text-muted: #6b7280;
-    --border-color: #e5e7eb;
-    --error-color: #ef4444;
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --border-color: #e5e7eb; /* Sempadan halus */
+    --sidebar-width: 250px;
 }
 
 body {
-    background-color: var(--bg-color);
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* --- SIDEBAR (Tiada bayang, hanya garisan sempadan) --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--bg-surface);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    letter-spacing: -0.02em;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 1rem 0.5rem;
+    overflow-y: auto;
+}
+
+.nav-item {
+    display: block;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.2rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+    background-color: #f3f4f6;
     color: var(--text-main);
 }
 
-/* Authentication Layout */
-.auth-container {
+.nav-item.active {
+    background-color: #ecfdf5; /* Tona hijau cair */
+    color: var(--primary-hover);
+    font-weight: 500;
+}
+
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* --- TOPBAR --- */
+.main-content {
+    flex: 1;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.topbar {
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    height: 100vh;
 }
 
-.auth-card {
-    background-color: var(--card-bg);
-    padding: 2.5rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+.topbar h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.user-info {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    background: #f1f5f9;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.content-area {
+    padding: 2rem;
+}
+
+/* --- CARDS & METRICS (Membatalkan inline shadow lama) --- */
+.card, div[style*="box-shadow"] {
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important; /* Hilangkan bayang tebal */
+}
+
+div[style*="border-left"] {
+    border-left: 1px solid var(--border-color) !important; /* Buang garisan kiri tebal lama */
+}
+
+/* --- BUTTONS --- */
+button {
+    font-family: inherit;
+}
+
+.btn-logout {
     width: 100%;
-    max-width: 400px;
-}
-
-.auth-card h2 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    color: var(--primary-color);
-}
-
-.form-group {
-    margin-bottom: 1rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 0.75rem;
+    padding: 0.6rem;
+    background: white;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    outline: none;
-}
-
-.form-group input:focus {
-    border-color: var(--primary-color);
-}
-
-.btn-primary {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 600;
+    color: var(--text-main);
     cursor: pointer;
-    transition: background-color 0.2s;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
 }
 
-.btn-primary:hover {
-    background-color: var(--primary-hover);
+.btn-logout:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
 }
 
-.btn-primary:disabled {
-    background-color: var(--text-muted);
-    cursor: not-allowed;
+/* Butang utama (seperti butang Connect Supabase) */
+.btn-primary, .btn-add-row {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-.error-message {
-    color: var(--error-color);
-    font-size: 0.875rem;
-    margin-top: 0.5rem;
-    text-align: center;
-    display: none; /* Hidden by default */
+.btn-primary:hover, .btn-add-row:hover {
+    background-color: var(--primary-hover) !important;
+}
+
+/* --- TABLES --- */
+table th {
+    background: #f8fafc !important;
+    font-weight: 500 !important;
+    color: var(--text-muted) !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em;
+}
+
+table td {
+    border-bottom: 1px solid var(--border-color) !important;
 }
