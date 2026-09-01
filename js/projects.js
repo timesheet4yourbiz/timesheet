@@ -46,44 +46,55 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load Clients into Dropdown
     async function loadClientDropdown() {
-        const { data } = await supabase.from('clients').select('id, client_name').eq('status', 'ACTIVE').order('client_name');
+        const { data } = await supabase.from('clients').select('*').order('client_name');
         if (data) {
             clientSelect.innerHTML = '<option value="">Select client</option>' + 
                 data.map(c => `<option value="${c.id}">${c.client_name}</option>`).join('');
         }
     }
 
-    // Load Projects List
+    // Load Projects List (Foolproof Method - Tiada Ralat 400)
     async function loadProjects() {
-        // Tarik projects dan pautkan (join) dengan jadual clients untuk dapatkan nama klien
-        const { data, error } = await supabase.from('projects')
-            .select(`
-                id, 
-                project_name, 
-                status, 
-                client_id,
-                clients (client_name)
-            `)
-            .order('project_name', { ascending: true });
+        // 1. Tarik semua data projek
+        const { data: projectsData, error: projError } = await supabase.from('projects').select('*').order('project_name', { ascending: true });
+        // 2. Tarik semua data klien
+        const { data: clientsData } = await supabase.from('clients').select('*');
 
-        if (error || !data || data.length === 0) {
+        if (projError) {
+            console.error("Supabase Error:", projError);
+            projectsList.innerHTML = '<tr><td colspan="4" style="padding: 1.5rem; text-align: center; color: #ef4444;">Error loading data. Check console.</td></tr>';
+            return;
+        }
+
+        if (!projectsData || projectsData.length === 0) {
             projectsList.innerHTML = '<tr><td colspan="4" style="padding: 1.5rem; text-align: center; color: #64748b;">No projects found.</td></tr>';
             return;
         }
 
-        projectsList.innerHTML = data.map(proj => {
-            const clientName = proj.clients ? proj.clients.client_name : '-';
+        projectsList.innerHTML = projectsData.map(proj => {
+            // Logik padanan nama klien secara manual (selamat)
+            let clientName = '-';
+            if (proj.client_id && clientsData) {
+                const foundClient = clientsData.find(c => c.id === proj.client_id);
+                if (foundClient) clientName = foundClient.client_name;
+            } else if (proj.client && typeof proj.client === 'string') {
+                // Tunjuk data lama jika bos guna column 'client' (teks) sebelum ini
+                clientName = proj.client;
+            }
+
+            const projStatus = proj.status || 'ACTIVE'; // Fallback jika column status tiada
+
             return `
             <tr style="border-bottom: 1px solid var(--border-color); background: white;">
                 <td style="padding: 1rem 1.5rem; font-weight: 500; color: #334155;">
-                    <span style="color: #ef4444; margin-right: 8px;">•</span>${proj.project_name}
+                    <span style="color: #03a9f4; margin-right: 8px;">•</span>${proj.project_name || '-'}
                 </td>
                 <td style="padding: 1rem 1.5rem; color: #64748b;">${clientName}</td>
                 <td style="padding: 1rem 1.5rem;">
-                    <span style="background: #f1f5f9; color: #475569; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem;">${proj.status}</span>
+                    <span style="background: #f1f5f9; color: #475569; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem;">${projStatus}</span>
                 </td>
                 <td style="padding: 1rem 1.5rem;">
-                    <button class="edit-proj-btn" data-id="${proj.id}" data-name="${proj.project_name}" data-client="${proj.client_id || ''}" style="background: none; border: none; cursor: pointer; color: #94a3b8;" title="Edit">
+                    <button class="edit-proj-btn" data-id="${proj.id}" data-name="${proj.project_name || ''}" data-client="${proj.client_id || ''}" style="background: none; border: none; cursor: pointer; color: #94a3b8;" title="Edit">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon></svg>
                     </button>
                 </td>
@@ -127,10 +138,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .eq('id', editProjectId);
             errorObj = error;
         } else {
-            // Generate dummy project_code
-            const dummyCode = 'PRJ-' + Math.floor(Math.random() * 10000);
-            
             // Insert
+            const dummyCode = 'PRJ-' + Math.floor(Math.random() * 10000);
             const { error } = await supabase.from('projects')
                 .insert([{ 
                     project_name: pName, 
