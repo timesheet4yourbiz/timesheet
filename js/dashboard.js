@@ -13,15 +13,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     let currentEmpId = null;
+    
+    // Pembolehubah untuk Pagination
+    let allTeamRowsHtml = [];
+    let currentPage = 1;
+    let itemsPerPage = 10;
 
     // Execution
     await initEmployee();
     if (currentEmpId) {
         await loadMetrics();
-        // Ini sahaja fungsi yang dipanggil untuk Carta Baru (Fungsi lama sudah dibuang)
         await loadAdvancedCharts(); 
         await loadTeamActivities();
     }
+
+    // Event Listener untuk Pagination
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    const itemsSelect = document.getElementById('itemsPerPageSelect');
+
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) { currentPage--; renderTeamActivitiesTable(); }
+    });
+    if (nextBtn) nextBtn.addEventListener('click', () => {
+        const maxPage = Math.ceil(allTeamRowsHtml.length / itemsPerPage);
+        if (currentPage < maxPage) { currentPage++; renderTeamActivitiesTable(); }
+    });
+    if (itemsSelect) itemsSelect.addEventListener('change', (e) => {
+        itemsPerPage = parseInt(e.target.value);
+        currentPage = 1; // Reset ke halaman pertama jika tukar saiz
+        renderTeamActivitiesTable();
+    });
 
     // Helper Functions
     async function initEmployee() {
@@ -112,7 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const sortedTasks = Object.keys(taskData).sort((a, b) => taskData[b].mins - taskData[a].mins);
 
-        // Render Bar Chart
         const barCanvas = document.getElementById('weeklyBarChart');
         if (barCanvas) {
             const barDatasets = sortedTasks.map(task => ({
@@ -136,7 +157,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Render Pie Chart
         const pieCanvas = document.getElementById('taskPieChart');
         if (pieCanvas) {
             new Chart(pieCanvas, {
@@ -156,7 +176,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Render Custom Task List
         listContainer.innerHTML = sortedTasks.map(task => {
             const mins = taskData[task].mins;
             const h = Math.floor(mins / 60);
@@ -178,11 +197,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     }
 
-async function loadTeamActivities() {
+    async function loadTeamActivities() {
         const listContainer = document.getElementById('teamActivitiesList');
         if (!listContainer) return;
 
-        // 1. Tetapkan tarikh Isnin - Ahad minggu ini
         const now = new Date();
         let day = now.getDay(), diff = now.getDate() - day + (day === 0 ? -6 : 1);
         const currentMonday = new Date(now.setDate(diff));
@@ -194,10 +212,7 @@ async function loadTeamActivities() {
             weekDates.push(d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' }));
         }
 
-        // 2. Tarik senarai semua pekerja
         const { data: emps } = await supabase.from('employees').select('id, full_name');
-        
-        // 3. Tarik data masa untuk minggu ini
         const { data: entries, error } = await supabase.from('time_entries')
             .select(`employee_id, total_minutes, work_date, tasks(task_name, projects(project_name))`)
             .gte('work_date', weekDates[0])
@@ -212,18 +227,12 @@ async function loadTeamActivities() {
         const colors = ['#3b82f6', '#8b5cf6', '#0ea5e9', '#f59e0b', '#ef4444', '#10b981', '#6366f1', '#ec4899', '#14b8a6', '#f97316'];
         let colorIndex = 0;
         const taskColors = {};
-
-        // 4. Proses data ke dalam bentuk kumpulan mengikut pekerja
         const teamStats = {};
+
         emps.forEach(e => {
             const name = e.full_name || 'Unknown';
             teamStats[e.id] = {
-                name: name,
-                initials: name.substring(0, 2).toUpperCase(),
-                totalMins: 0,
-                latestTask: '-',
-                latestProj: '-',
-                tasksBreakdown: {}
+                name: name, initials: name.substring(0, 2).toUpperCase(), totalMins: 0, latestTask: '-', latestProj: '-', tasksBreakdown: {}
             };
         });
 
@@ -235,47 +244,34 @@ async function loadTeamActivities() {
                 const taskName = entry.tasks?.task_name || 'Misc';
                 const projName = entry.tasks?.projects?.project_name || '';
                 
-                // Tetapkan warna seragam untuk task
-                if (!taskColors[taskName]) {
-                    taskColors[taskName] = colors[colorIndex % colors.length];
-                    colorIndex++;
-                }
-
-                // Log task terkini (berdasarkan susunan order descending)
-                if (emp.latestTask === '-') {
-                    emp.latestTask = taskName;
-                    emp.latestProj = projName;
-                }
+                if (!taskColors[taskName]) { taskColors[taskName] = colors[colorIndex % colors.length]; colorIndex++; }
+                if (emp.latestTask === '-') { emp.latestTask = taskName; emp.latestProj = projName; }
 
                 emp.totalMins += entry.total_minutes;
                 emp.tasksBreakdown[taskName] = (emp.tasksBreakdown[taskName] || 0) + entry.total_minutes;
             });
         }
 
-        // 5. Hasilkan Baris Jadual HTML
-        const STANDARD_WEEK_MINS = 40 * 60; // Anggaran 40 jam seminggu untuk skala max progress bar
+        const STANDARD_WEEK_MINS = 40 * 60; 
 
-        listContainer.innerHTML = Object.values(teamStats).map((emp, index) => {
+        // Simpan baris HTML ke dalam Array memori untuk Pagination
+        allTeamRowsHtml = Object.values(teamStats).map((emp, index) => {
             const h = Math.floor(emp.totalMins / 60);
             const m = emp.totalMins % 60;
             const timeStr = `${h}:${String(m).padStart(2, '0')}`;
             
-            // Hasilkan HTML untuk blok warna (Progress bar)
             let barHtml = '';
             for (const [tName, tMins] of Object.entries(emp.tasksBreakdown)) {
                 const widthPct = Math.min((tMins / STANDARD_WEEK_MINS) * 100, 100);
                 barHtml += `<div style="width: ${widthPct}%; height: 100%; background-color: ${taskColors[tName]};" title="${tName}: ${Math.round(tMins/60)}h"></div>`;
             }
 
-            // Warna bulatan initials pekerja (rawak dari index)
             const avatarColor = colors[index % colors.length];
 
             return `
                 <tr style="border-bottom: 1px solid var(--border-color); background: white;">
                     <td style="padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
-                        <div style="width: 35px; height: 35px; border-radius: 50%; background: ${avatarColor}; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem;">
-                            ${emp.initials}
-                        </div>
+                        <div style="width: 35px; height: 35px; border-radius: 50%; background: ${avatarColor}; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem;">${emp.initials}</div>
                         <span style="font-weight: 500; color: #334155;">${emp.name}</span>
                     </td>
                     <td style="padding: 1rem 1.5rem;">
@@ -285,18 +281,39 @@ async function loadTeamActivities() {
                             ${emp.latestTask} ${emp.latestProj !== '-' ? `<span style="color: #94a3b8;">- ${emp.latestProj}</span>` : ''}
                         </div>
                     </td>
-                    <td style="padding: 1rem 1.5rem; color: #475569;">
-                        ${timeStr}
-                    </td>
-                    <td style="padding: 1rem 1.5rem;">
-                        <div style="display: flex; height: 12px; width: 100%; background: #f1f5f9; border-radius: 2px; overflow: hidden;">
-                            ${barHtml}
-                        </div>
-                    </td>
+                    <td style="padding: 1rem 1.5rem; color: #475569;">${timeStr}</td>
+                    <td style="padding: 1rem 1.5rem;"><div style="display: flex; height: 12px; width: 100%; background: #f1f5f9; border-radius: 2px; overflow: hidden;">${barHtml}</div></td>
                 </tr>
             `;
-        }).join('');
+        });
+
+        // Hantar ke fungsi render Pagination
+        renderTeamActivitiesTable();
     }
 
-    
+    // Fungsi Render Pagination
+    function renderTeamActivitiesTable() {
+        const listContainer = document.getElementById('teamActivitiesList');
+        const pageInfo = document.getElementById('pageInfo');
+        if (!listContainer || !pageInfo) return;
+
+        const totalItems = allTeamRowsHtml.length;
+        if (totalItems === 0) {
+            listContainer.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 1.5rem;">No activities found.</td></tr>';
+            pageInfo.textContent = '0-0 of 0';
+            return;
+        }
+
+        const maxPage = Math.ceil(totalItems / itemsPerPage);
+        if (currentPage > maxPage) currentPage = maxPage;
+
+        const startIdx = (currentPage - 1) * itemsPerPage;
+        const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+
+        // Keluarkan baris spesifik mengikut halaman
+        listContainer.innerHTML = allTeamRowsHtml.slice(startIdx, endIdx).join('');
+        
+        // Kemas kini teks 1-10 of 50
+        pageInfo.textContent = `${startIdx + 1}-${endIdx} of ${totalItems}`;
+    }
 });
