@@ -82,6 +82,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadAdvancedCharts() {
         if (!currentEmpId || typeof Chart === 'undefined') return;
 
+// Tetapan Global Chart.js Gaya Supabase
+        Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        Chart.defaults.color = "#94a3b8"; // Warna teks kelabu
+        Chart.defaults.scale.grid.color = "#f1f5f9"; // Garisan grid sangat halus
+        Chart.defaults.scale.grid.drawBorder = false;
+        Chart.defaults.plugins.tooltip.backgroundColor = "rgba(15, 23, 42, 0.9)"; // Tooltip gelap moden
+        Chart.defaults.plugins.tooltip.padding = 10;
+        Chart.defaults.plugins.tooltip.cornerRadius = 6;
+        
+
         const now = new Date();
         let day = now.getDay(), diff = now.getDate() - day + (day === 0 ? -6 : 1);
         const currentMonday = new Date(now.setDate(diff));
