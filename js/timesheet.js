@@ -30,11 +30,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('nextWeek').addEventListener('click', () => { currentMonday.setDate(currentMonday.getDate() + 7); updateWeekUI(); });
     document.getElementById('thisWeek').addEventListener('click', () => { currentMonday = getMonday(new Date()); updateWeekUI(); });
 
-    const copyLastWeekBtn = document.getElementById('copyLastWeekBtn');
-    copyLastWeekBtn.addEventListener('click', copyLastWeekTasks);
-    
-    const copyLastWeekBtn = document.getElementById('copyLastWeekBtn');
-    copyLastWeekBtn.addEventListener('click', copyLastWeekTasks);
+const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
+    copyLastWeekSelect.addEventListener('change', async (e) => {
+        const mode = e.target.value;
+        if (!mode) return;
+        await copyLastWeekTasks(mode);
+        e.target.value = ''; // Reset semula dropdown selepas klik
+    });
 
     saveBtn.addEventListener('click', saveTimesheet);
 
