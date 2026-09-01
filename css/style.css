@@ -3,7 +3,9 @@
 ========================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
+*, *::before, *::after {
+    box-sizing: border-box;
+}
 :root {
     --primary-color: #3ecf8e; /* Supabase Emerald Green */
     --primary-hover: #24b47e;
@@ -60,13 +62,14 @@ body {
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem; /* Jarak antara ikon dan teks */
-    padding: 0.5rem 1rem;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem; /* Dibesarkan sedikit supaya lebih selesa ditekan */
     margin-bottom: 0.2rem;
     color: var(--text-muted);
     text-decoration: none;
-    font-family: 'Inter', -apple-system, sans-serif; /* Paksa fon seragam */
+    font-family: 'Inter', -apple-system, sans-serif;
     font-size: 0.85rem;
+    font-weight: 500; /* Diseragamkan supaya teks tidak melompat/mengecil */
     border-radius: 6px;
     transition: all 0.2s ease;
 }
@@ -88,12 +91,12 @@ body {
 .nav-item.active {
     background-color: #ecfdf5; 
     color: var(--primary-hover);
-    font-weight: 500;
+    /* font-weight dibuang dari sini sebab dah seragam di atas */
 }
 
 .nav-item.active svg {
     opacity: 1;
-    color: var(--primary-hover); /* Ikon bertukar hijau bila aktif */
+    color: var(--primary-hover);
 }
 
 .sidebar-footer {
