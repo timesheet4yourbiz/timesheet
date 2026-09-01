@@ -229,7 +229,6 @@ const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
 
 
 async function copyLastWeekTasks(mode) {
-        // 1. Dapatkan tarikh Isnin dan Ahad minggu lepas
         const lastWeekMonday = new Date(currentMonday);
         lastWeekMonday.setDate(currentMonday.getDate() - 7);
         const lastWeekSunday = new Date(lastWeekMonday);
@@ -238,7 +237,6 @@ async function copyLastWeekTasks(mode) {
         const startDate = lastWeekMonday.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
         const endDate = lastWeekSunday.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
 
-        // 2. Tarik data timesheet minggu lepas (termasuk total_minutes dan work_date)
         const { data, error } = await supabase
             .from('time_entries')
             .select('task_id, work_date, total_minutes')
@@ -253,34 +251,39 @@ async function copyLastWeekTasks(mode) {
         } 
 
         if (data && data.length > 0) {
+            
+            // ISU 2 FIX: Buang baris "-- Select Task --" yang kosong sebelum tambah task baru
+            document.querySelectorAll('.task-select').forEach(select => {
+                if (!select.value) {
+                    const row = select.closest('tr');
+                    if (row) row.remove();
+                }
+            });
+
             const currentSelects = Array.from(document.querySelectorAll('.task-select')).map(select => select.value);
             
-            // Susun data mengikut task_id
             const taskDataMap = {};
             data.forEach(entry => {
                 if (!taskDataMap[entry.task_id]) {
                     taskDataMap[entry.task_id] = {};
                 }
                 
-                // Jika user pilih "Copy activities and time", kita salin masa sekali
                 if (mode === 'task_time') {
-                    // Cari indeks hari (0 = Isnin, 6 = Ahad)
-                    const entryDate = new Date(entry.work_date);
+                    // ISU 1 FIX: Pecahkan string tarikh secara manual untuk elak ralat Timezone
+                    const [y, m, d] = entry.work_date.split('-');
+                    const entryDate = new Date(y, m - 1, d);
                     let dayIndex = entryDate.getDay() - 1; 
                     if (dayIndex === -1) dayIndex = 6; 
                     
-                    // Tukar minit ke format HH:MM
                     const h = Math.floor(entry.total_minutes / 60);
-                    const m = entry.total_minutes % 60;
-                    const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                    const min = entry.total_minutes % 60;
+                    const timeStr = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
                     
-                    // Padankan dengan tarikh minggu SEMASA
                     const thisWeekDateKey = weekDates[dayIndex];
                     taskDataMap[entry.task_id][thisWeekDateKey] = timeStr;
                 }
             });
 
-            // 3. Masukkan baris ke dalam jadual
             let addedCount = 0;
             for (const taskId in taskDataMap) {
                 if (!currentSelects.includes(taskId)) {
@@ -292,7 +295,7 @@ async function copyLastWeekTasks(mode) {
             if (addedCount === 0) {
                 alert("Semua task dari minggu lepas sudah ada di skrin minggu ini.");
             } else {
-                calculateTotals(); // Kira semula jumlah keseluruhan jika ada masa disalin
+                calculateTotals();
             }
         } else {
             alert("Tiada rekod task dijumpai pada minggu lepas.");
