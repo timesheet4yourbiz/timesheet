@@ -6,11 +6,12 @@
     <title>Dashboard - WorkTime System</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <!-- Tambah Chart.js untuk Carta Pai -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-header"><h2>WorkTime</h2></div>
             <nav class="sidebar-nav">
@@ -30,7 +31,6 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <header class="topbar">
                 <h3>Dashboard</h3>
@@ -40,47 +40,55 @@
             <div class="content-area">
                 <!-- Metrics Grid -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-                    
                     <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid var(--primary-color);">
                         <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Total Employees</h4>
                         <h2 id="metricEmployees" style="font-size: 2rem; color: var(--text-main);">...</h2>
                     </div>
-                    
                     <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #16a34a;">
                         <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Active Projects</h4>
                         <h2 id="metricProjects" style="font-size: 2rem; color: var(--text-main);">...</h2>
                     </div>
-                    
                     <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #eab308;">
                         <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Pending Approvals</h4>
                         <h2 id="metricApprovals" style="font-size: 2rem; color: var(--text-main);">...</h2>
                     </div>
-                    
                     <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #8b5cf6;">
                         <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">My Hours (Today)</h4>
                         <h2 id="metricHours" style="font-size: 2rem; color: var(--text-main);">...</h2>
                     </div>
-
                 </div>
 
-                <!-- Recent Activity Table -->
-                <div class="card">
-                    <h2>My Recent Timesheet Entries</h2>
-                    <div style="overflow-x: auto; margin-top: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr>
-                                    <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: var(--bg-color);">Date</th>
-                                    <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: var(--bg-color);">Project</th>
-                                    <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: var(--bg-color);">Task</th>
-                                    <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: var(--bg-color);">Duration</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recentActivityList">
-                                <tr><td colspan="4" style="padding: 1rem; text-align: center;">Loading data...</td></tr>
-                            </tbody>
-                        </table>
+                <!-- Lower Section: Chart & Table (Grid Layout) -->
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; align-items: start;">
+                    
+                    <!-- Corporate Pie Chart -->
+                    <div class="card" id="chartContainer" style="height: 100%;">
+                        <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">Hours by Project (This Month)</h2>
+                        <div style="position: relative; height: 250px; width: 100%;">
+                            <canvas id="projectChart"></canvas>
+                        </div>
                     </div>
+
+                    <!-- Recent Activity Table -->
+                    <div class="card" style="height: 100%;">
+                        <h2 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">My Recent Entries</h2>
+                        <div style="overflow-x: auto; border-radius: 8px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                                <thead>
+                                    <tr>
+                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc; color: #475569;">Date</th>
+                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc; color: #475569;">Project</th>
+                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc; color: #475569;">Task</th>
+                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc; color: #475569;">Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentActivityList">
+                                    <tr><td colspan="4" style="padding: 1rem; text-align: center;">Loading data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </main>
