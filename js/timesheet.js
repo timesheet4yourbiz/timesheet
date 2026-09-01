@@ -129,6 +129,7 @@ const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
         }
         
         cells += `<td class="total-cell row-total">00:00</td>`;
+        <td style="text-align: center;"><button class="btn-del-row" type="button" style="background: transparent; border: none; cursor: pointer; font-size: 1.2rem; color: #dc2626;" title="Delete Task">🗑️</button></td>
         tr.innerHTML = cells;
         
         tr.querySelectorAll('.day-input').forEach(input => {
@@ -296,6 +297,7 @@ async function copyLastWeekTasks(mode) {
                 alert("Semua task dari minggu lepas sudah ada di skrin minggu ini.");
             } else {
                 calculateTotals();
+                await saveTimesheet(); // <-- Ini arahan Auto-save
             }
         } else {
             alert("Tiada rekod task dijumpai pada minggu lepas.");
