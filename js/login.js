@@ -52,7 +52,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             loginBtn.textContent = 'Sign In';
             loginBtn.disabled = false;
         } else {
-            // Berjaya login, terus ke halaman Dashboard
+            // Semak status kelulusan HR di jadual employees
+            const userId = data.user.id;
+            const { data: empData } = await supabase
+                .from('employees')
+                .select('status')
+                .eq('id', userId)
+                .single();
+
+            // Sekat jika akaun masih PENDING
+            if (empData && empData.status === 'PENDING') {
+                await supabase.auth.signOut();
+                errorMessage.textContent = 'Akses Ditolak: Akaun anda masih PENDING kelulusan Admin/HR.';
+                errorMessage.style.display = 'block';
+                loginBtn.textContent = 'Sign In';
+                loginBtn.disabled = false;
+                return;
+            }
+
+            // Jika ACTIVE, terus masuk ke Dashboard
             window.location.href = 'dashboard.html';
         }
     });
