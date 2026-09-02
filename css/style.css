@@ -85,10 +85,12 @@ body {
     color: var(--text-muted);
     text-decoration: none;
     font-family: 'Inter', -apple-system, sans-serif;
-    font-size: 0.85rem;
-    font-weight: 500; 
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;  
+    line-height: 1.5 !important;  
     border-radius: 6px;
     transition: all 0.2s ease;
+    white-space: nowrap;          
 }
 
 .nav-item svg {
