@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - WorkTime</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .settings-card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569; }
+        .form-control { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; }
+        .help-text { font-size: 0.8rem; color: #94a3b8; margin-top: 0.4rem; display: block; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header"><h2>WorkTime</h2></div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="settings.html" class="nav-item active">Settings</a>
+            </nav>
+            <div class="sidebar-footer"><button id="logoutBtn" class="btn-logout">Logout</button></div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h3>System Settings</h3>
+                <div class="user-info"><span id="userEmail">Loading...</span></div>
+            </header>
+
+            <div class="content-area">
+                <div class="settings-card">
+                    <h3 style="margin-top: 0; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">Appearance</h3>
+                    
+                    <div class="form-group">
+                        <label>Company Logo URL</label>
+                        <input type="text" id="logoUrl" class="form-control" placeholder="https://example.com/logo.png">
+                        <span class="help-text">Tampal link imej logo yang telus (transparent background).</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Login Background URL</label>
+                        <input type="text" id="bgUrl" class="form-control" placeholder="https://example.com/background.jpg">
+                        <span class="help-text">Tampal link imej resolusi tinggi untuk latar belakang halaman login.</span>
+                    </div>
+
+                    <button id="saveSettingsBtn" class="btn-primary" style="background: #03a9f4; width: 100%;">SAVE SETTINGS</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script type="module" src="../js/settings.js"></script>
+</body>
+</html>
