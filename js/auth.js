@@ -1,6 +1,7 @@
 import { supabase } from './supabase.js';
-
-document.addEventListener('DOMContentLoaded', () => {
+import { loadSidebar } from './sidebar.js';
+document.addEventListener('DOMContentLoaded', async () => {
+loadSidebar(); 
     
     const loginForm = document.getElementById('loginForm');
     
