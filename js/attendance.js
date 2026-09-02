@@ -50,11 +50,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         clockBtn.disabled = false;
     });
 
-    // Semak Status Hari Ini
+// Semak Status Hari Ini
     async function checkTodayStatus() {
         const today = new Date().toISOString().split('T')[0];
+        // Gunakan .maybeSingle() untuk elakkan ralat 406 jika tiada rekod
         const { data } = await supabase.from('attendance')
-            .select('*').eq('user_id', session.user.id).eq('date', today).single();
+            .select('*').eq('user_id', session.user.id).eq('date', today).maybeSingle();
 
         if (!data) {
             clockState = 'IN';
