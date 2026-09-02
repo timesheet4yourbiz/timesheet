@@ -34,6 +34,7 @@ body {
 /* --- SIDEBAR (Tiada bayang, hanya garisan sempadan) --- */
 .sidebar {
     width: var(--sidebar-width);
+    height: 100%; /* Add this line */
     background-color: var(--bg-surface);
     border-right: 1px solid var(--border-color);
     display: flex;
