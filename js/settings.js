@@ -1,6 +1,7 @@
 import { supabase } from './supabase.js';
-
+import { loadSidebar } from './sidebar.js';
 document.addEventListener('DOMContentLoaded', async () => {
+loadSidebar(); 
     // Auth Check
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return window.location.href = '../pages/login.html';
