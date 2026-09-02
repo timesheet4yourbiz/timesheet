@@ -15,69 +15,29 @@
 </head>
 <body>
 
-    <div class="app-container">
-       <div id="sidebar-container"></div>  
-        <main class="main-content">
-            <header class="topbar">
-                <h3>Timesheet</h3>
-                <div class="user-info"><span id="userEmail">Loading...</span></div>
-            </header>
-
-            <div class="content-area">
-                <div class="timesheet-header">
-                    <div class="week-nav">
-                        <button id="prevWeek" class="btn-nav">&lt; Prev</button>
-                        <strong id="weekLabel">Loading Week...</strong>
-                        <button id="nextWeek" class="btn-nav">Next &gt;</button>
-                        <button id="thisWeek" class="btn-nav">This Week</button>
+<div class="content-area">
+                <div class="card" style="padding: 1.5rem; background: white; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h4 style="margin:0; color: var(--text-muted); font-size: 0.9rem;">TIME ENTRIES LOG</h4>
+                        <div id="totalHours" style="font-weight: 600; color: var(--primary-color); background: #ecfdf5; padding: 0.5rem 1rem; border-radius: 6px;">
+                            Total: 0 hrs 0 mins
+                        </div>
                     </div>
-                    <button id="saveBtn" class="btn-save">Save Timesheet</button>
-                </div>
-
-                <div class="table-container">
-                    <table id="timesheetTable">
+                    
+                    <table style="width: 100%; border-collapse: collapse;">
                         <thead>
-                            <tr id="daysHeader">
-                                <th class="col-task">Project / Task</th>
-                                <th>Mon<br><small>-</small></th>
-                                <th>Tue<br><small>-</small></th>
-                                <th>Wed<br><small>-</small></th>
-                                <th>Thu<br><small>-</small></th>
-                                <th>Fri<br><small>-</small></th>
-                                <th>Sat<br><small>-</small></th>
-                                <th>Sun<br><small>-</small></th>
-                               <th>Total</th>
-<th style="width: 40px; text-align: center;">🗑️</th>
+                            <tr style="text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc;">
+                                <th style="padding: 0.75rem; color: var(--text-muted);">Date</th>
+                                <th style="padding: 0.75rem; color: var(--text-muted);">Project</th>
+                                <th style="padding: 0.75rem; color: var(--text-muted);">Task Description</th>
+                                <th style="padding: 0.75rem; color: var(--text-muted);">Duration</th>
                             </tr>
                         </thead>
-                        <tbody id="timesheetBody">
-                            <!-- Rows will be populated here -->
+                        <tbody id="timesheetTableBody">
+                            <!-- Data ditarik oleh JS -->
                         </tbody>
-                        <tfoot>
-                            <tr>
-                                <td class="col-task total-cell" style="text-align: right;">Daily Total:</td>
-                                <td class="total-cell" id="tot-0">00:00</td>
-                                <td class="total-cell" id="tot-1">00:00</td>
-                                <td class="total-cell" id="tot-2">00:00</td>
-                                <td class="total-cell" id="tot-3">00:00</td>
-                                <td class="total-cell" id="tot-4">00:00</td>
-                                <td class="total-cell" id="tot-5">00:00</td>
-                                <td class="total-cell" id="tot-6">00:00</td>
-                                <td class="total-cell" id="tot-week">00:00</td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1rem; align-items: center;">
-                    <button id="addRowBtn" class="btn-add-row">+ Add Task Row</button>
-                    <select id="copyLastWeekSelect" class="btn-add-row" style="background: white; color: #3b82f6; border: 1px solid #3b82f6; cursor: pointer;">
-                        <option value="" disabled selected>Copy last week ▾</option>
-                        <option value="task_only">Copy activities only</option>
-                        <option value="task_time">Copy activities and time</option>
-                    </select>
-                </div>
-                
             </div>
         </main>
     </div>
