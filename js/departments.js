@@ -1,13 +1,17 @@
 import { supabase } from './supabase.js';
 import { loadSidebar } from './sidebar.js';
 document.addEventListener('DOMContentLoaded', async () => {
-loadSidebar(); 
-    
-    // Semak Session
+loadSidebar();    
+
+    // Auth
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-        window.location.href = '../pages/login.html';
-        return;
+    if (!session) return window.location.href = '../pages/login.html';
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = '../pages/login.html';
+        });
     }
     
     document.getElementById('userEmail').textContent = session.user.email;
