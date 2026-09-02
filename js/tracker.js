@@ -96,18 +96,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- 3. TARIK PROJEK KE DROPDOWN ---
     async function loadProjectsDropdown() {
-        const { data } = await supabase.from('projects').select('id, name').order('name');
+        // Tukar 'name' kepada 'project_name'
+        const { data } = await supabase.from('projects').select('id, project_name').order('project_name');
         if (data) {
             projectSelect.innerHTML = '<option value="">Select Project</option>' +
-                data.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                data.map(p => `<option value="${p.id}">${p.project_name}</option>`).join('');
         }
     }
 
     // --- 4. PAPAR REKOD MASA TERKINI ---
     async function loadTimeEntries() {
+        // Tukar 'projects(name)' kepada 'projects(project_name)'
         const { data, error } = await supabase
             .from('time_entries')
-            .select('*, projects(name)')
+            .select('*, projects(project_name)')
             .order('created_at', { ascending: false })
             .limit(10);
 
@@ -119,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         trackerEntriesList.innerHTML = data.map(entry => `
             <tr style="border-bottom: 1px solid var(--border-color);">
                 <td style="padding: 0.8rem; font-weight: 500;">${entry.description}</td>
-                <td style="padding: 0.8rem; color: var(--text-muted);">${entry.projects ? entry.projects.name : '-'}</td>
+                <td style="padding: 0.8rem; color: var(--text-muted);">${entry.projects ? entry.projects.project_name : '-'}</td>
                 <td style="padding: 0.8rem; font-family: monospace; font-weight: 600;">${formatTime(entry.duration_seconds)}</td>
                 <td style="padding: 0.8rem; text-align: right;">
                     <button class="del-entry-btn" data-id="${entry.id}" style="border:none; background:none; color:#ef4444; cursor:pointer;">Delete</button>
@@ -136,5 +138,4 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         });
-    }
-});
+    }});
