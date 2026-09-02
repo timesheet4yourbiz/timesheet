@@ -24,13 +24,21 @@
 
     <div class="content-area">
         <div class="card" style="padding: 1.5rem; background: white; border-radius: 8px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h4 style="margin:0; color: var(--text-muted); font-size: 0.9rem;">EMPLOYEE DIRECTORY</h4>
+            
+            <!-- Bahagian Kawalan (Carian & Butang Pukal) -->
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <input type="text" id="searchInput" placeholder="🔍 Search email or role..." style="padding: 0.6rem 1rem; border: 1px solid var(--border-color); border-radius: 6px; flex: 1; min-width: 250px;">
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="bulkApproveBtn" style="background: #10b981; color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 500;">✔ Approve Selected</button>
+                    <button id="bulkDeleteBtn" style="background: #ef4444; color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 500;">✖ Delete Selected</button>
+                </div>
             </div>
             
+            <!-- Jadual Pekerja -->
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc;">
+                        <th style="padding: 0.75rem; width: 40px;"><input type="checkbox" id="selectAllCheckbox"></th>
                         <th style="padding: 0.75rem;">Email Address</th>
                         <th style="padding: 0.75rem;">Role</th>
                         <th style="padding: 0.75rem;">Status</th>
@@ -38,12 +46,12 @@
                     </tr>
                 </thead>
                 <tbody id="employeesTableBody">
-                    <!-- Data masuk dari JS -->
+                    <!-- Data ditarik oleh JS -->
                 </tbody>
             </table>
         </div>
     </div>
-</main>
+        </main>
     </div>
 
     <script type="module" src="../js/employees.js"></script>
