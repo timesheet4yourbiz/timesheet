@@ -17,73 +17,33 @@
         <div id="sidebar-container"></div>
         <!-- Main Content -->
         <main class="main-content">
-            <header class="topbar">
-                <h3>Team</h3>
-                <div class="user-info"><span id="userEmail">Loading...</span></div>
-            </header>
+    <header class="topbar">
+        <h3>Team Management</h3>
+        <span id="userEmail" class="user-info">Loading...</span>
+    </header>
 
-            <div class="content-area">
-                
-                <!-- Butang Tab -->
-                <div class="tabs">
-                    <button class="tab-btn active" data-target="membersTab">Members</button>
-                    <button class="tab-btn" data-target="groupsTab">Groups</button>
-                </div>
-
-                <!-- KANDUNGAN: MEMBERS TAB -->
-                <div id="membersTab" class="tab-content active">
-                    <div class="action-bar" style="justify-content: flex-end;">
-                        <button id="addMemberBtn" class="btn-primary" style="background-color: #03a9f4 !important;">ADD NEW MEMBER</button>
-                    </div>
-                    <div class="card" style="padding: 0;">
-                        <div style="overflow-x: auto;">
-                            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
-                                <thead>
-                                    <tr style="border-bottom: 1px solid var(--border-color); color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">
-                                        <th style="padding: 1rem 1.5rem; font-weight: 600;">Name</th>
-                                        <th style="padding: 1rem 1.5rem; font-weight: 600;">Email</th>
-                                        <th style="padding: 1rem 1.5rem; font-weight: 600;">Billable Rate (MYR)</th>
-                                        <th style="padding: 1rem 1.5rem; font-weight: 600;">Role</th>
-                                        <th style="padding: 1rem 1.5rem; font-weight: 600;">Group</th>
-                                        <th style="padding: 1rem 1.5rem; font-weight: 600; width: 60px;"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="membersList">
-                                    <tr><td colspan="6" style="padding: 1.5rem; text-align: center;">Loading members...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- KANDUNGAN: GROUPS TAB -->
-                <div id="groupsTab" class="tab-content">
-                    <div class="action-bar" style="justify-content: flex-end;">
-                        <div class="group-add-form">
-                            <input type="text" id="newGroupName" placeholder="Add new group">
-                            <button id="addGroupBtn">ADD</button>
-                        </div>
-                    </div>
-                    <div class="card" style="padding: 0;">
-                        <div style="overflow-x: auto;">
-                            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
-                                <thead>
-                                    <tr style="border-bottom: 1px solid var(--border-color); color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">
-                                        <th style="padding: 1rem 1.5rem; font-weight: 600;">Name</th>
-                                        <th style="padding: 1rem 1.5rem; font-weight: 600;">Access</th>
-                                        <th style="padding: 1rem 1.5rem; font-weight: 600; width: 80px;"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="groupsList">
-                                    <tr><td colspan="3" style="padding: 1.5rem; text-align: center;">Loading groups...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
+    <div class="content-area">
+        <div class="card" style="padding: 1.5rem; background: white; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h4 style="margin:0; color: var(--text-muted); font-size: 0.9rem;">EMPLOYEE DIRECTORY</h4>
             </div>
-        </main>
+            
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc;">
+                        <th style="padding: 0.75rem;">Email Address</th>
+                        <th style="padding: 0.75rem;">Role</th>
+                        <th style="padding: 0.75rem;">Status</th>
+                        <th style="padding: 0.75rem; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="employeesTableBody">
+                    <!-- Data masuk dari JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
     </div>
 
     <script type="module" src="../js/employees.js"></script>
