@@ -10,74 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="../css/style.css">
-    <style>
-        /* CSS Khusus untuk Time Tracker Bar */
-        .tracker-bar {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.75rem 1.5rem;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-        .tracker-selects {
-            display: flex;
-            flex: 1;
-            gap: 1rem;
-            min-width: 300px;
-        }
-        .tracker-selects select {
-            flex: 1;
-            padding: 0.6rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.85rem;
-            color: var(--text-main);
-            background-color: #f8fafc;
-            outline: none;
-            transition: border 0.2s;
-        }
-        .tracker-selects select:focus {
-            border-color: var(--primary-color);
-            background-color: white;
-        }
-        .timer-display {
-            font-size: 1.5rem; /* Saiz fon dikecilkan agar kemas */
-            font-weight: 600;
-            font-variant-numeric: tabular-nums; /* Elak nombor bergoyang bila berubah */
-            color: var(--text-main);
-            min-width: 120px;
-            text-align: center;
-            letter-spacing: -0.02em;
-        }
-        .btn-start {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 0.6rem 2rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .btn-start:hover {
-            background-color: var(--primary-hover);
-        }
-        .btn-start.stop-mode {
-            background-color: #ef4444; /* Merah untuk butang Stop */
-        }
-        .btn-start.stop-mode:hover {
-            background-color: #dc2626;
-        }
-    </style>
+   
 </head>
 <body>
 
