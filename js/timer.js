@@ -1,6 +1,7 @@
 import { supabase } from './supabase.js';
-
+import { loadSidebar } from './sidebar.js';
 document.addEventListener('DOMContentLoaded', async () => {
+loadSidebar(); 
     
     // 1. Session & Initialization
     const { data: { session } } = await supabase.auth.getSession();
