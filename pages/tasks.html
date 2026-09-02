@@ -18,39 +18,42 @@
     <div class="app-container">
         <!-- Sidebar Seragam Dengan Kategori -->
         <div id="sidebar-container"></div>        <!-- Main Content -->
-        <main class="main-content">
-            <header class="topbar">
-                <h3>Tasks</h3>
-                <div class="user-info">
-                    <span id="userEmail">Loading...</span>
-                </div>
-            </header>
+<main class="main-content">
+    <header class="topbar">
+        <h3>Task Management</h3>
+        <span id="userEmail" class="user-info">Loading...</span>
+    </header>
 
-            <div class="content-area">
-                <div class="card">
-                    <div class="header-actions">
-                        <h2>Task List</h2>
-                        <button id="addTaskBtn" class="btn-sm">+ Add Task</button>
-                    </div>
-                    
-                    <div class="table-container">
-                        <table id="taskTable">
-                            <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Task Name</th>
-                                    <th>Project</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="taskList">
-                                <tr><td colspan="4">Loading tasks...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <div class="content-area">
+        <!-- Borang Tambah Tugasan -->
+        <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+            <div style="display: flex; gap: 1rem;">
+                <select id="projectSelect" style="flex: 1; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px;">
+                    <option value="">Select Project...</option>
+                </select>
+                <input type="text" id="taskNameInput" placeholder="New Task Name" style="flex: 2; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px;">
+                <button id="addTaskBtn" class="btn-primary">Add Task</button>
             </div>
-        </main>
+        </div>
+
+        <!-- Jadual Tugasan -->
+        <div class="card" style="padding: 1.5rem;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc;">
+                        <th style="padding: 0.75rem;">Project</th>
+                        <th style="padding: 0.75rem;">Task Name</th>
+                        <th style="padding: 0.75rem;">Status</th>
+                        <th style="padding: 0.75rem; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tasksTableBody">
+                    <!-- Data ditarik oleh JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
     </div>
 
     <!-- Add Task Modal -->
