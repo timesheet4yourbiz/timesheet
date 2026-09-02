@@ -1,6 +1,7 @@
 import { supabase } from './supabase.js';
-
+import { loadSidebar } from './sidebar.js';
 document.addEventListener('DOMContentLoaded', async () => {
+loadSidebar(); 
     
     // Semak Session
     const { data: { session } } = await supabase.auth.getSession();
