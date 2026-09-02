@@ -5,17 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Timesheet - WorkTime System</title>
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
+    <!-- CSS Utama Sahaja -->
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/dashboard.css">
-    
 </head>
 <body>
 
-<div class="content-area">
+    <div class="app-container">
+        <div id="sidebar-container"></div>  
+        
+        <main class="main-content">
+            <header class="topbar">
+                <h3>My Timesheet</h3>
+                <div class="user-info"><span id="userEmail">Loading...</span></div>
+            </header>
+
+            <div class="content-area">
                 <div class="card" style="padding: 1.5rem; background: white; border-radius: 8px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                         <h4 style="margin:0; color: var(--text-muted); font-size: 0.9rem;">TIME ENTRIES LOG</h4>
