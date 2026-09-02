@@ -1,117 +1,89 @@
 import { supabase } from './supabase.js';
 import { loadSidebar } from './sidebar.js';
-document.addEventListener('DOMContentLoaded', async () => {
-loadSidebar();    
 
-    // Auth
+document.addEventListener('DOMContentLoaded', async () => {
+    loadSidebar();
+
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return window.location.href = '../pages/login.html';
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            window.location.href = '../pages/login.html';
-        });
-    }
     
     document.getElementById('userEmail').textContent = session.user.email;
-    
-    // Logout Logic
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-        await supabase.auth.signOut();
-        window.location.href = '../pages/login.html';
-    });
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', () => supabase.auth.signOut().then(() => window.location.href = '../pages/login.html'));
 
-    // Elements
-    const taskList = document.getElementById('taskList');
-    const projectSelect = document.getElementById('taskProject');
-    const modal = document.getElementById('taskModal');
-    const addBtn = document.getElementById('addTaskBtn');
-    const closeBtn = document.getElementById('closeModalBtn');
-    const form = document.getElementById('taskForm');
-    const saveBtn = document.getElementById('saveBtn');
+    const projectSelect = document.getElementById('projectSelect');
+    const taskNameInput = document.getElementById('taskNameInput');
+    const addTaskBtn = document.getElementById('addTaskBtn');
+    const tasksTableBody = document.getElementById('tasksTableBody');
 
-    // Load Data
-    await loadProjectsForDropdown();
+    await loadProjectsDropdown();
     await loadTasks();
 
-    // Modal Toggles
-    addBtn.addEventListener('click', () => modal.style.display = 'flex');
-    closeBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-        form.reset();
+    // Fungsi Tambah Task
+    addTaskBtn.addEventListener('click', async () => {
+        const projectId = projectSelect.value;
+        const taskName = taskNameInput.value.trim();
+
+        if (!projectId || !taskName) return alert('Sila pilih projek dan masukkan nama tugasan.');
+
+        addTaskBtn.disabled = true;
+        addTaskBtn.textContent = 'Saving...';
+
+        await supabase.from('tasks').insert([{ project_id: projectId, task_name: taskName }]);
+        
+        taskNameInput.value = '';
+        addTaskBtn.disabled = false;
+        addTaskBtn.textContent = 'Add Task';
+        await loadTasks();
     });
 
-    // Save Data
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        saveBtn.disabled = true;
-        saveBtn.textContent = 'Saving...';
-
-        const taskData = {
-            project_id: document.getElementById('taskProject').value,
-            task_code: document.getElementById('taskCode').value,
-            task_name: document.getElementById('taskName').value,
-            status: 'TODO'
-        };
-
-        const { error } = await supabase.from('tasks').insert([taskData]);
-
-        if (error) {
-            alert('Error saving task: ' + error.message);
-            console.error(error);
-        } else {
-            modal.style.display = 'none';
-            form.reset();
-            await loadTasks();
-        }
-
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Save';
-    });
-
-    async function loadProjectsForDropdown() {
-        const { data, error } = await supabase
-            .from('projects')
-            .select('id, project_name')
-            .eq('status', 'ACTIVE'); // Hanya paparkan projek yang aktif
-
-        if (error) {
-            projectSelect.innerHTML = `<option value="">Error loading projects</option>`;
-            return;
-        }
-
-        projectSelect.innerHTML = `<option value="">-- Select Project --</option>` + 
-            data.map(proj => `<option value="${proj.id}">${proj.project_name}</option>`).join('');
+    async function loadProjectsDropdown() {
+        const { data } = await supabase.from('projects').select('id, project_name').order('project_name');
+        if (data) projectSelect.innerHTML += data.map(p => `<option value="${p.id}">${p.project_name}</option>`).join('');
     }
 
     async function loadTasks() {
-        // Fetch tasks bersama dengan nama project (menggunakan relationship foreign key Supabase)
-        const { data, error } = await supabase
-            .from('tasks')
-            .select(`
-                *,
-                projects ( project_name )
-            `)
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            taskList.innerHTML = `<tr><td colspan="4" style="color:red">Error loading data</td></tr>`;
+        const { data } = await supabase.from('tasks').select('*, projects(project_name)').order('created_at', { ascending: false });
+        
+        if (!data || data.length === 0) {
+            tasksTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 1.5rem;">No tasks found.</td></tr>';
             return;
         }
 
-        if (data.length === 0) {
-            taskList.innerHTML = `<tr><td colspan="4">No tasks found.</td></tr>`;
-            return;
-        }
+        tasksTableBody.innerHTML = data.map(task => {
+            const isCompleted = task.status === 'COMPLETED';
+            const statusBadge = isCompleted 
+                ? '<span style="background:#ecfdf5; color:#10b981; padding:0.2rem 0.6rem; border-radius:4px; font-size:0.8rem;">COMPLETED</span>'
+                : '<span style="background:#fef3c7; color:#d97706; padding:0.2rem 0.6rem; border-radius:4px; font-size:0.8rem;">PENDING</span>';
 
-        taskList.innerHTML = data.map(task => `
-            <tr>
-                <td><strong>${task.task_code}</strong></td>
-                <td>${task.task_name}</td>
-                <td>${task.projects ? task.projects.project_name : 'Unknown Project'}</td>
-                <td><span class="badge ${task.status === 'TODO' ? 'badge-todo' : ''}">${task.status}</span></td>
-            </tr>
-        `).join('');
+            return `
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.8rem; color: var(--text-muted);">${task.projects ? task.projects.project_name : '-'}</td>
+                    <td style="padding: 0.8rem; font-weight: 500; ${isCompleted ? 'text-decoration: line-through; color: #9ca3af;' : ''}">${task.task_name}</td>
+                    <td style="padding: 0.8rem;">${statusBadge}</td>
+                    <td style="padding: 0.8rem; text-align: right;">
+                        ${!isCompleted ? `<button class="complete-btn" data-id="${task.id}" style="border:none; background:none; color:#3ecf8e; cursor:pointer; margin-right: 1rem;">✔ Done</button>` : ''}
+                        <button class="delete-btn" data-id="${task.id}" style="border:none; background:none; color:#ef4444; cursor:pointer;">✖ Delete</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Action Buttons
+        document.querySelectorAll('.complete-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                await supabase.from('tasks').update({ status: 'COMPLETED' }).eq('id', e.target.dataset.id);
+                loadTasks();
+            });
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                if (confirm('Padam tugasan ini?')) {
+                    await supabase.from('tasks').delete().eq('id', e.target.dataset.id);
+                    loadTasks();
+                }
+            });
+        });
     }
 });
