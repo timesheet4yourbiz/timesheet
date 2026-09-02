@@ -29,10 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 regBtn.disabled = false;
                 regBtn.textContent = 'Register Account';
             } else {
-                // Berjaya didaftarkan
+                // [KOD BARU] Tendang keluar (Sign Out) serta-merta untuk elak auto-login
+                await supabase.auth.signOut(); 
+
                 registerForm.style.display = 'none';
                 regMessage.style.display = 'block';
-                regMessage.innerHTML = `Pendaftaran berjaya!<br><br>Sila semak peti masuk (inbox/spam) e-mel <b>${email}</b> untuk pautan pengesahan akaun sebelum anda boleh login.`;
+                regMessage.innerHTML = `Pendaftaran berjaya!<br><br>Akaun anda kini berstatus <b>PENDING</b>. Sila tunggu pengesahan dan kelulusan daripada Admin/HR sebelum anda boleh log masuk ke dalam sistem.`;
             }
         });
     }
