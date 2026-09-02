@@ -18,52 +18,46 @@
        <!-- Sidebar Seragam Dengan Kategori -->
         <div id="sidebar-container"></div>        
         <main class="main-content">
-            <header class="topbar">
-                <h3>Time Tracker</h3>
-                <div class="user-info"><span id="userEmail">Loading...</span></div>
-            </header>
+    <header class="topbar">
+        <h3>Time Tracker</h3>
+        <span id="userEmail" class="user-info">Loading...</span>
+    </header>
 
-            <div class="content-area">
-                
-                <!-- Sleek Tracker Bar -->
-                <div class="tracker-bar">
-                    <div class="tracker-selects">
-                        <select id="projectSelect">
-                            <option value="">Select Project...</option>
-                        </select>
-                        <select id="taskSelect">
-                            <option value="">Select Task...</option>
-                        </select>
-                    </div>
-                    <div class="timer-display" id="timerDisplay">00:00:00</div>
-                    <button id="startBtn" class="btn-start">START</button>
-                </div>
-
-                <!-- Recent Entries Table -->
-                <div class="card" style="padding: 0;">
-                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; border-radius: 8px 8px 0 0;">
-                        <h2 style="font-size: 1rem; color: #475569; text-transform: uppercase; margin: 0;">Recent Time Entries</h2>
-                    </div>
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
-                            <thead>
-                                <tr style="border-bottom: 1px solid var(--border-color); color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">
-                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Project</th>
-                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Task</th>
-                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Start Time</th>
-                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">End Time</th>
-                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Duration</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recentEntriesList">
-                                <tr><td colspan="5" style="padding: 1.5rem; text-align: center;">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
+    <div class="content-area">
+        <!-- Tracker Bar -->
+        <div class="tracker-bar">
+            <input type="text" id="taskDescription" class="form-control" placeholder="What are you working on?" style="flex: 2; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px;">
+            
+            <div class="tracker-selects">
+                <select id="projectSelect">
+                    <option value="">Select Project</option>
+                </select>
             </div>
-        </main>
+
+            <div id="timerDisplay" class="timer-display">00:00:00</div>
+            
+            <button id="startStopBtn" class="btn-start">Start</button>
+        </div>
+
+        <!-- Recent Entries Table -->
+        <div class="card" style="padding: 1.5rem; background: white; border-radius: 8px;">
+            <h4 style="margin-top:0; color: var(--text-muted); font-size: 0.9rem;">RECENT TIME ENTRIES</h4>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="text-align: left; border-bottom: 1px solid var(--border-color);">
+                        <th style="padding: 0.75rem;">Description</th>
+                        <th style="padding: 0.75rem;">Project</th>
+                        <th style="padding: 0.75rem;">Duration</th>
+                        <th style="padding: 0.75rem; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="trackerEntriesList">
+                    <!-- Data ditarik via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
     </div>
 
     <script type="module" src="../js/tracker.js"></script>
