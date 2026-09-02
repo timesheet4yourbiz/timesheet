@@ -55,21 +55,37 @@ body {
 
 .sidebar-nav {
     flex: 1;
-    padding: 1rem 0.5rem;
+    padding: 1rem 0.5rem 2rem 0.5rem; /* Tambah jarak 2rem di bawah */
     overflow-y: auto;
+    overflow-x: hidden;
+}
+
+
+.sidebar-nav::-webkit-scrollbar {
+    width: 5px;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.6rem 1rem; /* Dibesarkan sedikit supaya lebih selesa ditekan */
+    padding: 0.6rem 1rem; 
     margin-bottom: 0.2rem;
     color: var(--text-muted);
     text-decoration: none;
     font-family: 'Inter', -apple-system, sans-serif;
     font-size: 0.85rem;
-    font-weight: 500; /* Diseragamkan supaya teks tidak melompat/mengecil */
+    font-weight: 500; 
     border-radius: 6px;
     transition: all 0.2s ease;
 }
@@ -91,7 +107,7 @@ body {
 .nav-item.active {
     background-color: #ecfdf5; 
     color: var(--primary-hover);
-    /* font-weight dibuang dari sini sebab dah seragam di atas */
+   
 }
 .nav-item.active svg {
     opacity: 1;
