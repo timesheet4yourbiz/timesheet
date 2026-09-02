@@ -1,181 +1,140 @@
 import { supabase } from './supabase.js';
 import { loadSidebar } from './sidebar.js';
-document.addEventListener('DOMContentLoaded', async () => {
-loadSidebar();    
 
-    // Auth
+document.addEventListener('DOMContentLoaded', async () => {
+    loadSidebar();
+
+    // 1. Auth Check
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return window.location.href = '../pages/login.html';
+    
+    document.getElementById('userEmail').textContent = session.user.email;
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
+        logoutBtn.addEventListener('click', async () => {
             await supabase.auth.signOut();
             window.location.href = '../pages/login.html';
         });
     }
-    
-    document.getElementById('userEmail').textContent = session.user.email;
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-        await supabase.auth.signOut();
-        window.location.href = '../pages/login.html';
-    });
 
-    let currentEmpId = null;
+    // DOM Elements
+    const taskDescription = document.getElementById('taskDescription');
+    const projectSelect = document.getElementById('projectSelect');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const startStopBtn = document.getElementById('startStopBtn');
+    const trackerEntriesList = document.getElementById('trackerEntriesList');
+
+    // Timer Variables
     let timerInterval = null;
     let startTime = null;
+    let elapsedTime = 0;
     let isRunning = false;
-    let currentEntryId = null; 
 
-    // Sambungan ke Elemen HTML Baru
-    const projectSelect = document.getElementById('projectSelect');
-    const taskSelect = document.getElementById('taskSelect');
-    const startBtn = document.getElementById('startBtn');
-    const timerDisplay = document.getElementById('timerDisplay');
-    const recentEntriesList = document.getElementById('recentEntriesList');
+    // Load Initial Data
+    await loadProjectsDropdown();
+    await loadTimeEntries();
 
-    // Execution
-    await initEmployee();
-    if (currentEmpId) {
-        await loadProjects();
-        await loadRecentEntries();
-    }
-
-    // Event Listeners
-    projectSelect.addEventListener('change', async (e) => {
-        await loadTasks(e.target.value);
-    });
-    startBtn.addEventListener('click', toggleTimer);
-
-    // --- Helper Functions ---
-    async function initEmployee() {
-        const { data } = await supabase.from('employees').select('id').eq('email', session.user.email).single();
-        if (data) currentEmpId = data.id;
-    }
-
-    async function loadProjects() {
-        const { data } = await supabase.from('projects').select('id, project_name').eq('status', 'ACTIVE');
-        if (data) {
-            projectSelect.innerHTML = '<option value="">Select Project...</option>' + data.map(p => `<option value="${p.id}">${p.project_name}</option>`).join('');
-        }
-    }
-
-    async function loadTasks(projectId) {
-        if (!projectId) {
-            taskSelect.innerHTML = '<option value="">Select Task...</option>';
-            return;
-        }
-        const { data } = await supabase.from('tasks').select('id, task_name').eq('project_id', projectId);
-        if (data) {
-            taskSelect.innerHTML = '<option value="">Select Task...</option>' + data.map(t => `<option value="${t.id}">${t.task_name}</option>`).join('');
-        }
-    }
-
-    async function loadRecentEntries() {
-        const { data, error } = await supabase.from('time_entries')
-            .select(`id, start_time, end_time, total_minutes, tasks(task_name, projects(project_name))`)
-            .eq('employee_id', currentEmpId)
-            .order('start_time', { ascending: false })
-            .limit(5);
-
-        if (error || !data || data.length === 0) {
-            recentEntriesList.innerHTML = '<tr><td colspan="5" style="padding: 1.5rem; text-align: center;">No recent entries.</td></tr>';
-            return;
-        }
-
-        recentEntriesList.innerHTML = data.map(entry => {
-            const pName = entry.tasks?.projects?.project_name || '-';
-            const tName = entry.tasks?.task_name || '-';
-            
-            const st = entry.start_time ? new Date(entry.start_time).toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit', hour12: false}) : '-';
-            const et = entry.end_time ? new Date(entry.end_time).toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit', hour12: false}) : '-';
-            
-            let dur = '-';
-            if (entry.total_minutes) {
-                const h = Math.floor(entry.total_minutes / 60);
-                const m = entry.total_minutes % 60;
-                dur = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
-            }
-
-            return `
-                <tr style="border-bottom: 1px solid var(--border-color); background: white;">
-                    <td style="padding: 1rem 1.5rem; color: #334155;"><strong>${pName}</strong></td>
-                    <td style="padding: 1rem 1.5rem; color: #64748b;">${tName}</td>
-                    <td style="padding: 1rem 1.5rem; color: #64748b;">${st}</td>
-                    <td style="padding: 1rem 1.5rem; color: #64748b;">${et}</td>
-                    <td style="padding: 1rem 1.5rem; font-weight: 500; color: #334155;">${dur}</td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    async function toggleTimer() {
+    // --- 2. LOGIK TIMER ---
+    startStopBtn.addEventListener('click', async () => {
         if (!isRunning) {
-            // START LOGIC
-            const taskId = taskSelect.value;
-            if (!taskId) return alert('Please select a project and task first.');
-            
+            // START TIMER
             isRunning = true;
             startTime = new Date();
-            startBtn.textContent = 'STOP';
-            startBtn.classList.add('stop-mode');
-            
-            projectSelect.disabled = true;
-            taskSelect.disabled = true;
+            startStopBtn.textContent = 'STOP';
+            startStopBtn.classList.add('stop-mode');
 
-            timerInterval = setInterval(updateDisplay, 1000);
-
-            // Simpan data asas ke pangkalan data
-            const { data } = await supabase.from('time_entries').insert([{
-                employee_id: currentEmpId,
-                task_id: taskId,
-                work_date: startTime.toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' }),
-                start_time: startTime.toISOString(),
-                entry_source: 'TRACKER',
-                status: 'RUNNING'
-            }]).select().single();
-            
-            if (data) currentEntryId = data.id;
+            timerInterval = setInterval(() => {
+                const now = new Date();
+                elapsedTime = Math.floor((now - startTime) / 1000);
+                timerDisplay.textContent = formatTime(elapsedTime);
+            }, 1000);
 
         } else {
-            // STOP LOGIC
-            isRunning = false;
+            // STOP TIMER & SAVE TO SUPABASE
             clearInterval(timerInterval);
             const endTime = new Date();
-            startBtn.textContent = 'START';
-            startBtn.classList.remove('stop-mode');
-            
-            projectSelect.disabled = false;
-            taskSelect.disabled = false;
-            timerDisplay.textContent = '00:00:00';
+            const description = taskDescription.value.trim() || 'No description';
+            const projectId = projectSelect.value || null;
 
-            // Kemas kini masa tamat & tempoh ke pangkalan data
-            if (currentEntryId) {
-                const diffMs = endTime - startTime;
-                const totalMins = Math.floor(diffMs / 60000);
-                const totalSecs = Math.floor(diffMs / 1000);
-                
-                await supabase.from('time_entries').update({
-                    end_time: endTime.toISOString(),
-                    total_minutes: totalMins,
-                    total_seconds: totalSecs,
-                    status: 'STOPPED'
-                }).eq('id', currentEntryId);
-                
-                currentEntryId = null;
+            startStopBtn.disabled = true;
+            startStopBtn.textContent = 'SAVING...';
+
+            const { error } = await supabase.from('time_entries').insert([{
+                user_id: session.user.id,
+                project_id: projectId,
+                description: description,
+                start_time: startTime.toISOString(),
+                end_time: endTime.toISOString(),
+                duration_seconds: elapsedTime
+            }]);
+
+            // Reset UI State
+            isRunning = false;
+            elapsedTime = 0;
+            timerDisplay.textContent = '00:00:00';
+            taskDescription.value = '';
+            startStopBtn.textContent = 'START';
+            startStopBtn.classList.remove('stop-mode');
+            startStopBtn.disabled = false;
+
+            if (error) {
+                console.error(error);
+                alert('Ralat menyimpan rekod masa.');
+            } else {
+                await loadTimeEntries();
             }
-            
-            await loadRecentEntries();
+        }
+    });
+
+    // Helper: Format Saat ke HH:MM:SS
+    function formatTime(totalSeconds) {
+        const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+        const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+        const secs = (totalSeconds % 60).toString().padStart(2, '0');
+        return `${hrs}:${mins}:${secs}`;
+    }
+
+    // --- 3. TARIK PROJEK KE DROPDOWN ---
+    async function loadProjectsDropdown() {
+        const { data } = await supabase.from('projects').select('id, name').order('name');
+        if (data) {
+            projectSelect.innerHTML = '<option value="">Select Project</option>' +
+                data.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
         }
     }
 
-    function updateDisplay() {
-        const now = new Date();
-        const diff = Math.floor((now - startTime) / 1000);
-        
-        const h = Math.floor(diff / 3600);
-        const m = Math.floor((diff % 3600) / 60);
-        const s = diff % 60;
-        
-        timerDisplay.textContent = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    // --- 4. PAPAR REKOD MASA TERKINI ---
+    async function loadTimeEntries() {
+        const { data, error } = await supabase
+            .from('time_entries')
+            .select('*, projects(name)')
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (error || !data || data.length === 0) {
+            trackerEntriesList.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 1.5rem; color: var(--text-muted);">No recent entries found.</td></tr>';
+            return;
+        }
+
+        trackerEntriesList.innerHTML = data.map(entry => `
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 0.8rem; font-weight: 500;">${entry.description}</td>
+                <td style="padding: 0.8rem; color: var(--text-muted);">${entry.projects ? entry.projects.name : '-'}</td>
+                <td style="padding: 0.8rem; font-family: monospace; font-weight: 600;">${formatTime(entry.duration_seconds)}</td>
+                <td style="padding: 0.8rem; text-align: right;">
+                    <button class="del-entry-btn" data-id="${entry.id}" style="border:none; background:none; color:#ef4444; cursor:pointer;">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+
+        // Function Delete Rekod
+        document.querySelectorAll('.del-entry-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                if (confirm('Padam rekod masa ini?')) {
+                    await supabase.from('time_entries').delete().eq('id', e.target.getAttribute('data-id'));
+                    loadTimeEntries();
+                }
+            });
+        });
     }
 });
