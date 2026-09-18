@@ -1,25 +1,28 @@
 /* =========================================================
-   UI GAYA SUPABASE (Minimalist, Flat, Clean Borders)
+   UI GAYA DARK NEON CYBER-GLOW (FULL COMPONENTS OVERRIDE)
 ========================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
 *, *::before, *::after {
     box-sizing: border-box;
 }
+
 :root {
-    --primary-color: #3ecf8e; /* Supabase Emerald Green */
-    --primary-hover: #24b47e;
-    --bg-body: #f8f9fa; /* Latar belakang utama kelabu sangat cerah */
-    --bg-surface: #ffffff; /* Putih bersih untuk Sidebar & Kad */
-    --text-main: #1f2937;
-    --text-muted: #6b7280;
-    --border-color: #e5e7eb; /* Sempadan halus */
+    --primary-color: #d946ef;
+    --primary-hover: #ec4899;
+    --bg-body: #12101d;
+    --bg-surface: #1e1b2e;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-color: rgba(255, 255, 255, 0.08);
     --sidebar-width: 250px;
+    --header-gradient: linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #6366f1 100%);
 }
 
 body {
     margin: 0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg-body);
     color: var(--text-main);
     -webkit-font-smoothing: antialiased;
@@ -29,12 +32,13 @@ body {
     display: flex;
     height: 100vh;
     overflow: hidden;
+    background-color: var(--bg-body);
 }
 
-/* --- SIDEBAR (Tiada bayang, hanya garisan sempadan) --- */
+/* --- SIDEBAR --- */
 .sidebar {
     width: var(--sidebar-width);
-    height: 100%; /* Add this line */
+    height: 100%;
     background-color: var(--bg-surface);
     border-right: 1px solid var(--border-color);
     display: flex;
@@ -49,32 +53,21 @@ body {
 .sidebar-header h2 {
     margin: 0;
     font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-main);
+    font-weight: 700;
+    color: #ffffff;
     letter-spacing: -0.02em;
 }
 
 .sidebar-nav {
     flex: 1;
-    padding: 1rem 0.5rem 2rem 0.5rem; /* Tambah jarak 2rem di bawah */
+    padding: 1rem 0.5rem 2rem 0.5rem;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-
-.sidebar-nav::-webkit-scrollbar {
-    width: 5px;
-}
-.sidebar-nav::-webkit-scrollbar-track {
-    background: transparent;
-}
-.sidebar-nav::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-}
-.sidebar-nav::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
+.sidebar-nav::-webkit-scrollbar { width: 5px; }
+.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
 .nav-item {
     display: flex;
@@ -84,61 +77,50 @@ body {
     margin-bottom: 0.2rem;
     color: var(--text-muted);
     text-decoration: none;
-    font-family: 'Inter', -apple-system, sans-serif;
     font-size: 0.85rem !important;
     font-weight: 500 !important;  
-    line-height: 1.5 !important;  
-    border-radius: 6px;
+    border-radius: 8px;
     transition: all 0.2s ease;
     white-space: nowrap;          
 }
 
-.nav-item svg {
-    opacity: 0.7;
-    transition: all 0.2s ease;
-}
-
-.nav-item:hover {
-    background-color: #f3f4f6;
-    color: var(--text-main);
-}
-
-.nav-item:hover svg {
-    opacity: 1;
-}
+.nav-item svg { opacity: 0.7; transition: all 0.2s ease; }
+.nav-item:hover { background-color: rgba(255, 255, 255, 0.05); color: #ffffff; }
+.nav-item:hover svg { opacity: 1; }
 
 .nav-item.active {
-    background-color: #ecfdf5; 
-    color: var(--primary-hover);
-   
+    background: rgba(217, 70, 239, 0.15); 
+    color: var(--primary-color);
+    border: 1px solid rgba(217, 70, 239, 0.3);
 }
-.nav-item.active svg {
-    opacity: 1;
-    color: var(--primary-hover);
-}
+.nav-item.active svg { opacity: 1; color: var(--primary-color); }
+
 .nav-section-title {
     font-size: 0.7rem;
-    font-weight: 600;
-    color: #94a3b8;
+    font-weight: 700;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin: 1.5rem 1rem 0.5rem 1rem;
 }
+
 .sidebar-footer {
     padding: 1rem;
     border-top: 1px solid var(--border-color);
 }
 
-/* --- TOPBAR --- */
+/* --- TOPBAR & CONTENT AREA --- */
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+    background-color: var(--bg-body);
 }
 
 .topbar {
-    background-color: var(--bg-surface);
+    background-color: rgba(30, 27, 46, 0.8);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-color);
     padding: 1rem 2rem;
     display: flex;
@@ -149,78 +131,96 @@ body {
 .topbar h3 {
     margin: 0;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
+    color: #ffffff;
 }
 
 .user-info {
     font-size: 0.85rem;
-    color: var(--text-muted);
-    background: #f1f5f9;
+    color: var(--primary-color);
+    background: rgba(217, 70, 239, 0.15);
     padding: 0.3rem 0.8rem;
     border-radius: 20px;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(217, 70, 239, 0.3);
 }
 
-.content-area {
-    padding: 2rem;
-}
+.content-area { padding: 2rem; }
 
-/* --- CARDS & METRICS (Membatalkan inline shadow lama) --- */
+/* --- CARDS & WIDGETS --- */
 .card, div[style*="box-shadow"] {
     background: var(--bg-surface) !important;
     border: 1px solid var(--border-color) !important;
-    border-radius: 8px !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important; /* Hilangkan bayang tebal */
+    border-radius: 16px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    color: var(--text-main) !important;
 }
 
 div[style*="border-left"] {
-    border-left: 1px solid var(--border-color) !important; /* Buang garisan kiri tebal lama */
+    border-left: 1px solid var(--border-color) !important;
+}
+
+/* --- BORANG & INPUTS --- */
+input, select, textarea {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--border-color) !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--text-muted) !important;
 }
 
 /* --- BUTTONS --- */
-button {
-    font-family: inherit;
-}
+button { font-family: inherit; }
 
 .btn-logout {
     width: 100%;
     padding: 0.6rem;
-    background: white;
+    background: rgba(255,255,255,0.05);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--text-main);
     cursor: pointer;
     font-size: 0.85rem;
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.2s;
 }
 
 .btn-logout:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
 }
 
-/* Butang utama (seperti butang Connect Supabase) */
 .btn-primary, .btn-add-row {
-    background-color: var(--primary-color) !important;
+    background: var(--header-gradient) !important;
     color: white !important;
     border: none !important;
-    border-radius: 6px !important;
-    padding: 0.5rem 1rem !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1.2rem !important;
     font-size: 0.85rem !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
     cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(217, 70, 239, 0.3);
 }
 
 .btn-primary:hover, .btn-add-row:hover {
-    background-color: var(--primary-hover) !important;
+    opacity: 0.9;
+    box-shadow: 0 6px 20px rgba(217, 70, 239, 0.5);
 }
 
 /* --- TABLES --- */
+.table-container {
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+}
+
 table th {
-    background: #f8fafc !important;
-    font-weight: 500 !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    font-weight: 600 !important;
     color: var(--text-muted) !important;
     font-size: 0.75rem !important;
     letter-spacing: 0.05em;
@@ -228,9 +228,10 @@ table th {
 
 table td {
     border-bottom: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
 }
 
-/* --- SUPABASE METRICS CARDS & ALIGNMENT --- */
+/* --- METRICS CARDS --- */
 .metrics-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -240,402 +241,88 @@ table td {
 .metric-card {
     background: var(--bg-surface);
     padding: 1.5rem;
-    border-radius: 8px;
+    border-radius: 16px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 .metric-card h4 {
     color: var(--text-muted);
     margin: 0 0 0.5rem 0;
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
 }
 .metric-card h2 {
-    color: var(--text-main);
+    color: #ffffff;
     margin: 0;
     font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* --- TIME TRACKER BAR --- */
+.tracker-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+.tracker-selects {
+    display: flex;
+    flex: 1;
+    gap: 1rem;
+    min-width: 300px;
+}
+.tracker-selects select {
+    flex: 1;
+    padding: 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    background-color: rgba(255, 255, 255, 0.05);
+    outline: none;
+}
+.timer-display {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #ffffff;
+    min-width: 120px;
+    text-align: center;
+}
+.btn-start {
+    background: var(--header-gradient);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 2rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    letter-spacing: -0.02em;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(217, 70, 239, 0.3);
 }
-canvas {
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.02)); /* Efek timbul graf yang sangat halus */
+.btn-start.stop-mode {
+    background: linear-gradient(135deg, #ef4444, #f43f5e) !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4) !important;
 }
 
- <style>
-        /* CSS Khusus untuk Time Tracker Bar */
-        .tracker-bar {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.75rem 1.5rem;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-        .tracker-selects {
-            display: flex;
-            flex: 1;
-            gap: 1rem;
-            min-width: 300px;
-        }
-        .tracker-selects select {
-            flex: 1;
-            padding: 0.6rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.85rem;
-            color: var(--text-main);
-            background-color: #f8fafc;
-            outline: none;
-            transition: border 0.2s;
-        }
-        .tracker-selects select:focus {
-            border-color: var(--primary-color);
-            background-color: white;
-        }
-        .timer-display {
-            font-size: 1.5rem; /* Saiz fon dikecilkan agar kemas */
-            font-weight: 600;
-            font-variant-numeric: tabular-nums; /* Elak nombor bergoyang bila berubah */
-            color: var(--text-main);
-            min-width: 120px;
-            text-align: center;
-            letter-spacing: -0.02em;
-        }
-        .btn-start {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 0.6rem 2rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .btn-start:hover {
-            background-color: var(--primary-hover);
-        }
-        .btn-start.stop-mode {
-            background-color: #ef4444; /* Merah untuk butang Stop */
-        }
-        .btn-start.stop-mode:hover {
-            background-color: #dc2626;
-        }
-    </style>
+/* --- STATUS BADGES & MODALS --- */
+.badge { padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
+.status-DRAFT { background: rgba(255,255,255,0.1); color: var(--text-muted); }
+.status-SUBMITTED { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.status-APPROVED { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.status-REJECTED { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
 
-
-
-
-   <style>
-        .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 1rem; border-bottom: 1px solid var(--border-color); text-align: left; }
-        th { background: var(--bg-color); font-weight: 600; }
-        .btn-sm { padding: 0.4rem 0.8rem; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
-        .btn-submit { background: var(--primary-color); }
-        .btn-approve { background: #16a34a; }
-        .btn-reject { background: #dc2626; }
-        .badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; background: #e5e7eb; }
-        .status-DRAFT { background: #e5e7eb; color: #374151; }
-        .status-SUBMITTED { background: #fef08a; color: #854d0e; }
-        .status-APPROVED { background: #dcfce7; color: #166534; }
-        .status-REJECTED { background: #fee2e2; color: #991b1b; }
-        
-        /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 2rem; border-radius: 8px; width: 400px; max-width: 90%; }
-        .modal-content textarea { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; margin-top: 0.5rem; margin-bottom: 1rem; resize: vertical; }
-    </style>
-
-
-
-
-
-    <style>
-        .attendance-card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; margin-bottom: 2rem; }
-        .time-display { font-size: 3rem; font-weight: bold; font-family: monospace; color: var(--primary-color); margin-bottom: 0.5rem; }
-        .date-display { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 2rem; }
-        .action-buttons { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
-        .btn-attendance { padding: 1rem 3rem; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.2s; min-width: 200px; }
-        .btn-clock-in { background-color: #16a34a; }
-        .btn-clock-in:hover { background-color: #15803d; }
-        .btn-clock-out { background-color: #dc2626; }
-        .btn-clock-out:hover { background-color: #b91c1c; }
-        .btn-attendance:disabled { background-color: var(--text-muted); cursor: not-allowed; }
-        .status-badge { display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; margin-bottom: 1rem; background: #f3f4f6; }
-        
-        .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 1rem; border-bottom: 1px solid var(--border-color); text-align: center; }
-        th { background: var(--bg-color); font-weight: 600; }
-    </style>
-
-
-
-
-
-<style>
-        .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.75rem; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.9rem; }
-        th { background: var(--bg-color); font-weight: 600; }
-        .badge-action { padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.75rem; }
-        .action-CREATE { background: #dcfce7; color: #166534; }
-        .action-UPDATE { background: #fef08a; color: #854d0e; }
-        .action-DELETE { background: #fee2e2; color: #991b1b; }
-        .action-LOGIN { background: #e0e7ff; color: #3730a3; }
-        .code-block { background: #f8fafc; padding: 0.5rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem; white-space: pre-wrap; word-break: break-all; }
-    </style>
-
-
-
-
-
-
-<style>
-        /* Gaya tambahan untuk modal (Borang Add Client) */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.5); z-index: 1000; justify-content: center; align-items: center;
-        }
-        .modal-card {
-            background: white; padding: 2rem; border-radius: 8px; width: 100%; max-width: 400px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;
-        }
-        .form-group { margin-bottom: 1.2rem; }
-        .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
-        .form-control {
-            width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px;
-            font-family: inherit; font-size: 0.9rem;
-        }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
-        .btn-cancel { background: transparent; border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
-    </style>
-
-
-
-
-
-
-<style>
-        .table-container { overflow-x: auto; margin-top: 1rem; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); }
-        th { background-color: var(--bg-color); font-weight: 600; }
-        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .btn-sm { padding: 0.5rem 1rem; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 2rem; border-radius: 8px; width: 400px; max-width: 90%; }
-        .modal-content h3 { margin-bottom: 1rem; }
-        .btn-cancel { background: var(--text-muted); }
-    </style>
-
-
-
-
-
-
-<style>
-        /* Gaya Tabs */
-        .tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; background: #f8fafc; border-radius: 8px 8px 0 0; overflow: hidden; }
-        .tab-btn { padding: 0.8rem 1.5rem; cursor: pointer; border: none; background: transparent; font-weight: 500; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; }
-        .tab-btn:hover { color: var(--text-main); background: #f1f5f9; }
-        .tab-btn.active { color: var(--text-main); background: white; border-top: 2px solid #03a9f4; border-right: 1px solid var(--border-color); border-left: 1px solid var(--border-color); margin-bottom: -1px; }
-        
-        /* Gaya Sembunyikan Tab */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        /* Action Bar (Butang Add & Search) */
-        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .group-add-form { display: flex; gap: 0; }
-        .group-add-form input { padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 4px 0 0 4px; font-family: inherit; font-size: 0.85rem; width: 250px; outline: none; }
-        .group-add-form button { background: #03a9f4; color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 0 4px 4px 0; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-transform: uppercase; }
-    </style>
-
-
-
-<style>
-        /* Gaya tambahan untuk modal (Borang Add Project) */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.5); z-index: 1000; justify-content: center; align-items: center;
-        }
-        .modal-card {
-            background: white; padding: 2rem; border-radius: 8px; width: 100%; max-width: 500px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;
-        }
-        .form-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem;
-        }
-        .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
-        .form-control {
-            width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px;
-            font-family: inherit; font-size: 0.9rem;
-        }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
-        .btn-cancel { background: transparent; border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
-    </style>
-
-
-
-
-
-<style>
-        .filter-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
-        .filter-group { display: flex; flex-direction: column; gap: 0.5rem; }
-        .filter-group input, .filter-group select { padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; }
-        .btn-action { padding: 0.5rem 1.5rem; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; }
-        .btn-generate { background: var(--primary-color); }
-        .btn-export { background: #16a34a; }
-        .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.75rem; border-bottom: 1px solid var(--border-color); text-align: left; }
-        th { background: var(--bg-color); font-weight: 600; }
-        .summary-box { padding: 1rem; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 1rem; font-weight: bold; }
-    </style>
-
-
-
-
-
-
-<style>
-        .settings-card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px; }
-        .form-group { margin-bottom: 1.5rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569; }
-        .form-control { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; }
-        .help-text { font-size: 0.8rem; color: #94a3b8; margin-top: 0.4rem; display: block; }
-    </style>
-
-
-
-
-
-<style>
-        .table-container { overflow-x: auto; margin-top: 1rem; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); }
-        th { background-color: var(--bg-color); font-weight: 600; }
-        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .btn-sm { padding: 0.5rem 1rem; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 2rem; border-radius: 8px; width: 400px; max-width: 90%; }
-        .modal-content h3 { margin-bottom: 1rem; }
-        .btn-cancel { background: var(--text-muted); }
-        .badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; background: #e5e7eb; }
-        .badge-todo { background: #fef08a; color: #854d0e; }
-    </style>
-
-
-
-
-
-
-<style>
-        .timesheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
-        .week-nav { display: flex; align-items: center; gap: 1rem; background: var(--card-bg); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); }
-        .btn-nav { padding: 0.5rem 1rem; cursor: pointer; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 4px; font-weight: 500; }
-        .btn-nav:hover { background: #e5e7eb; }
-        .btn-save { padding: 0.5rem 1.5rem; background: var(--primary-color); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .btn-save:disabled { background: var(--text-muted); cursor: not-allowed; }
-        .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th, td { padding: 0.75rem; border: 1px solid var(--border-color); text-align: center; }
-        th { background: var(--bg-color); font-weight: 600; }
-        .col-task { text-align: left; min-width: 200px; }
-        .time-input { width: 70px; padding: 0.5rem; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; font-family: monospace; }
-        .time-input:focus { border-color: var(--primary-color); outline: none; }
-        .total-cell { font-weight: bold; background: #f8fafc; }
-        .btn-add-row { margin-top: 1rem; padding: 0.5rem 1rem; background: #16a34a; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    </style>
-
-
-
-
-
-
-<style>
-        /* CSS Khusus untuk Time Tracker Bar */
-        .tracker-bar {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.75rem 1.5rem;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-        .tracker-selects {
-            display: flex;
-            flex: 1;
-            gap: 1rem;
-            min-width: 300px;
-        }
-        .tracker-selects select {
-            flex: 1;
-            padding: 0.6rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.85rem;
-            color: var(--text-main);
-            background-color: #f8fafc;
-            outline: none;
-            transition: border 0.2s;
-        }
-        .tracker-selects select:focus {
-            border-color: var(--primary-color);
-            background-color: white;
-        }
-        .timer-display {
-            font-size: 1.5rem; /* Saiz fon dikecilkan agar kemas */
-            font-weight: 600;
-            font-variant-numeric: tabular-nums; /* Elak nombor bergoyang bila berubah */
-            color: var(--text-main);
-            min-width: 120px;
-            text-align: center;
-            letter-spacing: -0.02em;
-        }
-        .btn-start {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 0.6rem 2rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .btn-start:hover {
-            background-color: var(--primary-hover);
-        }
-        .btn-start.stop-mode {
-            background-color: #ef4444; /* Merah untuk butang Stop */
-        }
-        .btn-start.stop-mode:hover {
-            background-color: #dc2626;
-        }
-    </style>
+.modal-content, .modal-card {
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 16px !important;
+    color: var(--text-main) !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5) !important;
+}
