@@ -1,128 +1,95 @@
-/* =========================================================
-   DASHBOARD LAYOUT (SOFT BRIGHT DARK-PURPLE EDITION)
-========================================================= */
-
-:root {
-    --bg-dark: #1e1833;             /* Dark purple lebih cerah */
-    --card-dark: #2a2247;           /* Kad ungu lembut berpendar */
-    --card-border: rgba(255, 255, 255, 0.12);
-    --header-gradient: linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #6366f1 100%);
-    --accent-pink: #d946ef;
-    --accent-purple: #a855f7;
-    --text-main: #f8fafc;
-    --text-muted: #a3a8cc;
-    --error-color: #ef4444;
-    --font-base: 0.85rem;           /* Standard saiz menu sisi (~13px) */
-}
-
+/* Layout Asas Dashboard */
 .app-container {
     display: flex;
     min-height: 100vh;
-    background-color: var(--bg-dark);
-    color: var(--text-main);
-    font-size: var(--font-base);
 }
 
+/* Sidebar Styling */
 .sidebar {
-    width: 240px;
-    background-color: var(--card-dark);
-    border-right: 1px solid var(--card-border);
+    width: 250px;
+    background-color: var(--card-bg);
+    border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
 }
 
 .sidebar-header {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--card-border);
-    background: rgba(255, 255, 255, 0.03);
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .sidebar-header h2 {
-    color: #ffffff;
-    font-size: 1.0rem;
-    font-weight: 600;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    color: var(--primary-color);
+    font-size: 1.25rem;
 }
 
 .sidebar-nav {
-    padding: 0.75rem 0;
+    padding: 1rem 0;
     flex: 1;
 }
 
 .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    padding: 0.6rem 1.25rem;
-    color: var(--text-muted);
+    display: block;
+    padding: 0.75rem 1.5rem;
+    color: var(--text-main);
     text-decoration: none;
-    font-size: var(--font-base);
     font-weight: 500;
-    transition: all 0.2s ease;
-    border-left: 3px solid transparent;
+    transition: background-color 0.2s;
 }
 
 .nav-item:hover, .nav-item.active {
-    background-color: rgba(168, 85, 247, 0.18);
-    color: #ffffff;
-    border-left-color: var(--accent-pink);
-    font-weight: 600;
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+    border-right: 3px solid var(--primary-color);
 }
 
 .sidebar-footer {
-    padding: 0.85rem 1.25rem;
-    border-top: 1px solid var(--card-border);
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
 }
 
 .btn-logout {
     width: 100%;
     padding: 0.5rem;
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background-color: #fee2e2;
+    color: var(--error-color);
+    border: none;
     border-radius: 6px;
-    font-size: var(--font-base);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.2s;
 }
 
 .btn-logout:hover {
-    background: rgba(239, 68, 68, 0.3);
-    color: #ffffff;
+    background-color: #fca5a5;
 }
 
+/* Main Content Styling */
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: var(--bg-dark);
 }
 
 .topbar {
-    background: rgba(42, 34, 71, 0.8);
-    backdrop-filter: blur(10px);
-    padding: 0.85rem 1.5rem;
-    border-bottom: 1px solid var(--card-border);
+    background-color: var(--card-bg);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .content-area {
-    padding: 1.5rem;
+    padding: 2rem;
     flex: 1;
     overflow-y: auto;
 }
 
 .card {
-    background-color: var(--card-dark);
-    padding: 1.25rem;
-    border-radius: 12px;
-    border: 1px solid var(--card-border);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    margin-bottom: 1.25rem;
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
 }
