@@ -91,12 +91,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadProjects() {
-        console.log("Memuat turun senarai projek...");
+        console.log("Memuat turun senarai projek bersama Client...");
         
-        // Tarik data secara terus dari projek tanpa bergantung pada relation clients dahulu
+        // Kita aktifkan semula '.select('*, clients(client_name)')' untuk tarik nama client
         const { data, error } = await supabase
             .from('projects')
-            .select('*')
+            .select('*, clients(client_name)')
             .order('created_at', { ascending: false });
         
         if (error) {
@@ -105,8 +105,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        console.log("Data projek diterima dari Supabase:", data);
-
         if (!data || data.length === 0) {
             if (projectsList) projectsList.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color: #888;">No projects found. Create one to get started.</td></tr>';
             return;
@@ -114,21 +112,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (projectsList) {
             projectsList.innerHTML = data.map(p => {
+                // Tarik nama client jika wujud, jika tiada letak '-'
+                const clientName = p.clients ? p.clients.client_name : '-';
+
                 return `
-                    <tr style="border-bottom: 1px solid var(--border-color);">
-                        <td style="padding: 15px 10px 15px 20px;">
+                    <tr style="border-bottom: 1px solid var(--border-color); background: white;">
+                        
+                        <!-- Kotak Checkbox (Dihadkan lebarnya supaya tak menolak nama projek) -->
+                        <td style="padding: 15px 10px 15px 20px; width: 40px;">
                             <input type="checkbox" style="cursor: pointer;">
                         </td>
                         
-                        <!-- Nama Projek -->
-                        <td style="padding: 15px 20px; font-weight: 500; color: #1e293b; white-space: nowrap;">
+                        <!-- Nama Projek (Padding kiri diubah ke 0 supaya rapat dengan dinding/checkbox) -->
+                        <td style="padding: 15px 20px 15px 0; font-weight: 500; color: #1e293b; white-space: nowrap;">
                             <span style="display:inline-block; width:8px; height:8px; background:#0ea5e9; border-radius:50%; margin-right:8px;"></span>
                             ${p.project_name || p.project_code || 'Tiada Nama'}
                         </td>
                         
-                        <!-- Client -->
+                        <!-- Client (Kini memaparkan nama sebenar) -->
                         <td style="padding: 15px 20px; color: #475569; font-weight: 500;">
-                            -
+                            ${clientName}
                         </td>
                         
                         <td style="padding: 15px; color: #64748b;">0.00h</td>
