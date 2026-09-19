@@ -2,9 +2,9 @@ import { supabase } from './supabase.js';
 import { loadSidebar } from './sidebar.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log("1. Enjin Tracker dihidupkan...");
     loadSidebar();
 
-    // 1. Semakan Auth
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return window.location.href = '../pages/login.html';
     
@@ -14,78 +14,75 @@ document.addEventListener('DOMContentLoaded', async () => {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) logoutBtn.addEventListener('click', () => supabase.auth.signOut().then(() => window.location.href = '../pages/login.html'));
 
-    // 2. Kenal pasti Elemen DOM
+    console.log("2. Mengenal pasti wayar DOM...");
     const taskDescInput = document.getElementById('taskDescInput');
+    const projectSelect = document.getElementById('projectSelect'); // Wayar baru kita
     const timerDisplay = document.getElementById('timerDisplay');
     const timerBtn = document.getElementById('timerBtn');
     const entriesContainer = document.getElementById('entriesContainer');
 
-    // Magik UI: Tukar teks statik "Project" kepada dropdown yang berfungsi
-    const projectDiv = taskDescInput.nextElementSibling;
-    projectDiv.innerHTML = `
-        <select id="projectSelect" style="border:none; background:transparent; outline:none; color:#0ea5e9; font-weight:500; cursor:pointer; width: 100%; font-size:0.9rem;">
-            <option value="">⊕ Select Project</option>
-        </select>
-    `;
-    const projectSelect = document.getElementById('projectSelect');
+    if (!projectSelect) console.error("Ralat: Dropdown 'projectSelect' tidak wujud dalam HTML.");
 
     let currentEmployeeId = null;
     let activeEntryId = null;
     let timerInterval = null;
     let startTime = null;
 
-    // 3. Permulaan Data
+    console.log("3. Menarik data Pekerja & Projek...");
     await initEmployee();
     await loadProjects();
     
+    // Pastikan ID pekerja wujud sebelum tarik rekod
     if (currentEmployeeId) {
         await checkActiveTimer();
         await loadRecentEntries();
     } else {
-        entriesContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: red;">Sila daftar e-mel anda di bahagian Team terlebih dahulu.</div>`;
+        if(entriesContainer) entriesContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: #ef4444; font-weight:bold;">Akaun e-mel anda (${session.user.email}) belum didaftarkan di modul Team (Jadual Employees). Sistem tidak dapat merekod masa.</div>`;
     }
 
     // ==========================================
     // FUNGSI PEMASA (TIMER LOGIC)
     // ==========================================
 
-    timerBtn.addEventListener('click', async () => {
-        timerBtn.disabled = true;
-        if (activeEntryId) {
-            await stopTimer();
-        } else {
-            await startTimer();
-        }
-        timerBtn.disabled = false;
-    });
+    if(timerBtn) {
+        timerBtn.addEventListener('click', async () => {
+            timerBtn.disabled = true;
+            if (activeEntryId) {
+                await stopTimer();
+            } else {
+                await startTimer();
+            }
+            timerBtn.disabled = false;
+        });
+    }
 
     async function initEmployee() {
-        const { data } = await supabase.from('employees').select('id').eq('email', session.user.email).maybeSingle();
+        const { data, error } = await supabase.from('employees').select('id').eq('email', session.user.email).maybeSingle();
+        if (error) console.error("Ralat check pekerja:", error);
         if (data) currentEmployeeId = data.id;
     }
 
     async function loadProjects() {
-        const { data } = await supabase.from('projects').select('id, project_name').order('project_name', { ascending: true });
+        const { data, error } = await supabase.from('projects').select('id, project_name').order('project_name', { ascending: true });
+        if (error) console.error("Ralat tarik projek:", error);
         if (data && projectSelect) {
-            projectSelect.innerHTML += data.map(p => `<option value="${p.id}">${p.project_name}</option>`).join('');
+            projectSelect.innerHTML = '<option value="">⊕ Select Project</option>' + 
+                data.map(p => `<option value="${p.id}">${p.project_name}</option>`).join('');
         }
     }
 
     async function checkActiveTimer() {
-        const { data } = await supabase
-            .from('time_entries')
-            .select('*')
-            .eq('employee_id', currentEmployeeId)
-            .eq('status', 'RUNNING')
-            .maybeSingle();
-
+        const { data, error } = await supabase.from('time_entries').select('*').eq('employee_id', currentEmployeeId).eq('status', 'RUNNING').maybeSingle();
         if (data) {
             activeEntryId = data.id;
             startTime = new Date(data.start_time).getTime();
-            taskDescInput.value = data.description || '';
-            taskDescInput.disabled = true;
-            if (data.project_id) projectSelect.value = data.project_id;
-            projectSelect.disabled = true;
+            
+            if(taskDescInput) {
+                taskDescInput.value = data.description || '';
+                taskDescInput.disabled = true;
+            }
+            if (data.project_id && projectSelect) projectSelect.value = data.project_id;
+            if (projectSelect) projectSelect.disabled = true;
             
             setButtonState('STOP');
             startClock();
@@ -93,13 +90,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function startTimer() {
-        const projectId = projectSelect.value;
-        const description = taskDescInput.value.trim() || '(No description)';
+        if (!currentEmployeeId) return alert("Ralat: ID Pekerja anda tidak dijumpai dalam pangkalan data.");
         
-        // Boleh mulakan timer tanpa projek, tapi lebih baik jika ada
+        const projectId = projectSelect ? projectSelect.value : null;
+        const description = taskDescInput ? taskDescInput.value.trim() : '';
+        
         const payload = {
             employee_id: currentEmployeeId,
-            description: description,
+            description: description || '(No description)',
             work_date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' }),
             start_time: new Date().toISOString(),
             status: 'RUNNING',
@@ -110,13 +108,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const { data, error } = await supabase.from('time_entries').insert([payload]).select().single();
 
-        if (error) return alert("Gagal mulakan timer: " + error.message);
+        if (error) {
+            console.error("Insert Error:", error);
+            return alert("Gagal mulakan timer: " + error.message);
+        }
 
         activeEntryId = data.id;
         startTime = new Date(data.start_time).getTime();
         
-        taskDescInput.disabled = true;
-        projectSelect.disabled = true;
+        if(taskDescInput) taskDescInput.disabled = true;
+        if(projectSelect) projectSelect.disabled = true;
         
         setButtonState('STOP');
         startClock();
@@ -128,39 +129,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         const totalSeconds = Math.floor((endTime - startTime) / 1000);
         const totalMinutes = Math.floor(totalSeconds / 60);
 
-        const { error } = await supabase
-            .from('time_entries')
-            .update({
-                end_time: nowIso,
-                total_minutes: totalMinutes,
-                duration_seconds: totalSeconds,
-                status: 'STOPPED'
-            })
-            .eq('id', activeEntryId);
+        const { error } = await supabase.from('time_entries').update({
+            end_time: nowIso, total_minutes: totalMinutes, duration_seconds: totalSeconds, status: 'STOPPED'
+        }).eq('id', activeEntryId);
 
-        if (error) return alert("Gagal hentikan timer: " + error.message);
+        if (error) {
+            console.error("Update Error:", error);
+            return alert("Gagal hentikan timer: " + error.message);
+        }
 
         stopClock();
         activeEntryId = null;
         startTime = null;
-        timerDisplay.textContent = '0:00:00';
+        if(timerDisplay) timerDisplay.textContent = '0:00:00';
         
-        taskDescInput.disabled = false;
-        taskDescInput.value = '';
-        projectSelect.disabled = false;
-        projectSelect.value = '';
+        if(taskDescInput) { taskDescInput.disabled = false; taskDescInput.value = ''; }
+        if(projectSelect) { projectSelect.disabled = false; projectSelect.value = ''; }
         
         setButtonState('START');
         await loadRecentEntries();
     }
 
     function setButtonState(state) {
+        if(!timerBtn) return;
         if (state === 'START') {
-            timerBtn.textContent = 'START';
-            timerBtn.style.backgroundColor = '#0ea5e9'; // Biru Clockify
+            timerBtn.textContent = 'ADD'; // Atau START
+            timerBtn.style.backgroundColor = '#0ea5e9';
         } else {
             timerBtn.textContent = 'STOP';
-            timerBtn.style.backgroundColor = '#ef4444'; // Merah
+            timerBtn.style.backgroundColor = '#ef4444';
         }
     }
 
@@ -168,6 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function stopClock() { clearInterval(timerInterval); }
     
     function updateDisplay() {
+        if(!timerDisplay) return;
         const diff = Math.floor((Date.now() - startTime) / 1000);
         const h = Math.floor(diff / 3600);
         const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
@@ -186,19 +184,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const { data, error } = await supabase
             .from('time_entries')
-            .select(`*, projects(project_name)`)
+            .select('*, projects(project_name)')
             .eq('employee_id', currentEmployeeId)
             .eq('status', 'STOPPED')
             .order('start_time', { ascending: false });
 
-        if (error || !data || data.length === 0) {
+        if (error) {
+            console.error("Load Entries Error:", error);
+            entriesContainer.innerHTML = `<div style="padding:20px; text-align:center; color:red;">Ralat menarik data: ${error.message}</div>`;
+            return;
+        }
+
+        if (!data || data.length === 0) {
             entriesContainer.innerHTML = '<div style="padding:30px; text-align:center; color:#94a3b8; font-size:0.9rem;">No time entries found. Start the timer above!</div>';
             return;
         }
 
-        // Kumpulkan rekod mengikut Tarikh (work_date)
         const groupedData = data.reduce((acc, entry) => {
-            const date = entry.work_date;
+            const date = entry.work_date || new Date(entry.start_time).toLocaleDateString('en-CA');
             if (!acc[date]) acc[date] = { entries: [], totalSeconds: 0 };
             acc[date].entries.push(entry);
             acc[date].totalSeconds += (entry.duration_seconds || 0);
@@ -208,31 +211,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         let htmlContent = '';
         let grandTotalSeconds = 0;
 
-        // Loop melalui setiap hari
         for (const [date, group] of Object.entries(groupedData)) {
             grandTotalSeconds += group.totalSeconds;
             
-            // Format Tarikh Header (Contoh: Fri, Sep 4)
             const dateObj = new Date(date);
             const dateString = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
             
-            // Format Total Harian
             const dH = Math.floor(group.totalSeconds / 3600);
             const dM = String(Math.floor((group.totalSeconds % 3600) / 60)).padStart(2, '0');
 
             htmlContent += `
-                <div style="background: white; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
-                    
-                    <!-- Header Hari -->
+                <div style="background: white; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; margin-bottom: 20px;">
                     <div style="background: #f8fafc; padding: 10px 20px; display: flex; justify-content: space-between; font-size: 0.85rem; color: #94a3b8; border-bottom: 1px solid var(--border-color);">
                         <span>${dateString}</span>
                         <span>Total: <strong style="color: #475569;">${dH}:${dM}</strong></span>
                     </div>
-                    
                     <div class="daily-entries-list">
             `;
 
-            // Loop rekod dalam hari tersebut
             group.entries.forEach(entry => {
                 const sTime = new Date(entry.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 const eTime = entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-';
@@ -243,7 +239,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const pName = entry.projects ? entry.projects.project_name : 'No Project';
 
                 htmlContent += `
-                        <!-- Baris Rekod -->
                         <div style="display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border-color);">
                             <div style="flex: 1; color: #475569; font-size: 0.9rem;">${entry.description || '(No description)'}</div>
                             
@@ -267,13 +262,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
             });
 
-            htmlContent += `
-                    </div>
-                </div>
-            `;
+            htmlContent += `</div></div>`;
         }
 
-        // Papar keseluruhan
         const grandH = Math.floor(grandTotalSeconds / 3600);
         const grandM = String(Math.floor((grandTotalSeconds % 3600) / 60)).padStart(2, '0');
         
@@ -285,7 +276,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             ${htmlContent}
         `;
 
-        // Daftar Event Listener untuk Delete Rekod
         document.querySelectorAll('.del-entry-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 if(confirm('Padam rekod masa ini?')) {
