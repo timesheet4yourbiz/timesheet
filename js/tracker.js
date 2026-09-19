@@ -103,8 +103,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    async function loadProjects() {
-        const { data } = await supabase.from('projects').select('id, project_name').eq('status', 'Active');
+async function loadProjects() {
+        // Tukar 'Active' kepada 'ACTIVE' (atau buang terus filter status)
+        const { data } = await supabase.from('projects').select('id, project_name').eq('status', 'ACTIVE');
         if (data) {
             projectSelect.innerHTML += data.map(p => `<option value="${p.id}">${p.project_name}</option>`).join('');
         }
