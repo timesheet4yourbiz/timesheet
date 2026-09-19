@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <tr style="border-bottom: 1px solid var(--border-color); background: white;">
                         
                         <!-- Kotak Checkbox (Dihadkan lebarnya supaya tak menolak nama projek) -->
-                        <td style="padding: 15px 10px 15px 20px; width: 40px;">
+                        <td style="padding: 15px 10px 15px 8px; width: 40px;">
                             <input type="checkbox" style="cursor: pointer;">
                         </td>
                         
