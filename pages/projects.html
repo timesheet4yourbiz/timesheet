@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projects - WorkTime</title>
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
@@ -26,22 +26,50 @@
             <div class="content-area">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                     <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main); font-weight: 600;">Projects</h2>
-                    <button id="openModalBtn" class="btn-primary" style="background-color: #03a9f4 !important;">CREATE NEW PROJECT</button>
+                    <button id="openModalBtn" class="btn-primary" style="background-color: #03a9f4 !important; border-radius: 4px; padding: 10px 20px;">CREATE NEW PROJECT</button>
                 </div>
 
-                <div class="card" style="padding: 0;">
+                <!-- BAR TAPISAN (FILTER BAR) CLOCKIFY STYLE -->
+                <div style="background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 10px 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 20px; font-size: 0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                    <span style="color: #999; font-weight: 600; letter-spacing: 0.5px;">FILTER</span>
+                    <select style="border: none; background: transparent; color: #555; cursor: pointer; outline: none; font-weight: 500;"><option>Active</option></select>
+                    <select style="border: none; background: transparent; color: #555; cursor: pointer; outline: none; font-weight: 500;"><option>Client</option></select>
+                    <select style="border: none; background: transparent; color: #555; cursor: pointer; outline: none; font-weight: 500;"><option>Access</option></select>
+                    <select style="border: none; background: transparent; color: #555; cursor: pointer; outline: none; font-weight: 500;"><option>Billing</option></select>
+                    
+                    <div style="flex: 1; border-left: 1px solid var(--border-color); padding-left: 15px; display: flex; align-items: center; gap: 8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" placeholder="Find by name" style="width: 100%; border: none; outline: none; background: transparent; font-size: 0.85rem;">
+                    </div>
+                    
+                    <button style="border: 1px solid #0ea5e9; background: white; color: #0ea5e9; padding: 6px 15px; border-radius: 4px; font-weight: 500; cursor: pointer; transition: 0.2s;">APPLY FILTER</button>
+                </div>
+
+                <!-- JADUAL PROJEK -->
+                <div class="card" style="padding: 0; background: white; border-radius: 4px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                    
+                    <!-- Sub-header Jadual -->
+                    <div style="background: #f8fafc; padding: 12px 20px; display: flex; justify-content: space-between; font-size: 0.85rem; color: #64748b; border-bottom: 1px solid var(--border-color);">
+                        <span>Projects</span>
+                        <span style="cursor: pointer;">Export ▼</span>
+                    </div>
+                    
                     <div style="overflow-x: auto;">
                         <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
                             <thead>
                                 <tr style="border-bottom: 1px solid var(--border-color); color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">
-                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Name</th>
-                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Client</th>
-                                    <th style="padding: 1rem 1.5rem; font-weight: 600;">Status</th>
-                                    <th style="padding: 1rem 1.5rem; font-weight: 600; width: 80px;">Action</th>
+                                    <th style="padding: 12px 10px 12px 20px; font-weight: 600; width: 30px;"><input type="checkbox"></th>
+                                    <th style="padding: 12px 15px 12px 0; font-weight: 600;">Name</th>
+                                    <th style="padding: 12px 15px; font-weight: 600;">Client</th>
+                                    <th style="padding: 12px 15px; font-weight: 600;">Tracked</th>
+                                    <th style="padding: 12px 15px; font-weight: 600;">Amount</th>
+                                    <th style="padding: 12px 15px; font-weight: 600;">Progress</th>
+                                    <th style="padding: 12px 15px; font-weight: 600;">Access</th>
+                                    <th style="padding: 12px 20px; font-weight: 600; text-align: right;">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="projectsList">
-                                <tr><td colspan="4" style="padding: 1.5rem; text-align: center;">Loading projects...</td></tr>
+                                <tr><td colspan="8" style="padding: 2rem; text-align: center; color: #888;">Loading projects...</td></tr>
                             </tbody>
                         </table>
                     </div>
