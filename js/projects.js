@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
     if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
 
-   if (saveProjectBtn) {
+    if (saveProjectBtn) {
         saveProjectBtn.addEventListener('click', async () => {
             const pName = projectNameInput.value.trim();
             const pClient = clientSelect.value; 
@@ -52,14 +52,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const autoCode = 'PRJ-' + Math.floor(1000 + Math.random() * 9000);
 
+            // Bina payload secara selamat
             const payload = { 
                 project_name: pName,
-                project_code: autoCode
+                project_code: autoCode,
+                status: 'ACTIVE'
             };
             
-            if (pClient) payload.client_id = pClient;
+            // Hanya masukkan client_id jika pengguna betul-betul pilih client
+            if (pClient && pClient !== "") {
+                payload.client_id = pClient;
+            }
 
-            // Masukkan data dan pulangkan rekod baharu (.select())
+            console.log("Menghantar data projek:", payload);
+
             const { data, error } = await supabase.from('projects').insert([payload]).select();
 
             saveProjectBtn.disabled = false;
@@ -67,54 +73,69 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) {
                 alert('Ralat mencipta projek: ' + error.message);
-                console.error(error);
+                console.error("Ralat Insert:", error);
             } else {
-                console.log('Projek berjaya ditambah:', data);
+                console.log('Projek berjaya disimpan ke Supabase:', data);
                 closeModal();
-                await loadProjects(); // Muat semula senarai projek
+                await loadProjects(); // Muat semula senarai
             }
         });
     }
 
     async function loadClientsDropdown() {
-        const { data } = await supabase.from('clients').select('id, client_name').order('client_name');
-        if (data && clientSelect) {
+        const { data, error } = await supabase.from('clients').select('id, client_name').order('client_name');
+        if (!error && data && clientSelect) {
             clientSelect.innerHTML = '<option value="">Select client</option>' + 
                 data.map(c => `<option value="${c.id}">${c.client_name}</option>`).join('');
         }
     }
 
     async function loadProjects() {
+        console.log("Memuat turun senarai projek...");
+        
+        // Tarik data secara terus dari projek tanpa bergantung pada relation clients dahulu
         const { data, error } = await supabase
             .from('projects')
-            .select('*, clients(client_name)')
+            .select('*')
             .order('created_at', { ascending: false });
         
-        if (error || !data || data.length === 0) {
-            if (projectsList) projectsList.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color: #888;">No projects found.</td></tr>';
+        if (error) {
+            console.error("Ralat muat turun projek:", error);
+            if (projectsList) projectsList.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color: red;">Ralat: ${error.message}</td></tr>`;
+            return;
+        }
+
+        console.log("Data projek diterima dari Supabase:", data);
+
+        if (!data || data.length === 0) {
+            if (projectsList) projectsList.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color: #888;">No projects found. Create one to get started.</td></tr>';
             return;
         }
 
         if (projectsList) {
             projectsList.innerHTML = data.map(p => {
-                const clientName = p.clients ? p.clients.client_name : '-';
-
                 return `
                     <tr style="border-bottom: 1px solid var(--border-color);">
                         <td style="padding: 15px 10px 15px 20px;">
                             <input type="checkbox" style="cursor: pointer;">
                         </td>
+                        
+                        <!-- Nama Projek -->
                         <td style="padding: 15px 20px; font-weight: 500; color: #1e293b; white-space: nowrap;">
                             <span style="display:inline-block; width:8px; height:8px; background:#0ea5e9; border-radius:50%; margin-right:8px;"></span>
                             ${p.project_name || p.project_code || 'Tiada Nama'}
                         </td>
+                        
+                        <!-- Client -->
                         <td style="padding: 15px 20px; color: #475569; font-weight: 500;">
-                            ${clientName}
+                            -
                         </td>
+                        
                         <td style="padding: 15px; color: #64748b;">0.00h</td>
                         <td style="padding: 15px; color: #64748b;">0.00 MYR</td>
                         <td style="padding: 15px; color: #64748b;">-</td>
                         <td style="padding: 15px; color: #334155;">Public</td>
+                        
                         <td style="padding: 15px 20px; text-align: right;">
                             <button class="del-project-btn" data-id="${p.id}" style="border:none; background:none; color:#ef4444; cursor:pointer; font-weight: 500;">Delete</button>
                         </td>
