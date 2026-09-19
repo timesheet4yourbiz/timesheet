@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
     if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
 
-    if (saveProjectBtn) {
+   if (saveProjectBtn) {
         saveProjectBtn.addEventListener('click', async () => {
             const pName = projectNameInput.value.trim();
             const pClient = clientSelect.value; 
@@ -50,7 +50,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             saveProjectBtn.disabled = true;
             saveProjectBtn.textContent = 'CREATING...';
 
-            // Jana kod projek automatik (Contoh: PRJ-8492)
             const autoCode = 'PRJ-' + Math.floor(1000 + Math.random() * 9000);
 
             const payload = { 
@@ -58,18 +57,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 project_code: autoCode
             };
             
-            if(pClient) payload.client_id = pClient;
+            if (pClient) payload.client_id = pClient;
 
-            const { error } = await supabase.from('projects').insert([payload]);
+            // Masukkan data dan pulangkan rekod baharu (.select())
+            const { data, error } = await supabase.from('projects').insert([payload]).select();
 
             saveProjectBtn.disabled = false;
             saveProjectBtn.textContent = 'CREATE';
 
             if (error) {
                 alert('Ralat mencipta projek: ' + error.message);
+                console.error(error);
             } else {
+                console.log('Projek berjaya ditambah:', data);
                 closeModal();
-                loadProjects();
+                await loadProjects(); // Muat semula senarai projek
             }
         });
     }
