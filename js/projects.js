@@ -125,9 +125,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         
                         <!-- Nama Projek (Padding kiri diubah ke 0 supaya rapat dengan dinding/checkbox) -->
                         <td style="padding: 15px 20px 15px 0; font-weight: 500; color: #1e293b; white-space: nowrap;">
-                            <span style="display:inline-block; width:8px; height:8px; background:#0ea5e9; border-radius:50%; margin-right:8px;"></span>
-                            ${p.project_name || p.project_code || 'Tiada Nama'}
-                        </td>
+    <span style="display:inline-block; width:8px; height:8px; background:#0ea5e9; border-radius:50%; margin-right:8px;"></span>
+    <a href="project-details.html?id=${p.id}" style="text-decoration: none; color: inherit; cursor: pointer;">
+        ${p.project_name || p.project_code || 'Tiada Nama'}
+    </a>
+</td>
                         
                         <!-- Client (Kini memaparkan nama sebenar) -->
                         <td style="padding: 15px 20px; color: #475569; font-weight: 500;">
