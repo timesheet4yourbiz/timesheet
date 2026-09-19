@@ -50,8 +50,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             saveProjectBtn.disabled = true;
             saveProjectBtn.textContent = 'CREATING...';
 
-            // Simpan projek beserta client_id jika ada
-            const payload = { project_name: pName };
+            // Jana kod projek automatik (Contoh: PRJ-8492)
+            const autoCode = 'PRJ-' + Math.floor(1000 + Math.random() * 9000);
+
+            const payload = { 
+                project_name: pName,
+                project_code: autoCode
+            };
+            
             if(pClient) payload.client_id = pClient;
 
             const { error } = await supabase.from('projects').insert([payload]);
@@ -77,7 +83,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadProjects() {
-        // Tarik projek berserta data Client dari jadual clients
         const { data, error } = await supabase
             .from('projects')
             .select('*, clients(client_name)')
@@ -90,7 +95,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (projectsList) {
             projectsList.innerHTML = data.map(p => {
-                // Ambil nama client jika ada
                 const clientName = p.clients ? p.clients.client_name : '-';
 
                 return `
@@ -98,23 +102,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <td style="padding: 15px 10px 15px 20px;">
                             <input type="checkbox" style="cursor: pointer;">
                         </td>
-                        
-                        <!-- Nama Projek (Berjarak Lega) -->
                         <td style="padding: 15px 20px; font-weight: 500; color: #1e293b; white-space: nowrap;">
                             <span style="display:inline-block; width:8px; height:8px; background:#0ea5e9; border-radius:50%; margin-right:8px;"></span>
                             ${p.project_name || p.project_code || 'Tiada Nama'}
                         </td>
-                        
-                        <!-- Lajur Client (Memaparkan Nama Client) -->
                         <td style="padding: 15px 20px; color: #475569; font-weight: 500;">
                             ${clientName}
                         </td>
-                        
                         <td style="padding: 15px; color: #64748b;">0.00h</td>
                         <td style="padding: 15px; color: #64748b;">0.00 MYR</td>
                         <td style="padding: 15px; color: #64748b;">-</td>
                         <td style="padding: 15px; color: #334155;">Public</td>
-                        
                         <td style="padding: 15px 20px; text-align: right;">
                             <button class="del-project-btn" data-id="${p.id}" style="border:none; background:none; color:#ef4444; cursor:pointer; font-weight: 500;">Delete</button>
                         </td>
