@@ -104,10 +104,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 async function loadProjects() {
-        // Tukar 'Active' kepada 'ACTIVE' (atau buang terus filter status)
-        const { data } = await supabase.from('projects').select('id, project_name').eq('status', 'ACTIVE');
-        if (data) {
-            projectSelect.innerHTML += data.map(p => `<option value="${p.id}">${p.project_name}</option>`).join('');
+        // Tarik semua projek tanpa menapis status, dan susun ikut nama
+        const { data, error } = await supabase.from('projects').select('id, project_name, project_code').order('project_name');
+        
+        if (error) {
+            console.error("Ralat tarik projek:", error);
+            showError("Gagal memuat turun senarai projek: " + error.message);
+            return;
+        }
+
+        if (data && data.length > 0) {
+            projectSelect.innerHTML = '<option value="">[ Select Project ▼ ]</option>' + 
+                data.map(p => `<option value="${p.id}">${p.project_name || p.project_code || 'Projek Tanpa Nama'}</option>`).join('');
         }
     }
 
