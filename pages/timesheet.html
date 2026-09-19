@@ -3,49 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timesheet - WorkTime System</title>
-
+    <title>Timesheet - WorkTime</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- CSS Utama Sahaja -->
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-
     <div class="app-container">
-        <div id="sidebar-container"></div>  
+        <!-- Sidebar dimuatkan di sini -->
+        <div id="sidebar-container"></div>
         
         <main class="main-content">
             <header class="topbar">
-                <h3>My Timesheet</h3>
+                <h3>Timesheet</h3>
                 <div class="user-info"><span id="userEmail">Loading...</span></div>
             </header>
 
             <div class="content-area">
-                <div class="card" style="padding: 1.5rem; background: white; border-radius: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h4 style="margin:0; color: var(--text-muted); font-size: 0.9rem;">TIME ENTRIES LOG</h4>
-                        <div id="totalHours" style="font-weight: 600; color: var(--primary-color); background: #ecfdf5; padding: 0.5rem 1rem; border-radius: 6px;">
-                            Total: 0 hrs 0 mins
+                
+                <!-- Kawalan Atas: Tajuk & Filter Minggu -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main); font-weight: 400;">Timesheet</h2>
+                    
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select style="padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; outline: none; background: white;">
+                            <option>Teammates</option>
+                        </select>
+                        
+                        <button style="padding: 8px 12px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; color: #64748b; cursor: pointer;">
+                            ☰
+                        </button>
+                        
+                        <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 4px; background: white; overflow: hidden;">
+                            <div style="padding: 8px 15px; border-right: 1px solid #cbd5e1; color: #475569; display: flex; align-items: center; gap: 8px;">
+                                📅 This week
+                            </div>
+                            <button style="padding: 8px 12px; background: white; border: none; border-right: 1px solid #cbd5e1; cursor: pointer; color: #64748b;">&lt;</button>
+                            <button style="padding: 8px 12px; background: white; border: none; cursor: pointer; color: #64748b;">&gt;</button>
                         </div>
                     </div>
-                    
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc;">
-                                <th style="padding: 0.75rem; color: var(--text-muted);">Date</th>
-                                <th style="padding: 0.75rem; color: var(--text-muted);">Project</th>
-                                <th style="padding: 0.75rem; color: var(--text-muted);">Task Description</th>
-                                <th style="padding: 0.75rem; color: var(--text-muted);">Duration</th>
-                            </tr>
-                        </thead>
-                        <tbody id="timesheetTableBody">
-                            <!-- Data ditarik oleh JS -->
-                        </tbody>
-                    </table>
                 </div>
+
+                <!-- Jadual Timesheet Mingguan -->
+                <div class="card" style="padding: 0; background: white; border-radius: 4px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 15px;">
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border-color); background: #f8fafc; color: #94a3b8; font-size: 0.8rem;">
+                                    <th style="padding: 12px 20px; text-align: left; font-weight: 500; width: 35%;">Projects</th>
+                                    <th style="padding: 12px 10px; font-weight: 500;">Mo, Sep 14</th>
+                                    <th style="padding: 12px 10px; font-weight: 500;">Tu, Sep 15</th>
+                                    <th style="padding: 12px 10px; font-weight: 500;">We, Sep 16</th>
+                                    <th style="padding: 12px 10px; font-weight: 500;">Th, Sep 17</th>
+                                    <th style="padding: 12px 10px; font-weight: 500;">Fr, Sep 18</th>
+                                    <th style="padding: 12px 10px; font-weight: 500;">Sa, Sep 19</th>
+                                    <th style="padding: 12px 10px; font-weight: 500;">Su, Sep 20</th>
+                                    <th style="padding: 12px 10px; font-weight: 500;">Total:</th>
+                                    <th style="padding: 12px 15px; width: 40px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="timesheetTableBody">
+                                <!-- Baris Contoh Projek -->
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem; color: #334155;">
+                                        <span style="display:inline-block; width:6px; height:6px; background:#a855f7; border-radius:50%; margin-right:8px;"></span>
+                                        PRJ-2446 - DOCUMENTATION
+                                    </td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none;"></td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none;"></td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none;"></td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none;"></td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none;"></td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none;"></td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none;"></td>
+                                    <td style="font-weight: 500; color: #64748b;">0:00</td>
+                                    <td style="color: #94a3b8; cursor: pointer;">✕</td>
+                                </tr>
+                                
+                                <!-- Baris Tambah Projek -->
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem;">
+                                        <a href="#" style="color: #0ea5e9; text-decoration: none; font-weight: 500;">⊕ Select project</a>
+                                    </td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none; background: #f8fafc;" disabled></td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none; background: #f8fafc;" disabled></td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none; background: #f8fafc;" disabled></td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none; background: #f8fafc;" disabled></td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none; background: #f8fafc;" disabled></td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none; background: #f8fafc;" disabled></td>
+                                    <td><input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; outline: none; background: #f8fafc;" disabled></td>
+                                    <td style="font-weight: 500; color: #64748b;">0:00</td>
+                                    <td style="color: #94a3b8; cursor: pointer;">✕</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: #f1f5f9; font-weight: 500; color: #64748b; font-size: 0.9rem;">
+                                    <td style="padding: 12px 20px; text-align: left;">Total:</td>
+                                    <td style="padding: 12px 10px;">0:00</td>
+                                    <td style="padding: 12px 10px;">0:00</td>
+                                    <td style="padding: 12px 10px;">0:00</td>
+                                    <td style="padding: 12px 10px;">0:00</td>
+                                    <td style="padding: 12px 10px;">0:00</td>
+                                    <td style="padding: 12px 10px;">0:00</td>
+                                    <td style="padding: 12px 10px;">0:00</td>
+                                    <td style="padding: 12px 10px;">0:00</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Butang Tindakan Bawah -->
+                <div style="display: flex; gap: 10px;">
+                    <button style="padding: 8px 15px; background: white; border: 1px solid #0ea5e9; color: #0ea5e9; border-radius: 4px; cursor: pointer; font-weight: 500;">
+                        ⊕ Add new row
+                    </button>
+                    <button style="padding: 8px 15px; background: white; border: 1px solid #cbd5e1; color: #475569; border-radius: 4px; cursor: pointer;">
+                        📄 Copy last week ▼
+                    </button>
+                    <button style="padding: 8px 15px; background: white; border: 1px solid #cbd5e1; color: #475569; border-radius: 4px; cursor: pointer;">
+                        💾 Save as template
+                    </button>
+                </div>
+
             </div>
         </main>
     </div>
