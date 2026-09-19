@@ -10,13 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="../css/style.css">
-    
 </head>
 <body>
 
     <div class="app-container">
         <div id="sidebar-container"></div>
-        <!-- Main Content -->
+        
         <main class="main-content">
             <header class="topbar">
                 <h3>Projects</h3>
@@ -26,10 +25,10 @@
             <div class="content-area">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                     <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main); font-weight: 600;">Projects</h2>
-                    <button id="openModalBtn" class="btn-primary" style="background-color: #03a9f4 !important; border-radius: 4px; padding: 10px 20px;">CREATE NEW PROJECT</button>
+                    <button id="openModalBtn" class="btn-primary" style="background-color: #0ea5e9 !important; border-radius: 4px; padding: 10px 20px; border:none; color:white; font-weight:bold; cursor:pointer;">CREATE NEW PROJECT</button>
                 </div>
 
-                <!-- BAR TAPISAN (FILTER BAR) CLOCKIFY STYLE -->
+                <!-- FILTER BAR -->
                 <div style="background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 10px 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 20px; font-size: 0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
                     <span style="color: #999; font-weight: 600; letter-spacing: 0.5px;">FILTER</span>
                     <select style="border: none; background: transparent; color: #555; cursor: pointer; outline: none; font-weight: 500;"><option>Active</option></select>
@@ -42,13 +41,11 @@
                         <input type="text" placeholder="Find by name" style="width: 100%; border: none; outline: none; background: transparent; font-size: 0.85rem;">
                     </div>
                     
-                    <button style="border: 1px solid #0ea5e9; background: white; color: #0ea5e9; padding: 6px 15px; border-radius: 4px; font-weight: 500; cursor: pointer; transition: 0.2s;">APPLY FILTER</button>
+                    <button style="border: 1px solid #0ea5e9; background: white; color: #0ea5e9; padding: 6px 15px; border-radius: 4px; font-weight: 500; cursor: pointer;">APPLY FILTER</button>
                 </div>
 
                 <!-- JADUAL PROJEK -->
-                <div class="card" style="padding: 0; background: white; border-radius: 4px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                    
-                    <!-- Sub-header Jadual -->
+                <div class="card" style="padding: 0; background: white; border-radius: 4px; border: 1px solid var(--border-color); overflow: hidden;">
                     <div style="background: #f8fafc; padding: 12px 20px; display: flex; justify-content: space-between; font-size: 0.85rem; color: #64748b; border-bottom: 1px solid var(--border-color);">
                         <span>Projects</span>
                         <span style="cursor: pointer;">Export ▼</span>
@@ -58,9 +55,9 @@
                         <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
                             <thead>
                                 <tr style="border-bottom: 1px solid var(--border-color); color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">
-                                    <th style="padding: 12px 10px 12px 20px; font-weight: 600; width: 30px;"><input type="checkbox"></th>
-                                    <th style="padding: 12px 15px 12px 0; font-weight: 600;">Name</th>
-                                    <th style="padding: 12px 15px; font-weight: 600;">Client</th>
+                                    <th style="padding: 12px 10px 12px 20px; width: 30px;"><input type="checkbox"></th>
+                                    <th style="padding: 12px 20px; font-weight: 600;">Name</th>
+                                    <th style="padding: 12px 20px; font-weight: 600;">Client</th>
                                     <th style="padding: 12px 15px; font-weight: 600;">Tracked</th>
                                     <th style="padding: 12px 15px; font-weight: 600;">Amount</th>
                                     <th style="padding: 12px 15px; font-weight: 600;">Progress</th>
@@ -78,28 +75,24 @@
         </main>
     </div>
 
-    <!-- Modal Form: Add Project -->
-    <div id="projectModal" class="modal-overlay">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;">Create new Project</h3>
+    <!-- MODAL CENTER (POP-UP TENGAN SKRIN) -->
+    <div id="projectModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.5); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="background: white; width: 100%; max-width: 500px; border-radius: 8px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); overflow: hidden; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #1e293b;">Create new Project</h3>
                 <button id="closeModalBtn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;">&times;</button>
             </div>
             
-            <div class="form-grid">
-                <div class="form-group">
-                    <input type="text" id="projectNameInput" class="form-control" placeholder="Enter Project name">
-                </div>
-                <div class="form-group">
-                    <select id="clientSelect" class="form-control">
-                        <option value="">Select client</option>
-                    </select>
-                </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                <input type="text" id="projectNameInput" placeholder="Enter Project name" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none;">
+                <select id="clientSelect" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; color: #475569;">
+                    <option value="">Select client</option>
+                </select>
             </div>
 
-            <div class="modal-actions">
-                <button id="cancelBtn" class="btn-cancel" style="border: none; color: #03a9f4; font-weight: 500;">Cancel</button>
-                <button id="saveProjectBtn" class="btn-primary" style="background-color: #03a9f4 !important;">CREATE</button>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button id="cancelBtn" style="background: none; border: none; color: #64748b; font-weight: 500; cursor: pointer; padding: 8px 16px;">Cancel</button>
+                <button id="saveProjectBtn" style="background-color: #0ea5e9; color: white; border: none; padding: 8px 20px; border-radius: 4px; font-weight: 600; cursor: pointer;">CREATE</button>
             </div>
         </div>
     </div>
