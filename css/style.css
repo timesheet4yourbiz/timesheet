@@ -638,4 +638,25 @@ canvas {
         .btn-start.stop-mode:hover {
             background-color: #dc2626;
         }
+
+
+/* =========================================================
+   ANIMASI ACCORDION UNTUK SENARAI TASK
+========================================================= */
+.task-accordion-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s ease-out;
+}
+.task-accordion-wrapper.open {
+    grid-template-rows: 1fr;
+}
+.task-accordion-inner {
+    overflow: hidden;
+}
+.project-row:hover {
+    background: #f8fafc !important;
+}
+
+
     </style>
