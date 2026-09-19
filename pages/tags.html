@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tags - WorkTime</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar dimuatkan di sini -->
+        <div id="sidebar-container"></div>
+        
+        <main class="main-content">
+            <header class="topbar">
+                <h3>Tags</h3>
+                <div class="user-info"><span id="userEmail">Loading...</span></div>
+            </header>
+
+            <div class="content-area">
+                <h2 style="margin: 0 0 20px 0; font-size: 1.5rem; color: var(--text-main); font-weight: 400;">Tags</h2>
+
+                <!-- Bar Tindakan: Search & Add Tag -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: white; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <!-- Kiri: Filter & Search -->
+                    <div style="display: flex; gap: 15px; width: 40%;">
+                        <select style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; outline: none;">
+                            <option>Show active</option>
+                        </select>
+                        <div style="flex: 1; border: 1px solid #cbd5e1; border-radius: 4px; display: flex; align-items: center; padding: 0 10px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" id="searchTagInput" placeholder="Search by name" style="border: none; outline: none; padding: 8px; width: 100%; font-size: 0.9rem;">
+                        </div>
+                    </div>
+                    
+                    <!-- Kanan: Add New Tag -->
+                    <div style="display: flex; gap: 0;">
+                        <input type="text" id="newTagInput" placeholder="Add new tag" style="padding: 8px 15px; border: 1px solid #cbd5e1; border-right: none; outline: none; border-radius: 4px 0 0 4px; width: 250px;">
+                        <button id="addTagBtn" style="background: #38bdf8; color: white; border: none; padding: 8px 25px; font-weight: bold; cursor: pointer; border-radius: 0 4px 4px 0; font-size: 0.9rem;">ADD</button>
+                    </div>
+                </div>
+
+                <!-- Jadual Tags -->
+                <div class="card" style="padding: 0; background: white; border-radius: 4px; border: 1px solid var(--border-color); overflow: hidden;">
+                    <div style="background: #f8fafc; padding: 12px 20px; font-size: 0.85rem; color: #94a3b8; border-bottom: 1px solid var(--border-color);">Tags</div>
+                    
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border-color); color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">
+                                    <th style="padding: 12px 10px 12px 20px; width: 30px;"><input type="checkbox"></th>
+                                    <th style="padding: 12px 20px; font-weight: 600;">Name</th>
+                                    <th style="padding: 12px 20px; font-weight: 600; text-align: right; width: 100px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tagsTableBody">
+                                <tr><td colspan="3" style="text-align: center; padding: 2rem; color: #888;">Loading tags...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="../js/tags.js"></script>
+</body>
+</html>
