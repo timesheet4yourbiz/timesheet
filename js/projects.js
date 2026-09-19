@@ -44,33 +44,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveProjectBtn.addEventListener('click', async () => {
             const pName = projectNameInput.value.trim();
             const pClient = clientSelect.value; 
-
             if (!pName) return alert('Sila masukkan nama projek.');
-
             saveProjectBtn.disabled = true;
             saveProjectBtn.textContent = 'CREATING...';
-
             const autoCode = 'PRJ-' + Math.floor(1000 + Math.random() * 9000);
-
             // Bina payload secara selamat
+            // Bina payload secara aman tanpa pembuatan kode PRJ
             const payload = { 
                 project_name: pName,
-                project_code: autoCode,
                 status: 'ACTIVE'
             };
             
-            // Hanya masukkan client_id jika pengguna betul-betul pilih client
+            // Hanya masukkan client_id jika pengguna benar-benar memilih client
             if (pClient && pClient !== "") {
                 payload.client_id = pClient;
             }
-
             console.log("Menghantar data projek:", payload);
-
             const { data, error } = await supabase.from('projects').insert([payload]).select();
-
             saveProjectBtn.disabled = false;
             saveProjectBtn.textContent = 'CREATE';
-
             if (error) {
                 alert('Ralat mencipta projek: ' + error.message);
                 console.error("Ralat Insert:", error);
