@@ -28,9 +28,11 @@
                     <!-- 1. Description -->
                     <input type="text" id="taskDescInput" placeholder="What have you worked on?" style="flex: 1; padding: 15px; border: none; outline: none; font-size: 0.95rem; color: #334155;">
                     
-                    <!-- 2. Project Select -->
-                    <div style="display: flex; align-items: center; padding: 0 15px; border-left: 1px dashed #cbd5e1; cursor: pointer; color: #0ea5e9; font-weight: 500; font-size: 0.9rem;">
-                        <span style="margin-right: 5px; font-size: 1.2rem;">⊕</span> Project
+                   <!-- 2. Project Select (Direct Wiring) -->
+                    <div style="display: flex; align-items: center; padding: 0 15px; border-left: 1px dashed #cbd5e1;">
+                        <select id="projectSelect" style="border:none; background:transparent; outline:none; color:#0ea5e9; font-weight:600; cursor:pointer; width:150px; font-size:0.9rem;">
+                            <option value="">⊕ Select Project</option>
+                        </select>
                     </div>
                     
                     <!-- 3. Tags & Billable -->
