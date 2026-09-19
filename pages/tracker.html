@@ -26,26 +26,38 @@
             <div class="content-area">
                 
                 <!-- KOTAK TIME TRACKER BARU (CLOCKIFY STYLE) -->
-                <div class="tracker-bar" style="display: flex; align-items: center; gap: 10px; padding: 15px; background: var(--bg-surface); border-radius: 8px; margin-bottom: 20px;">
-                    
-                    <!-- 1. Kotak Description -->
-                    <input type="text" id="taskDescInput" placeholder="What are you working on?" style="flex: 2; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: var(--text-main);">
-                    
-                    <!-- 2. Dropdown Project -->
-                    <select id="projectSelect" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: var(--text-main);">
-                        <option value="">[ Select Project ▼ ]</option>
-                    </select>
-                    
-                    <!-- 3. Dropdown Task (Akan dikunci selagi Projek tak dipilih) -->
-                    <select id="taskSelect" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: var(--text-main);" disabled>
-                        <option value="">[ Select Task ▼ ]</option>
-                    </select>
+                <!-- KOTAK TIME TRACKER BARU (CLOCKIFY STYLE DENGAN TAG) -->
+<div class="tracker-bar" style="display: flex; align-items: center; gap: 10px; padding: 15px; background: var(--bg-surface); border-radius: 8px; margin-bottom: 20px;">
+    
+    <!-- 1. Kotak Description -->
+    <input type="text" id="taskDescInput" placeholder="What are you working on?" style="flex: 2; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: var(--text-main);">
+    
+    <!-- 2. Dropdown Project -->
+    <select id="projectSelect" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: var(--text-main);">
+        <option value="">[ Select Project ▼ ]</option>
+    </select>
+    
+    <!-- 3. Dropdown Task -->
+    <select id="taskSelect" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: var(--text-main);" disabled>
+        <option value="">[ Select Task ▼ ]</option>
+    </select>
 
-                    <!-- 4. Paparan Masa & Butang -->
-                    <div id="timerDisplay" style="font-size: 1.5rem; font-weight: bold; min-width: 100px; text-align: center;">00:00:00</div>
-                    
-                    <button id="timerBtn" style="padding: 10px 20px; border-radius: 6px; background: #d946ef; color: white; border: none; font-weight: bold; cursor: pointer;" disabled>▶ START TIMER</button>
-                </div>
+    <!-- 4. Dropdown Tag (Aktiviti) - BARU -->
+    <select id="tagSelect" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: var(--text-main);">
+        <option value="">[ Select Tag ▼ ]</option>
+        <option value="Menganalisa">Menganalisa</option>
+        <option value="Pembangunan">Pembangunan</option>
+        <option value="Penyelenggaraan">Penyelenggaraan</option>
+        <option value="Perbincangan (Meeting)">Perbincangan</option>
+        <option value="Dokumentasi">Dokumentasi</option>
+        <option value="Lain-lain">Lain-lain</option>
+    </select>
+
+    <!-- 5. Paparan Masa & Butang -->
+    <div id="timerDisplay" style="font-size: 1.5rem; font-weight: bold; min-width: 100px; text-align: center;">00:00:00</div>
+    
+    <button id="timerBtn" style="padding: 10px 20px; border-radius: 6px; background: #d946ef; color: white; border: none; font-weight: bold; cursor: pointer;" disabled>▶ START TIMER</button>
+</div>
 
                 <!-- Banner jika ada error -->
                 <div id="errorBanner" style="display: none; background: #fee2e2; color: #ef4444; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; text-align: center;"></div>
