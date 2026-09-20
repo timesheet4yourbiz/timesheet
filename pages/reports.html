@@ -7,73 +7,86 @@
     <link rel="stylesheet" href="../css/style.css">
     <!-- Chart.js CDN untuk paparan Graf -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
-        body { margin: 0; padding: 0; background-color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+        body { margin: 0; padding: 0; background-color: #f4f7f6; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; }
         
-        /* Kontena Utama Reports (Ditunda ke kanan elak Sidebar) */
-        .main-content {
-            margin-left: 260px; /* Sama saiz dengan kelebaran sidebar bos */
+        /* ========================================================
+           PENYELESAIAN MUTLAK (ABSOLUTE) UNTUK ISU JATUH 
+           ======================================================== */
+        .reports-wrapper {
+            position: absolute;
+            top: 0;
+            left: 250px; /* Lebar sidebar. Sila ubah jika sidebar bos lebih lebar (cth: 260px) */
+            right: 0;
+            min-height: 100vh;
             padding: 24px 32px;
             box-sizing: border-box;
-            min-height: 100vh;
+            background: #f4f7f6; /* Warna latar mirip Clockify */
         }
 
         .reports-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         
-        /* Submenu Navigation Bar */
-        .reports-nav { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px; background: white; padding: 12px 16px 0 16px; border-radius: 8px 8px 0 0; }
+        /* Submenu Navigation Bar (Gaya Clockify) */
+        .reports-nav { display: flex; gap: 8px; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; padding-bottom: 0; }
         .nav-group { display: flex; align-items: center; gap: 4px; border-right: 1px solid #cbd5e1; padding-right: 12px; margin-right: 8px; }
         .nav-group:last-child { border-right: none; }
-        .nav-group-title { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-right: 6px; }
-        .nav-item { padding: 8px 14px; border-radius: 6px 6px 0 0; font-size: 0.875rem; font-weight: 500; color: #64748b; cursor: pointer; text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.2s; }
-        .nav-item:hover { color: #0ea5e9; background: #f8fafc; }
-        .nav-item.active { color: #0ea5e9; border-bottom-color: #0ea5e9; font-weight: 600; background: #f0f9ff; }
+        .nav-group-title { font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-right: 6px; }
+        .nav-item { padding: 8px 16px; font-size: 0.85rem; font-weight: 500; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; margin-bottom: -1px; text-decoration: none; }
+        .nav-item:hover { color: #0ea5e9; }
+        .nav-item.active { color: #0ea5e9; border-bottom-color: #0ea5e9; font-weight: 600; }
 
-        /* Filter Panel Bar - PAKSA jadi mendatar */
+        /* ========================================================
+           CSS GLOBAL UNTUK KANDUNGAN DINAMIK REPORTS.JS 
+           ======================================================== */
+           
+        /* Bar Penapis (Horizontal Panel) */
         .filter-panel { 
-            background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 24px; 
-            display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; 
+            background: white; border: 1px solid #e2e8f0; padding: 12px 16px; margin-bottom: 20px; 
+            display: flex; flex-wrap: nowrap; gap: 12px; align-items: center; justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02); border-radius: 4px;
         }
-        .filter-group { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
         
-        /* Halang elemen input menjadi 100% lebar akibat style.css */
+        .filter-group { display: flex; flex-wrap: nowrap; gap: 10px; align-items: center; }
+        
+        /* Halang input jadi 100% dan ikut gaya minimalis */
         .filter-panel select, .filter-panel input { 
-            padding: 8px 12px !important; border: 1px solid #cbd5e1 !important; border-radius: 6px !important; 
-            font-size: 0.85rem !important; color: #334155 !important; background: white !important; 
-            width: auto !important; max-width: 160px !important; display: inline-block !important; height: auto !important; margin: 0 !important;
+            padding: 6px 10px !important; border: 1px solid #cbd5e1 !important; border-radius: 4px !important; 
+            font-size: 0.8rem !important; color: #475569 !important; background: white !important; 
+            width: auto !important; max-width: 150px !important; display: inline-block !important; height: auto !important; margin: 0 !important;
         }
         
-        .btn-action { padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; border: none; white-space: nowrap; transition: background 0.2s; }
-        .btn-primary { background: #10b981; color: white; }
-        .btn-primary:hover { background: #059669; }
+        .btn-action { padding: 6px 16px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: none; white-space: nowrap; transition: background 0.2s; }
+        .btn-primary { background: #0ea5e9; color: white; }
+        .btn-primary:hover { background: #0284c7; }
 
-        /* Summary Cards Header */
-        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .stat-label { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
-        .stat-value { font-size: 1.5rem; font-weight: 700; color: #0f172a; }
+        /* Summary Teks Atas Bar Chart */
+        .summary-cards { display: flex; gap: 24px; margin-bottom: 16px; padding: 10px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 4px; }
+        .stat-card { display: flex; align-items: center; gap: 8px; }
+        .stat-label { font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
+        .stat-value { font-size: 1rem; font-weight: 700; color: #334155; }
 
-        /* Visual & Data Table Grid */
-        .report-section { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
-        .chart-container { position: relative; height: 320px; width: 100%; margin-bottom: 20px; }
+        /* Seksyen Carta & Jadual */
+        .report-section { background: white; border: 1px solid #e2e8f0; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); border-radius: 4px; }
+        .chart-container { position: relative; height: 300px; width: 100%; padding: 20px; box-sizing: border-box; }
         
-        .report-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
-        .report-table th { background: #f8fafc; color: #64748b; padding: 12px 16px; font-weight: 600; border-bottom: 1px solid #e2e8f0; }
-        .report-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; color: #334155; }
-        .report-table tr:hover { background: #f8fafc; }
+        .report-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        .report-table th { background: #f8fafc; color: #64748b; padding: 10px 16px; font-weight: 600; border-bottom: 1px solid #e2e8f0; font-size: 0.75rem; text-transform: uppercase; }
+        .report-table td { padding: 10px 16px; border-bottom: 1px solid #f1f5f9; color: #475569; }
+        .report-table tr:hover { background: #f8fafc; cursor: default; }
 
-        .loading-overlay { text-align: center; padding: 40px; color: #64748b; font-size: 0.9rem; }
-        .empty-state { text-align: center; padding: 40px; color: #94a3b8; font-size: 0.9rem; }
+        .loading-overlay, .empty-state { text-align: center; padding: 40px; color: #94a3b8; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
+    <!-- Sidebar Dimuatkan Di Sini Oleh JS -->
     <div id="sidebar-container"></div>
 
-    <!-- Main Content -->
-    <div class="main-content">
+    <!-- KANDUNGAN UTAMA (Mempunyai Position: Absolute) -->
+    <div class="reports-wrapper">
+        
         <div class="reports-header">
-            <h1 style="font-size: 1.5rem; color: #0f172a; margin: 0;">Reports</h1>
+            <h1 style="font-size: 1.5rem; color: #0f172a; margin: 0; font-weight: 600;">Reports</h1>
             <span id="userEmail" style="font-size: 0.85rem; color: #64748b;"></span>
         </div>
 
@@ -97,11 +110,11 @@
             </div>
         </div>
 
-        <!-- Dynamic Content View Holder -->
+        <!-- Pemegang Utama Data Laporan -->
         <div id="reportContentView"></div>
+        
     </div>
 
-    <!-- Script JS Kekal Sama -->
     <script type="module" src="../js/reports.js"></script>
 </body>
 </html>
