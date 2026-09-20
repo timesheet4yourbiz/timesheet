@@ -3,6 +3,7 @@ import { loadSidebar } from './sidebar.js';
 
 let activeTab = 'summary';
 let currentChart = null;
+let employeeMap = {};
 
 let filterState = {
     datePreset: 'this_month',
@@ -199,7 +200,10 @@ async function loadFilterDropdowns() {
         tasks.forEach(t => taskSelect.innerHTML += `<option value="${t.id}">${t.task_name}</option>`);
     }
     if (emps && empSelect) {
-        emps.forEach(e => empSelect.innerHTML += `<option value="${e.id}">${e.email}</option>`);
+        emps.forEach(e => {
+            employeeMap[e.id] = e.email;
+            empSelect.innerHTML += `<option value="${e.id}">${e.email}</option>`;
+        });
     }
 }
 
@@ -241,15 +245,24 @@ async function fetchAndProcessSummaryData() {
     if (!tableContainer) return;
     tableContainer.innerHTML = '<div class="loading-overlay">Memuatkan data laporan dari Supabase...</div>';
 
-    const startIso = new Date(`${filterState.startDate}T00:00:00`).toISOString();
-    const endIso = new Date(`${filterState.endDate}T23:59:59.999`).toISOString();
+    const startFull = `${filterState.startDate}T00:00:00`;
+    const endFull = `${filterState.endDate}T23:59:59`;
 
     let query = supabase
         .from('time_entries')
-        .select('id, duration_seconds, billable, employee_id, project_id, task_id, project:projects!fk_time_entries_project(project_name), task:tasks!fk_time_entries_task(task_name), employees(email)')
+        .select(`
+            id,
+            duration_seconds,
+            billable,
+            employee_id,
+            project_id,
+            task_id,
+            project:projects!fk_time_entries_project(project_name),
+            task:tasks!fk_time_entries_task(task_name)
+        `)
         .eq('status', 'STOPPED')
-        .gte('start_time', startIso)
-        .lte('start_time', endIso);
+        .gte('start_time', startFull)
+        .lte('start_time', endFull);
 
     if (filterState.projectId !== 'all') query = query.eq('project_id', filterState.projectId);
     if (filterState.taskId !== 'all') query = query.eq('task_id', filterState.taskId);
@@ -258,6 +271,7 @@ async function fetchAndProcessSummaryData() {
     const { data, error } = await query;
 
     if (error) {
+        console.error('Supabase Report Query Error:', error);
         tableContainer.innerHTML = `<div class="empty-state" style="color:#ef4444;">Ralat memuatkan data: ${error.message}</div>`;
         return;
     }
@@ -296,7 +310,7 @@ async function fetchAndProcessSummaryData() {
         } else if (filterState.groupBy === 'task') {
             groupKey = entry.task ? entry.task.task_name : 'No Task';
         } else if (filterState.groupBy === 'employee') {
-            groupKey = entry.employees ? entry.employees.email : 'No Employee';
+            groupKey = employeeMap[entry.employee_id] || 'No Employee';
         }
 
         if (!groupedMap[groupKey]) {
