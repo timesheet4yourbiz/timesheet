@@ -87,3 +87,98 @@
     <script type="module" src="../js/reports.js"></script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - WorkTime</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <!-- Chart.js CDN untuk paparan Graf -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+        
+        /* Layout Flexbox Utama untuk Sidebar & Kandungan */
+        .app-layout { display: flex; min-height: 100vh; }
+        
+        /* Kontena Utama Reports */
+        .reports-container { flex: 1; padding: 24px 32px; max-width: 1400px; box-sizing: border-box; overflow-x: hidden; }
+        .reports-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        /* Submenu Navigation Bar */
+        .reports-nav { display: flex; gap: 8px; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px; background: white; padding: 12px 16px 0 16px; border-radius: 8px 8px 0 0; border: 1px solid #e2e8f0; border-bottom: none; }
+        .nav-group { display: flex; align-items: center; gap: 4px; border-right: 1px solid #cbd5e1; padding-right: 12px; margin-right: 8px; }
+        .nav-group:last-child { border-right: none; }
+        .nav-group-title { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-right: 6px; }
+        .nav-item { padding: 8px 14px; border-radius: 6px 6px 0 0; font-size: 0.875rem; font-weight: 500; color: #64748b; cursor: pointer; text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .nav-item:hover { color: #0ea5e9; background: #f8fafc; }
+        .nav-item.active { color: #0ea5e9; border-bottom-color: #0ea5e9; font-weight: 600; background: #f0f9ff; }
+
+        /* Summary Cards Header */
+        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stat-label { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: #0f172a; }
+
+        /* Filter Panel Bar - Kemaskan Susunan Mendatar (Horizontal) */
+        .filter-panel { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
+        .filter-group { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .filter-select, .filter-input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; color: #334155; outline: none; background: white; width: auto !important; display: inline-block !important; height: auto !important; }
+        .btn-action { padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; border: none; transition: background 0.2s; white-space: nowrap; }
+        .btn-primary { background: #10b981; color: white; }
+        .btn-primary:hover { background: #059669; }
+
+        /* Visual & Data Table Grid */
+        .report-section { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+        .chart-container { position: relative; height: 320px; width: 100%; margin-bottom: 20px; }
+        
+        .report-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
+        .report-table th { background: #f8fafc; color: #64748b; padding: 12px 16px; font-weight: 600; border-bottom: 1px solid #e2e8f0; }
+        .report-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+        .report-table tr:hover { background: #f8fafc; }
+
+        .loading-overlay { text-align: center; padding: 40px; color: #64748b; font-size: 0.9rem; }
+        .empty-state { text-align: center; padding: 40px; color: #94a3b8; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar dimuatkan di sebelah kiri -->
+        <div id="sidebar-container"></div>
+
+        <!-- Kandungan Utama Reports di sebelah kanan -->
+        <div class="reports-container">
+            <div class="reports-header">
+                <h1 style="font-size: 1.5rem; color: #0f172a; margin: 0;">Reports</h1>
+                <span id="userEmail" style="font-size: 0.85rem; color: #64748b;"></span>
+            </div>
+
+            <!-- Submenu Navigation -->
+            <div class="reports-nav">
+                <div class="nav-group">
+                    <span class="nav-group-title">Time</span>
+                    <a class="nav-item active" data-tab="summary">Summary</a>
+                    <a class="nav-item" data-tab="detailed">Detailed</a>
+                    <a class="nav-item" data-tab="weekly">Weekly</a>
+                    <a class="nav-item" data-tab="shared">Shared</a>
+                </div>
+                <div class="nav-group">
+                    <span class="nav-group-title">Team</span>
+                    <a class="nav-item" data-tab="attendance">Attendance</a>
+                    <a class="nav-item" data-tab="assignments">Assignments</a>
+                </div>
+                <div class="nav-group">
+                    <span class="nav-group-title">Expense</span>
+                    <a class="nav-item" data-tab="expense">Detailed</a>
+                </div>
+            </div>
+
+            <!-- Dynamic Content View Holder -->
+            <div id="reportContentView"></div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/reports.js"></script>
+</body>
+</html>
