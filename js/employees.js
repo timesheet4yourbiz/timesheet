@@ -86,8 +86,23 @@ function setupModal() {
 
     btnClose.addEventListener('click', () => modal.style.display = 'none');
     
+    // FUNGSI TAMBAH PEKERJA BARU
     btnAdd.addEventListener('click', () => {
-        alert("To add a completely new user, they must first sign up via Supabase Auth. For now, you can Edit existing user profiles.");
+        document.getElementById('modalTitle').textContent = "Add New Member";
+        document.getElementById('formMemberId').value = ''; // Kosongkan ID untuk rekod baru
+        document.getElementById('formEmail').value = '';
+        document.getElementById('formEmail').disabled = false; // Boleh taip emel
+        document.getElementById('formName').value = '';
+        document.getElementById('formEmpNo').value = '';
+        document.getElementById('formPhone').value = '';
+        document.getElementById('formDept').value = '';
+        document.getElementById('formPosition').value = '';
+        document.getElementById('formRole').value = 'Employee';
+        document.getElementById('formGroup').value = '';
+        document.getElementById('formRate').value = '0.00';
+        document.getElementById('formStatus').value = 'Active';
+        
+        modal.style.display = 'flex';
     });
 
     form.addEventListener('submit', async (e) => {
@@ -99,6 +114,7 @@ function setupModal() {
 
         const empId = document.getElementById('formMemberId').value;
         const payload = {
+            email: document.getElementById('formEmail').value,
             name: document.getElementById('formName').value,
             employee_no: document.getElementById('formEmpNo').value,
             phone: document.getElementById('formPhone').value,
@@ -110,26 +126,38 @@ function setupModal() {
             status: document.getElementById('formStatus').value
         };
 
-        const { error } = await supabase.from('employees').update(payload).eq('id', empId);
+        let result;
+        if (empId) {
+            // Jika ada empId, bermaksud kita UPDATE rekod sedia ada
+            result = await supabase.from('employees').update(payload).eq('id', empId);
+        } else {
+            // Jika tiada empId, bermaksud kita INSERT rekod baru (dummy user)
+            // Catatan: Jika DB bos ketat pasal Foreign Key (auth.users), ini mungkin gagal.
+            result = await supabase.from('employees').insert([payload]);
+        }
         
-        btnSave.textContent = "Save Profile";
+        btnSave.textContent = "Save Member";
         btnSave.disabled = false;
 
-        if (error) {
-            alert("Failed to save profile: " + error.message);
+        if (result.error) {
+            // Mesej Ralat dalam English
+            alert("Database Error: " + result.error.message + "\n\n(If it mentions 'Foreign Key Constraint', it means you MUST register this user via Supabase Auth first).");
         } else {
             modal.style.display = 'none';
-            fetchMembers(); // Refresh table
+            fetchMembers(); // Segarkan jadual selepas simpan
         }
     });
 }
 
+// FUNGSI EDIT PROFIL PEKERJA
 window.openEditModal = function(id) {
     const member = membersData.find(m => m.id === id);
     if (!member) return;
 
+    document.getElementById('modalTitle').textContent = "Edit Member Profile";
     document.getElementById('formMemberId').value = member.id;
     document.getElementById('formEmail').value = member.email || '';
+    document.getElementById('formEmail').disabled = true; // Elak ubah e-mel log masuk
     document.getElementById('formName').value = member.name || '';
     document.getElementById('formEmpNo').value = member.employee_no || '';
     document.getElementById('formPhone').value = member.phone || '';
