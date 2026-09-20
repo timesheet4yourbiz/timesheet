@@ -219,12 +219,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         entriesContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Loading entries...</div>';
 
         // Tarik rekod masa bersama data project dan task
+
         const { data, error } = await supabase
             .from('time_entries')
             .select(`
                 *,
                 project:projects!fk_time_entries_project(project_name),
-                task:tasks(task_name)
+                task:tasks!fk_time_entries_task(task_name)
             `)
             .eq('employee_id', currentEmployeeId)
             .eq('status', 'STOPPED')
