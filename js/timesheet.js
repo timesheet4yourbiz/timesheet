@@ -124,7 +124,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const pName = entry.project ? entry.project.project_name : 'No Project';
             const tName = entry.task ? entry.task.task_name : '';
-            // Guna work_date jika ada, atau extract dari start_time
             const localDate = entry.work_date || new Date(entry.start_time).toLocaleDateString('en-CA');
 
             if (!matrix[key]) {
@@ -207,9 +206,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         bindEvents();
     }
 
-    // ==========================================
-    // FUNGSI LOGIK: SAVE MASA & DELETE BARIS
-    // ==========================================
     function bindEvents() {
         // 1. Simpan Masa apabila input ditukar
         document.querySelectorAll('.time-input').forEach(input => {
@@ -220,10 +216,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const tid = el.getAttribute('data-tid') || null;
                 const rawVal = el.value.trim();
 
-                el.style.opacity = '0.5'; // Kesan loading
+                el.style.opacity = '0.5'; 
                 const totalSeconds = parseTimeInput(rawVal);
-                await saveTimeEntry(dateStr, pid, tid, totalSeconds);
-                loadTimesheetData(); // Muat semula jadual supaya total bertukar
+                await saveTimeEntry(dateStr, pid, tid, totalSeconds, false);
+                loadTimesheetData(); 
             });
         });
 
@@ -250,64 +246,69 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // 3. Buka Pop-up Project
+        // 3. Logik Buka Pop-up Project
         const openPickerBtn = document.getElementById('openPickerBtn');
-        if (openPickerBtn) {
-            openPickerBtn.addEventListener('click', async () => {
-                const popup = document.getElementById('projectPickerPopup');
-                if(popup.style.display === 'block') { popup.style.display = 'none'; return; }
-                
-                popup.style.display = 'block';
-                popup.innerHTML = '<div style="padding:15px; color:#64748b; font-size:0.85rem; text-align:center;">Memuatkan senarai...</div>';
-                
-                const { data: projs } = await supabase.from('projects').select('*').order('project_name');
-                const { data: tasks } = await supabase.from('tasks').select('*');
-                
-                let pList = `
-                    <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
-                        <input type="text" placeholder="🔍 Search Project or Client" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:4px; outline:none; box-sizing:border-box; font-size:0.85rem;">
-                    </div>
-                    <div style="padding: 10px 15px; font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; font-weight: 600; display: flex; justify-content: space-between; background: #f8fafc;">
-                        <span>NO CLIENT</span>
-                        <span>${projs ? projs.length : 0} Projects ⌄</span>
-                    </div>
-                    <div style="max-height: 250px; overflow-y: auto;">
-                `;
-                
-                if (projs && projs.length > 0) {
-                    projs.forEach(p => {
-                        const tList = tasks ? tasks.filter(t => t.project_id === p.id) : [];
-                        const taskLabel = tList.length > 0 ? `${tList.length} Tasks ⌄` : 'Create Task ☆';
-                        
-                        pList += `
-                            <div class="proj-select-item" data-id="${p.id}" style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; border-bottom: 1px solid #f1f5f9; cursor:pointer;">
-                                <span style="color:#475569; font-size:0.85rem; display:flex; align-items:center; gap:8px;">
-                                    <span style="display:inline-block; width:6px; height:6px; background:#ef4444; border-radius:50%;"></span>
-                                    ${p.project_name}
-                                </span>
-                                <span style="color:#0ea5e9; font-size:0.75rem; font-weight:500;">${taskLabel}</span>
-                            </div>
-                        `;
-                    });
-                } else {
-                    pList += `<div style="padding:15px; text-align:center; color:#94a3b8; font-size:0.85rem;">Tiada Projek</div>`;
-                }
-                popup.innerHTML = pList + `</div>`;
+        const addNewRowBtn = document.getElementById('addNewRowBtn'); // Butang di bawah sekali
+        
+        const togglePopup = async () => {
+            const popup = document.getElementById('projectPickerPopup');
+            if(popup.style.display === 'block') { popup.style.display = 'none'; return; }
+            
+            popup.style.display = 'block';
+            popup.innerHTML = '<div style="padding:15px; color:#64748b; font-size:0.85rem; text-align:center;">Memuatkan senarai...</div>';
+            
+            const { data: projs } = await supabase.from('projects').select('*').order('project_name');
+            const { data: tasks } = await supabase.from('tasks').select('*');
+            
+            let pList = `
+                <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
+                    <input type="text" placeholder="🔍 Search Project or Client" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:4px; outline:none; box-sizing:border-box; font-size:0.85rem;">
+                </div>
+                <div style="padding: 10px 15px; font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; font-weight: 600; display: flex; justify-content: space-between; background: #f8fafc;">
+                    <span>NO CLIENT</span>
+                    <span>${projs ? projs.length : 0} Projects ⌄</span>
+                </div>
+                <div style="max-height: 250px; overflow-y: auto;">
+            `;
+            
+            if (projs && projs.length > 0) {
+                projs.forEach(p => {
+                    const tList = tasks ? tasks.filter(t => t.project_id === p.id) : [];
+                    const taskLabel = tList.length > 0 ? `${tList.length} Tasks ⌄` : 'Create Task ☆';
+                    
+                    pList += `
+                        <div class="proj-select-item" data-id="${p.id}" style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; border-bottom: 1px solid #f1f5f9; cursor:pointer;">
+                            <span style="color:#475569; font-size:0.85rem; display:flex; align-items:center; gap:8px;">
+                                <span style="display:inline-block; width:6px; height:6px; background:#ef4444; border-radius:50%;"></span>
+                                ${p.project_name}
+                            </span>
+                            <span style="color:#0ea5e9; font-size:0.75rem; font-weight:500;">${taskLabel}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                pList += `<div style="padding:15px; text-align:center; color:#94a3b8; font-size:0.85rem;">Tiada Projek</div>`;
+            }
+            popup.innerHTML = pList + `</div>`;
 
-                // Jika pengguna klik projek pada pop-up
-                document.querySelectorAll('.proj-select-item').forEach(item => {
-                    item.addEventListener('click', async (e) => {
-                        const selPid = e.currentTarget.getAttribute('data-id');
-                        // Cipta satu entri masa 0 saat untuk paparkan baris ini dalam grid
-                        await saveTimeEntry(new Date().toLocaleDateString('en-CA'), selPid, null, 0);
-                        loadTimesheetData();
-                    });
+            // Bina baris baharu (Placeholder 0 saat) apabila projek diklik
+            document.querySelectorAll('.proj-select-item').forEach(item => {
+                item.addEventListener('click', async (e) => {
+                    const selPid = e.currentTarget.getAttribute('data-id');
+                    // Guna tarikh hari Isnin minggu tersebut supaya baris masuk di grid yang betul
+                    const { start } = getWeekRange(currentDate); 
+                    
+                    // isInit = true membenarkan 0 saat disimpan tanpa didelete
+                    await saveTimeEntry(start.toLocaleDateString('en-CA'), selPid, null, 0, true);
+                    loadTimesheetData();
                 });
             });
-        }
+        };
+
+        if (openPickerBtn) openPickerBtn.addEventListener('click', togglePopup);
+        if (addNewRowBtn) addNewRowBtn.addEventListener('click', togglePopup);
     }
 
-    // Penukar format masa input (e.g., "1:30" atau "2.5" menjadi saat)
     function parseTimeInput(inputVal) {
         if (!inputVal) return 0;
         let hrs = 0, mins = 0;
@@ -325,38 +326,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         return (hrs * 3600) + (mins * 60);
     }
 
-    // Fungsi menyimpan data ke Supabase
-    async function saveTimeEntry(dateStr, pid, tid, totalSeconds) {
+    // Fungsi menyimpan / delete data ke Supabase
+    async function saveTimeEntry(dateStr, pid, tid, totalSeconds, isInit = false) {
         let query = supabase.from('time_entries').select('id').eq('employee_id', currentEmployeeId).eq('work_date', dateStr);
         if (pid) query = query.eq('project_id', pid); else query = query.is('project_id', null);
         if (tid) query = query.eq('task_id', tid); else query = query.is('task_id', null);
 
         const { data: existing } = await query;
 
-        // Jika letak 0 atau padam teks, delete rekod pada hari tersebut
-        if (totalSeconds === 0) {
+        // Jika letak 0 atau padam teks (bukan sedang tambah baris baru), delete rekod hari tersebut
+        if (totalSeconds === 0 && !isInit) {
             if (existing && existing.length > 0) {
                 await supabase.from('time_entries').delete().in('id', existing.map(e => e.id));
             }
-            return;
+            return; 
         }
 
         const totalMinutes = Math.floor(totalSeconds / 60);
         
         if (existing && existing.length > 0) {
-            // Update jika wujud
             await supabase.from('time_entries').update({
                 duration_seconds: totalSeconds,
                 total_minutes: totalMinutes
             }).eq('id', existing[0].id);
         } else {
-            // Insert baru jika tiada
             await supabase.from('time_entries').insert([{
                 employee_id: currentEmployeeId,
                 project_id: pid,
                 task_id: tid,
                 work_date: dateStr,
-                start_time: `${dateStr}T09:00:00`, // mock masa mula
+                start_time: `${dateStr}T09:00:00`, 
                 duration_seconds: totalSeconds,
                 total_minutes: totalMinutes,
                 status: 'STOPPED',
