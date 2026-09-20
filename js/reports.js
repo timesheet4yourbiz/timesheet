@@ -253,7 +253,6 @@ async function fetchAndProcessSummaryData() {
         .select(`
             id,
             duration_seconds,
-            billable,
             employee_id,
             project_id,
             task_id,
@@ -291,11 +290,8 @@ async function fetchAndProcessSummaryData() {
     data.forEach(entry => {
         const sec = entry.duration_seconds || 0;
         totalSec += sec;
-        if (entry.billable) {
-            billableSec += sec;
-        } else {
-            nonBillableSec += sec;
-        }
+        // Memandangkan lajur billable tiada dalam DB, anggap semua sebagai Non-Billable (atau ubah mengikut keperluan)
+        nonBillableSec += sec;
         if (entry.employee_id) uniqueEmployees.add(entry.employee_id);
     });
 
@@ -319,8 +315,7 @@ async function fetchAndProcessSummaryData() {
 
         const sec = entry.duration_seconds || 0;
         groupedMap[groupKey].totalSec += sec;
-        if (entry.billable) groupedMap[groupKey].billableSec += sec;
-        else groupedMap[groupKey].nonBillableSec += sec;
+        groupedMap[groupKey].nonBillableSec += sec;
         groupedMap[groupKey].count += 1;
     });
 
