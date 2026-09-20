@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (logoutBtn) logoutBtn.addEventListener('click', () => supabase.auth.signOut().then(() => window.location.href = '../pages/login.html'));
 
     let currentEmployeeId = null;
-    let currentDate = new Date(); // Bermula dengan hari ini
+    let currentDate = new Date(); 
 
     await initEmployee();
     
@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(tb) tb.innerHTML = `<tr><td colspan="10" style="padding:20px; text-align:center; color:red;">Akaun e-mel anda (${session.user.email}) tiada dalam sistem Team.</td></tr>`;
     }
 
-    // Fungsi nav minggu lepas & minggu depan
     document.getElementById('prevWeekBtn').addEventListener('click', () => {
         currentDate.setDate(currentDate.getDate() - 7);
         renderTimesheetHeader();
@@ -44,7 +43,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (data) currentEmployeeId = data.id;
     }
 
-    // Tukar tajuk jadual ikut tarikh minggu semasa
     function renderTimesheetHeader() {
         const { start, end, days } = getWeekRange(currentDate);
         const dateRangeEl = document.getElementById('weekDateRange');
@@ -55,22 +53,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         const theadRow = document.getElementById('timesheetHeadRow');
         if (!theadRow) return;
 
-        let thHtml = `<th style="padding: 12px 20px; text-align: left; font-weight: 500; width: 35%;">Projects & Tasks</th>`;
+        // Styling Header menyerupai gambar (Latar abu-abu terang)
+        theadRow.style.background = '#edf2f7';
+        theadRow.style.color = '#718096';
+        theadRow.style.fontSize = '0.85rem';
+        theadRow.style.borderBottom = '1px solid #e2e8f0';
+
+        let thHtml = `<th style="padding: 12px 20px; text-align: left; font-weight: 500; width: 35%;">Projects</th>`;
         days.forEach(d => {
             const label = d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
-            thHtml += `<th style="padding: 12px 10px; font-weight: 500;">${label}</th>`;
+            thHtml += `<th style="padding: 12px 10px; font-weight: 500; text-align: center;">${label}</th>`;
         });
-        thHtml += `<th style="padding: 12px 10px; font-weight: 500;">Total:</th>`;
+        thHtml += `<th style="padding: 12px 10px; font-weight: 500; text-align: center;">Total:</th>`;
         thHtml += `<th style="padding: 12px 15px; width: 40px;"></th>`;
         
         theadRow.innerHTML = thHtml;
     }
 
-    // Dapatkan tarikh Isnin - Ahad berdasarkan tarikh semasa
     function getWeekRange(dateObj) {
         const curr = new Date(dateObj);
-        const day = curr.getDay(); // 0 = Ahad, 1 = Isnin
-        const diff = curr.getDate() - day + (day === 0 ? -6 : 1); // Paksa mula hari Isnin
+        const day = curr.getDay(); 
+        const diff = curr.getDate() - day + (day === 0 ? -6 : 1); 
         
         const start = new Date(curr.setDate(diff));
         start.setHours(0,0,0,0);
@@ -96,12 +99,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { start, end, days } = getWeekRange(currentDate);
         const startIso = start.toISOString().split('T')[0];
         
-        // Cipta tarikh akhir dengan masa 23:59:59 untuk pastikan ia merangkumi Ahad
         const endFull = new Date(end);
         endFull.setHours(23, 59, 59, 999);
         const endIso = endFull.toISOString(); 
 
-        // Tarik rekod dari Time Tracker
         const { data, error } = await supabase
             .from('time_entries')
             .select(`*, project:projects!fk_time_entries_project(project_name), task:tasks!fk_time_entries_task(task_name)`)
@@ -115,7 +116,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Kumpulkan data ikut gabungan Projek dan Task
         const matrix = {};
         
         data.forEach(entry => {
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const key = `${pId}_${tId}`;
             
             const pName = entry.project ? entry.project.project_name : 'No Project';
-            const tName = entry.task ? entry.task.task_name : 'No Task';
+            const tName = entry.task ? entry.task.task_name : '';
             const localDate = new Date(entry.start_time).toLocaleDateString('en-CA');
 
             if (!matrix[key]) {
@@ -137,24 +137,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        if (Object.keys(matrix).length === 0) {
-            tBody.innerHTML = '<tr><td colspan="10" style="padding:30px; text-align:center; color:#94a3b8;">Tiada rekod masa dijumpai untuk minggu ini.</td></tr>';
-            if(tFoot) tFoot.innerHTML = '';
-            return;
-        }
-
         let htmlContent = '';
         let dayTotals = { 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0 };
         let grandTotal = 0;
 
+        // Baris data dinamis
         for (const [key, rowData] of Object.entries(matrix)) {
             let rowTotal = 0;
+            const displayTask = rowData.taskName && rowData.taskName !== 'No Task' ? `<span style="color:#a0aec0; margin-left: 5px;">- ${rowData.taskName}</span>` : '';
             
-            htmlContent += `<tr style="border-bottom: 1px solid var(--border-color);">
-                <td style="padding: 12px 20px; text-align: left; font-size: 0.85rem; color: #334155;">
-                    <span style="display:inline-block; width:6px; height:6px; background:#0ea5e9; border-radius:50%; margin-right:8px;"></span>
-                    <strong style="color: #0ea5e9;">${rowData.projectName.toUpperCase()}</strong> <br>
-                    <span style="color: #64748b; margin-left: 14px;">${rowData.taskName}</span>
+            htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
+                <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem; color: #4a5568;">
+                    <span style="display:inline-block; width:6px; height:6px; background:#8b5cf6; border-radius:50%; margin-right:8px;"></span>
+                    ${rowData.projectName.toUpperCase()} ${displayTask}
                 </td>`;
             
             days.forEach((d, index) => {
@@ -164,34 +159,52 @@ document.addEventListener('DOMContentLoaded', async () => {
                 dayTotals[index] += seconds;
                 
                 const valStr = seconds > 0 ? formatHMS(seconds) : '';
-                htmlContent += `<td><input type="text" value="${valStr}" readonly style="width: 50px; padding: 6px; border: 1px solid transparent; background: transparent; text-align: center; font-size: 0.85rem; color: #475569; outline: none;"></td>`;
+                htmlContent += `<td style="text-align: center;">
+                                    <input type="text" value="${valStr}" readonly style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; font-size: 0.85rem; color: #475569; outline: none; background: white;">
+                                </td>`;
             });
 
             grandTotal += rowTotal;
-            htmlContent += `<td style="font-weight: 600; color: #475569; font-size: 0.85rem;">${formatHMS(rowTotal)}</td>
-                            <td style="color: #cbd5e1; cursor: pointer; font-size: 1.1rem;">⋮</td>
+            htmlContent += `<td style="font-weight: 500; color: #718096; font-size: 0.9rem; text-align: center; border-left: 1px dotted #e2e8f0;">${formatHMS(rowTotal)}</td>
+                            <td style="color: #a0aec0; cursor: pointer; font-size: 1.2rem; text-align: center; font-weight: 300;">✕</td>
                         </tr>`;
         }
         
+        // Tambahkan baris statis "Select project" di bagian paling bawah
+        htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
+            <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem;">
+                <span style="color: #3182ce; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.2rem;">⊕</span> Select project
+                </span>
+            </td>`;
+        for(let i=0; i<7; i++) {
+            htmlContent += `<td style="text-align: center;">
+                                <input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; background: white;" disabled>
+                            </td>`;
+        }
+        htmlContent += `<td style="font-weight: 500; color: #718096; font-size: 0.9rem; text-align: center; border-left: 1px dotted #e2e8f0;">0:00</td>
+                        <td style="color: #a0aec0; cursor: pointer; font-size: 1.2rem; text-align: center; font-weight: 300;">✕</td>
+                    </tr>`;
+
         tBody.innerHTML = htmlContent;
 
         if (tFoot) {
-            let footHtml = `<tr style="background: #f8fafc; font-weight: 600; color: #475569; font-size: 0.9rem;">
+            let footHtml = `<tr style="background: #edf2f7; font-weight: 500; color: #718096; font-size: 0.9rem; border-top: 1px solid #e2e8f0;">
                                 <td style="padding: 15px 20px; text-align: left;">Total:</td>`;
             
             for (let i = 0; i < 7; i++) {
-                footHtml += `<td style="padding: 15px 10px;">${dayTotals[i] > 0 ? formatHMS(dayTotals[i]) : '0:00'}</td>`;
+                footHtml += `<td style="padding: 15px 10px; text-align: center;">${dayTotals[i] > 0 ? formatHMS(dayTotals[i]) : '0:00'}</td>`;
             }
             
-            footHtml += `<td style="padding: 15px 10px; color: #0f172a;">${formatHMS(grandTotal)}</td><td></td></tr>`;
+            footHtml += `<td style="padding: 15px 10px; text-align: center; color: #4a5568;">${formatHMS(grandTotal)}</td><td></td></tr>`;
             tFoot.innerHTML = footHtml;
         }
     }
 
     function formatHMS(totalSeconds) {
+        if (totalSeconds === 0) return '0:00';
         const h = Math.floor(totalSeconds / 3600);
         const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-        if (h === 0 && m === '00') return '';
         return `${h}:${m}`;
     }
 });
