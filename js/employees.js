@@ -36,7 +36,7 @@ function setupNavigation() {
                         <p>Bahagian ini dijadualkan untuk fasa seterusnya.</p>
                     </div>`;
             } else {
-                window.location.reload(); // Quick reset untuk demo fasa ini
+                window.location.reload(); 
             }
         });
     });
@@ -85,13 +85,13 @@ async function fetchMembers() {
     const tbody = document.getElementById('membersTableBody');
     tbody.innerHTML = '<tr><td colspan="7" class="loading-overlay">Menyedut data pangkalan data...</td></tr>';
 
-    // Mengambil pekerja berserta nama kumpulan (group) melalui Foreign Key
+    // PENYELESAIAN DI SINI: Tambah !group_id untuk elak kekeliruan relationship
     const { data, error } = await supabase
         .from('employees')
         .select(`
             id, name, email, employee_no, department, position, 
             system_role, billable_rate, status, avatar_url,
-            groups(group_name)
+            groups!group_id(group_name)
         `)
         .order('name');
 
