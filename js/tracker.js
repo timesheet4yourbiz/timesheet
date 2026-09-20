@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const taskDescInput = document.getElementById('taskDescInput');
     const projectSelect = document.getElementById('projectSelect'); 
     const taskSelect = document.getElementById('taskSelect'); 
-    const tagSelect = document.getElementById('tagSelect'); // Wayar Tag baru
+    const tagSelect = document.getElementById('tagSelect');
     const timerDisplay = document.getElementById('timerDisplay');
     const timerBtn = document.getElementById('timerBtn');
     const entriesContainer = document.getElementById('entriesContainer');
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await initEmployee();
     await loadProjects();
-    await loadTags(); // Tarik senarai Tag
+    await loadTags();
     
     if (currentEmployeeId) {
         await checkActiveTimer();
@@ -37,7 +37,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(entriesContainer) entriesContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: #ef4444; font-weight:bold;">Akaun e-mel anda (${session.user.email}) belum didaftarkan di modul Team. Sistem tidak dapat merekod masa.</div>`;
     }
 
-    // FUNGSI DINAMIK: Tarik Task bila Project ditukar
     if (projectSelect && taskSelect) {
         projectSelect.addEventListener('change', async (e) => {
             const pid = e.target.value;
@@ -64,10 +63,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-
-    // ==========================================
-    // FUNGSI PEMASA (TIMER LOGIC)
-    // ==========================================
 
     if(timerBtn) {
         timerBtn.addEventListener('click', async () => {
@@ -226,7 +221,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         entriesContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Loading entries...</div>';
 
-        // Tambah table tag pada fungsi Select
         const { data, error } = await supabase
             .from('time_entries')
             .select(`
@@ -274,11 +268,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     </div>
                     
-                    <!-- Tajuk Column Dinamik -->
+                    <!-- Tajuk Column Dinamik (Ditambah Lajur Nota) -->
                     <div style="display:flex; padding: 6px 20px; background: #f1f5f9; font-size: 0.7rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; border-bottom: 1px solid var(--border-color);">
                         <div style="flex: 1;">Description</div>
                         <div style="width: 250px;">Project & Task</div>
                         <div style="width: 120px;">Tag</div>
+                        <div style="width: 40px; text-align: center;">📝</div>
                         <div style="width: 140px; text-align: right;">Time</div>
                         <div style="width: 50px; text-align: right;">Duration</div>
                         <div style="width: 65px;"></div>
@@ -300,6 +295,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 const displayProjTask = tName ? `${pName} / ${tName}` : pName;
                 const descValue = entry.description ? entry.description : '';
+                
+                // Set warna ikon bergantung kepada kewujudan nota
+                const noteText = entry.notes || '';
+                const noteIconColor = noteText ? '#0ea5e9' : '#cbd5e1';
 
                 htmlContent += `
                         <div style="display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border-color);">
@@ -311,9 +310,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${displayProjTask}</span>
                             </div>
                             
-                            <!-- Paparan Nama Tag -->
                             <div style="width: 120px; color: #64748b; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
                                 ${tagName ? `🏷️ <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${tagName}</span>` : '-'}
+                            </div>
+                            
+                            <!-- Ikon Nota Boleh Klik -->
+                            <div style="width: 40px; text-align: center;">
+                                <span class="note-entry-btn" data-id="${entry.id}" data-note="${noteText}" style="cursor: pointer; font-size: 1.1rem; color: ${noteIconColor};" title="${noteText ? noteText : 'Add note'}">📝</span>
                             </div>
                             
                             <div style="width: 140px; text-align: right; color: #64748b; font-size: 0.85rem;">
@@ -348,11 +351,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             ${htmlContent}
         `;
 
+        // Fungsi Padam Rekod
         document.querySelectorAll('.del-entry-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 if(confirm('Padam rekod masa ini?')) {
                     await supabase.from('time_entries').delete().eq('id', e.target.getAttribute('data-id'));
                     loadRecentEntries();
+                }
+            });
+        });
+
+        // Fungsi Kemas Kini Nota
+        document.querySelectorAll('.note-entry-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const entryId = e.currentTarget.getAttribute('data-id');
+                const currentNote = e.currentTarget.getAttribute('data-note');
+                
+                const newNote = prompt("Masukkan/Edit nota untuk rekod masa ini:", currentNote);
+                
+                // Jika user tekan OK (bukannya butang Cancel)
+                if (newNote !== null) {
+                    const { error } = await supabase.from('time_entries').update({ notes: newNote.trim() }).eq('id', entryId);
+                    if (error) {
+                        alert("Gagal simpan nota: " + error.message);
+                    } else {
+                        loadRecentEntries(); // Refresh jadual supaya ikon bertukar warna
+                    }
                 }
             });
         });
