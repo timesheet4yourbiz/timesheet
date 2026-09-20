@@ -8,51 +8,38 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { margin: 0; background: #f4f7f6; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; color: #334155; }
-        
         .main-content { position: absolute; top: 0; left: 250px; right: 0; padding: 24px 32px; min-height: 100vh; box-sizing: border-box; }
         
-        /* TOP HEADER */
         .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
         .page-title { margin: 0; font-size: 1.5rem; font-weight: 600; color: #0f172a; }
         .header-controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        
-        .control-select, .control-btn { 
-            padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; 
-            color: #475569; background: white; outline: none; cursor: pointer; height: 36px; box-sizing: border-box;
-        }
+        .control-select, .control-btn { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; background: white; outline: none; cursor: pointer; height: 36px; box-sizing: border-box; }
         .control-btn:hover { background: #f8fafc; }
-        .date-nav { display: flex; }
-        .date-nav button { border-radius: 0; padding: 8px 12px; border: 1px solid #cbd5e1; background: white; cursor: pointer; color: #64748b; height: 36px;}
-        .date-nav button:first-child { border-radius: 4px 0 0 4px; border-right: none; }
-        .date-nav button:last-child { border-radius: 0 4px 4px 0; border-left: none; }
-        .date-nav button:hover { background: #f1f5f9; }
-
-        /* KPI SECTION */
+        
         .kpi-section { display: flex; gap: 24px; margin-bottom: 24px; background: white; padding: 16px 24px; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         .kpi-item { flex: 1; border-right: 1px solid #e2e8f0; }
         .kpi-item:last-child { border-right: none; }
         .kpi-label { font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
         .kpi-value { font-size: 1.5rem; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* CHARTS SECTION */
         .chart-card { background: white; border-radius: 6px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         .chart-header { font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; margin-bottom: 16px; margin-top: 0; }
         .main-chart-container { height: 350px; width: 100%; position: relative; }
 
-        /* PROJECT DISTRIBUTION */
         .distribution-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-bottom: 24px; }
         .donut-container { height: 250px; position: relative; display: flex; justify-content: center; align-items: center; }
+        .donut-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
+        .donut-center-val { font-size: 1.2rem; font-weight: 700; color: #0f172a; }
+        .donut-center-lbl { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; }
         
-        /* RANKING LIST */
         .ranking-list { max-height: 250px; overflow-y: auto; padding-right: 10px; }
-        .ranking-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; }
+        .ranking-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding: 12px 0; border-bottom: 1px dashed #e2e8f0; }
         .ranking-item:last-child { border-bottom: none; }
-        .r-name { flex: 2; color: #334155; font-weight: 500; display: flex; align-items: center; gap: 8px; }
-        .r-dur { flex: 1; text-align: right; color: #64748b; font-family: monospace; }
-        .r-perc { width: 50px; text-align: right; color: #94a3b8; font-size: 0.75rem; }
-        .color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .r-name { flex: 2; color: #334155; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .r-dur { flex: 1; text-align: right; color: #64748b; font-family: monospace; font-size: 0.9rem;}
+        .r-perc { width: 60px; text-align: right; color: #94a3b8; font-size: 0.8rem; }
+        .color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
 
-        /* TEAM ACTIVITIES */
         .table-container { width: 100%; overflow-x: auto; }
         .team-table { width: 100%; border-collapse: collapse; text-align: left; }
         .team-table th { font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; padding: 12px 0; border-bottom: 1px solid #e2e8f0; }
@@ -66,9 +53,11 @@
         .act-title { font-weight: 500; color: #334155; margin-bottom: 4px; }
         .act-proj { color: #64748b; font-size: 0.8rem; }
         
-        .prog-bar-bg { width: 100%; max-width: 200px; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; margin-top: 6px; }
-        .prog-bar-fill { height: 100%; background: #10b981; border-radius: 4px; }
-        .zero-hours { color: #ef4444; font-weight: 600; }
+        .prog-bar-bg { width: 100%; max-width: 200px; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; margin-top: 6px; display: flex; }
+        .prog-bar-segment { height: 100%; }
+        
+        .btn-chase { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-chase:hover { background: #fecaca; }
     </style>
 </head>
 <body>
@@ -81,7 +70,6 @@
             <div class="header-controls">
                 <select id="filterProject" class="control-select"><option value="all">All Projects</option></select>
                 <select id="filterTeam" class="control-select"><option value="all">All Teams</option></select>
-                
                 <select id="filterDateRange" class="control-select">
                     <option value="today">Today</option>
                     <option value="this_week" selected>This week</option>
@@ -89,11 +77,6 @@
                     <option value="this_month">This month</option>
                     <option value="this_year">This year</option>
                 </select>
-                
-                <div class="date-nav">
-                    <button id="btnPrevDate">&lt;</button>
-                    <button id="btnNextDate">&gt;</button>
-                </div>
             </div>
         </div>
 
@@ -101,7 +84,7 @@
         <div class="kpi-section">
             <div class="kpi-item">
                 <div class="kpi-label">Total Time</div>
-                <div class="kpi-value" id="kpiTotalTime">Memuatkan...</div>
+                <div class="kpi-value" id="kpiTotalTime">--:--</div>
             </div>
             <div class="kpi-item">
                 <div class="kpi-label">Top Project</div>
@@ -117,8 +100,7 @@
         <div class="chart-card">
             <h3 class="chart-header">Time by Day</h3>
             <div class="main-chart-container">
-                <!-- Ruang untuk Chart.js Stacked Bar -->
-                <div style="display:flex; justify-content:center; align-items:center; height:100%; color:#94a3b8;">Sedia untuk integrasi carta (Fasa seterusnya)</div>
+                <canvas id="stackedBarChart"></canvas>
             </div>
         </div>
 
@@ -127,13 +109,17 @@
             <div class="chart-card" style="margin-bottom:0;">
                 <h3 class="chart-header">Project Distribution</h3>
                 <div class="donut-container">
-                    <div style="color:#94a3b8;">Doughnut Chart (Fasa seterusnya)</div>
+                    <canvas id="donutChart"></canvas>
+                    <div class="donut-center-text">
+                        <div class="donut-center-val" id="donutTotal">--:--</div>
+                        <div class="donut-center-lbl">Total</div>
+                    </div>
                 </div>
             </div>
             <div class="chart-card" style="margin-bottom:0;">
                 <h3 class="chart-header">Project Ranking</h3>
                 <div class="ranking-list" id="projectRankingList">
-                    <div style="color:#94a3b8; text-align:center; padding: 20px;">Memuatkan kedudukan projek...</div>
+                    <div style="color:#94a3b8; text-align:center; padding: 20px;">Memuatkan...</div>
                 </div>
             </div>
         </div>
@@ -142,15 +128,14 @@
         <div class="chart-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
                 <h3 class="chart-header" style="margin:0;">Team Activities</h3>
-                <input type="text" id="searchTeam" class="control-select" placeholder="Search team member..." style="width:200px;">
             </div>
             <div class="table-container">
                 <table class="team-table">
                     <thead>
                         <tr>
-                            <th style="width:35%;">Team Member</th>
+                            <th style="width:30%;">Team Member</th>
                             <th style="width:40%;">Latest Activity</th>
-                            <th style="width:25%;">Total Tracked</th>
+                            <th style="width:30%;">Total Tracked</th>
                         </tr>
                     </thead>
                     <tbody id="teamActivitiesBody">
@@ -159,7 +144,6 @@
                 </table>
             </div>
         </div>
-
     </div>
     
     <script type="module" src="../js/dashboard.js"></script>
