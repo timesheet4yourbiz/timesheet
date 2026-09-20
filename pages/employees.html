@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,13 +12,11 @@
         .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .page-title { margin: 0; font-size: 1.5rem; font-weight: 600; color: #0f172a; }
         
-        /* Submenu Navigation Bar */
         .team-nav { display: flex; gap: 8px; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px; padding-bottom: 0; }
         .nav-item { padding: 8px 16px; font-size: 0.85rem; font-weight: 500; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; margin-bottom: -1px; text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px;}
         .nav-item:hover { color: #0ea5e9; }
         .nav-item.active { color: #0ea5e9; border-bottom-color: #0ea5e9; font-weight: 600; }
 
-        /* Toolbar & Filters */
         .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 16px; }
         .filter-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .control-input, .control-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; background: white; outline: none; height: 36px; box-sizing: border-box; }
@@ -27,7 +25,6 @@
         .btn-primary { background: #0ea5e9; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; height: 36px; }
         .btn-primary:hover { background: #0284c7; }
 
-        /* Table Card */
         .table-card { background: white; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.02); overflow: hidden; }
         .table-container { width: 100%; overflow-x: auto; }
         .team-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 900px; }
@@ -35,7 +32,6 @@
         .team-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; vertical-align: middle; }
         .team-table tr:hover { background: #f8fafc; }
         
-        /* Member Info Styling */
         .member-info { display: flex; align-items: center; gap: 12px; }
         .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; }
         .m-name { font-weight: 600; color: #334155; }
@@ -49,6 +45,26 @@
         .action-btn:hover { background: #f1f5f9; color: #334155; }
         
         .loading-overlay, .empty-state { text-align: center; padding: 40px; color: #94a3b8; font-size: 0.9rem; }
+
+        /* MODAL STYLES */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 1000; justify-content: flex-end; }
+        .modal-content { background: white; width: 450px; height: 100%; padding: 32px; box-sizing: border-box; overflow-y: auto; box-shadow: -4px 0 15px rgba(0,0,0,0.1); animation: slideIn 0.3s forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; }
+        .modal-title { font-size: 1.2rem; font-weight: 600; color: #0f172a; margin: 0; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
+        .close-btn:hover { color: #0f172a; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
+        .form-input, .form-select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.9rem; box-sizing: border-box; outline: none; }
+        .form-input:focus, .form-select:focus { border-color: #0ea5e9; }
+        .form-row { display: flex; gap: 16px; }
+        .form-row .form-group { flex: 1; }
+        
+        .btn-save { width: 100%; background: #10b981; color: white; border: none; padding: 12px; border-radius: 4px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .btn-save:hover { background: #059669; }
     </style>
 </head>
 <body>
@@ -60,7 +76,6 @@
             <span id="userEmail" style="color:#64748b; font-size:0.85rem;"></span>
         </div>
 
-        <!-- Navigation Tabs -->
         <div class="team-nav">
             <a class="nav-item active" data-tab="members">Members</a>
             <a class="nav-item" data-tab="groups">Groups</a>
@@ -68,7 +83,6 @@
         </div>
 
         <div id="moduleContent">
-            <!-- Toolbar -->
             <div class="toolbar">
                 <div class="filter-group">
                     <input type="text" id="searchMember" class="control-input" placeholder="Search by name or email...">
@@ -88,7 +102,6 @@
                 <button class="btn-primary" id="btnAddMember">+ ADD NEW MEMBER</button>
             </div>
 
-            <!-- Table Card -->
             <div class="table-card">
                 <div class="table-container">
                     <table class="team-table">
@@ -104,11 +117,83 @@
                             </tr>
                         </thead>
                         <tbody id="membersTableBody">
-                            <tr><td colspan="7" class="loading-overlay">Memuatkan senarai ahli pasukan...</td></tr>
+                            <tr><td colspan="7" class="loading-overlay">Loading team members...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT MEMBER MODAL -->
+    <div class="modal-overlay" id="memberModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Member Profile</h2>
+                <button class="close-btn" id="btnCloseModal">&times;</button>
+            </div>
+            <form id="memberForm">
+                <input type="hidden" id="formMemberId">
+                <div class="form-group">
+                    <label class="form-label">Email (Identifier)</label>
+                    <input type="email" id="formEmail" class="form-input" required disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="formName" class="form-input" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Employee ID</label>
+                        <input type="text" id="formEmpNo" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="text" id="formPhone" class="form-input">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <input type="text" id="formDept" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Position</label>
+                        <input type="text" id="formPosition" class="form-input">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">System Role</label>
+                        <select id="formRole" class="form-select">
+                            <option value="Employee">Employee</option>
+                            <option value="Supervisor">Supervisor</option>
+                            <option value="Manager">Manager</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Group</label>
+                        <select id="formGroup" class="form-select">
+                            <option value="">- No Group -</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Billable Rate (RM/hr)</label>
+                        <input type="number" step="0.01" id="formRate" class="form-input" value="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select id="formStatus" class="form-select">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-save" id="btnSaveMember">Save Profile</button>
+            </form>
         </div>
     </div>
     
