@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (addNewRowBtn) addNewRowBtn.addEventListener('click', togglePopup);
 
         // ==========================================
-        // FUNGSI COPY LAST WEEK YANG DIKEMAS KINI
+        // FUNGSI COPY LAST WEEK (SALIN PROJEK + MASA)
         // ==========================================
         const copyLastWeekBtn = document.getElementById('copyLastWeekBtn');
         if (copyLastWeekBtn) {
@@ -417,18 +417,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const lwDate = new Date(currentDate);
                     lwDate.setDate(lwDate.getDate() - 7);
                     const { start: lwStart, end: lwEnd } = getWeekRange(lwDate);
-                    const { start: cwStart } = getWeekRange(currentDate);
-                    
-                    const cwStartStr = cwStart.toLocaleDateString('en-CA');
+                    const { days: cwDays } = getWeekRange(currentDate);
 
-                    // GUNA START_TIME UNTUK CARIAN SUPAYA SEJAJAR DENGAN DATA TRACKER
                     const lwStartIso = lwStart.toISOString().split('T')[0];
                     const lwEndFull = new Date(lwEnd);
                     lwEndFull.setHours(23, 59, 59, 999);
                     const lwEndIso = lwEndFull.toISOString();
 
+                    // AMBIL SEMUA DATA MINGGU LEPAS
                     const { data: lwData, error } = await supabase.from('time_entries')
-                        .select('project_id, task_id')
+                        .select('*')
                         .eq('employee_id', currentEmployeeId)
                         .eq('status', 'STOPPED')
                         .gte('start_time', lwStartIso)
@@ -443,14 +441,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                         return;
                     }
 
-                    const uniquePairs = new Set();
-                    lwData.forEach(item => uniquePairs.add(`${item.project_id || 'null'}|${item.task_id || 'null'}`));
+                    // KUMPULKAN MASA MENGIKUT PROJEK, TASK, DAN HARI
+                    const matrix = {};
+                    lwData.forEach(entry => {
+                        const pId = entry.project_id || 'null';
+                        const tId = entry.task_id || 'null';
+                        const key = `${pId}_${tId}`;
+                        
+                        // Cari index hari (0 = Isnin, 6 = Ahad)
+                        const entryDate = entry.work_date ? new Date(entry.work_date) : new Date(entry.start_time.split('T')[0]);
+                        let dayIndex = entryDate.getDay() - 1;
+                        if (dayIndex === -1) dayIndex = 6;
 
-                    for (const pair of uniquePairs) {
-                        const [p, t] = pair.split('|');
-                        const pid = p === 'null' ? null : p;
-                        const tid = t === 'null' ? null : t;
-                        await saveTimeEntry(cwStartStr, pid, tid, 0, true);
+                        if (!matrix[key]) {
+                            matrix[key] = { pid: entry.project_id, tid: entry.task_id, dailyData: [0,0,0,0,0,0,0] };
+                        }
+                        matrix[key].dailyData[dayIndex] += (entry.duration_seconds || 0);
+                    });
+
+                    // MASUKKAN DATA KE MINGGU SEMASA
+                    for (const key in matrix) {
+                        const row = matrix[key];
+                        // 1. Wujudkan tapak projek dahulu pada hari Isnin (supaya baris projek keluar)
+                        await saveTimeEntry(cwDays[0].toLocaleDateString('en-CA'), row.pid, row.tid, 0, true);
+                        
+                        // 2. Masukkan masa bagi setiap hari
+                        for (let i = 0; i < 7; i++) {
+                            const sec = row.dailyData[i];
+                            if (sec > 0) {
+                                const targetDateStr = cwDays[i].toLocaleDateString('en-CA');
+                                await saveTimeEntry(targetDateStr, row.pid, row.tid, sec, false);
+                            }
+                        }
                     }
 
                     await loadTimesheetData();
