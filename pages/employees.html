@@ -1,59 +1,117 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ms">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team - WorkTime</title>
-    
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="../css/style.css">
-    
+    <style>
+        body { margin: 0; background: #f4f7f6; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; color: #334155; }
+        .main-content { position: absolute; top: 0; left: 250px; right: 0; padding: 24px 32px; min-height: 100vh; box-sizing: border-box; }
+        
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-title { margin: 0; font-size: 1.5rem; font-weight: 600; color: #0f172a; }
+        
+        /* Submenu Navigation Bar */
+        .team-nav { display: flex; gap: 8px; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px; padding-bottom: 0; }
+        .nav-item { padding: 8px 16px; font-size: 0.85rem; font-weight: 500; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; margin-bottom: -1px; text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px;}
+        .nav-item:hover { color: #0ea5e9; }
+        .nav-item.active { color: #0ea5e9; border-bottom-color: #0ea5e9; font-weight: 600; }
+
+        /* Toolbar & Filters */
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 16px; }
+        .filter-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .control-input, .control-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; background: white; outline: none; height: 36px; box-sizing: border-box; }
+        .control-input { width: 220px; }
+        
+        .btn-primary { background: #0ea5e9; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; height: 36px; }
+        .btn-primary:hover { background: #0284c7; }
+
+        /* Table Card */
+        .table-card { background: white; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.02); overflow: hidden; }
+        .table-container { width: 100%; overflow-x: auto; }
+        .team-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 900px; }
+        .team-table th { font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; padding: 14px 16px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+        .team-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; vertical-align: middle; }
+        .team-table tr:hover { background: #f8fafc; }
+        
+        /* Member Info Styling */
+        .member-info { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; }
+        .m-name { font-weight: 600; color: #334155; }
+        .m-meta { color: #94a3b8; font-size: 0.75rem; margin-top: 2px; }
+        
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-inactive { background: #f1f5f9; color: #64748b; }
+
+        .action-btn { background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 1.2rem; padding: 4px 8px; border-radius: 4px; }
+        .action-btn:hover { background: #f1f5f9; color: #334155; }
+        
+        .loading-overlay, .empty-state { text-align: center; padding: 40px; color: #94a3b8; font-size: 0.9rem; }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <div id="sidebar-container"></div>
-        <!-- Main Content -->
-        <main class="main-content">
-    <header class="topbar">
-        <h3>Team Management</h3>
-        <span id="userEmail" class="user-info">Loading...</span>
-    </header>
+    <div id="sidebar-container"></div>
+    
+    <div class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">Team</h1>
+            <span id="userEmail" style="color:#64748b; font-size:0.85rem;"></span>
+        </div>
 
-    <div class="content-area">
-        <div class="card" style="padding: 1.5rem; background: white; border-radius: 8px;">
-            
-            <!-- Bahagian Kawalan (Carian & Butang Pukal) -->
-            <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <input type="text" id="searchInput" placeholder="🔍 Search email or role..." style="padding: 0.6rem 1rem; border: 1px solid var(--border-color); border-radius: 6px; flex: 1; min-width: 250px;">
-                <div style="display: flex; gap: 0.5rem;">
-                    <button id="bulkApproveBtn" style="background: #10b981; color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 500;">✔ Approve Selected</button>
-                    <button id="bulkDeleteBtn" style="background: #ef4444; color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 500;">✖ Delete Selected</button>
+        <!-- Navigation Tabs -->
+        <div class="team-nav">
+            <a class="nav-item active" data-tab="members">Members</a>
+            <a class="nav-item" data-tab="groups">Groups</a>
+            <a class="nav-item" data-tab="reminders">Reminders</a>
+        </div>
+
+        <div id="moduleContent">
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="filter-group">
+                    <input type="text" id="searchMember" class="control-input" placeholder="Search by name or email...">
+                    <select id="filterRole" class="control-select">
+                        <option value="all">All Roles</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Supervisor">Supervisor</option>
+                        <option value="Employee">Employee</option>
+                    </select>
+                    <select id="filterStatus" class="control-select">
+                        <option value="all">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <button class="btn-primary" id="btnAddMember">+ ADD NEW MEMBER</button>
+            </div>
+
+            <!-- Table Card -->
+            <div class="table-card">
+                <div class="table-container">
+                    <table class="team-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Group</th>
+                                <th>Rate (RM)</th>
+                                <th>Status</th>
+                                <th style="width: 50px; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="membersTableBody">
+                            <tr><td colspan="7" class="loading-overlay">Memuatkan senarai ahli pasukan...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            
-            <!-- Jadual Pekerja -->
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="text-align: left; border-bottom: 1px solid var(--border-color); background: #f8fafc;">
-                        <th style="padding: 0.75rem; width: 40px;"><input type="checkbox" id="selectAllCheckbox"></th>
-                        <th style="padding: 0.75rem;">Email Address</th>
-                        <th style="padding: 0.75rem;">Role</th>
-                        <th style="padding: 0.75rem;">Status</th>
-                        <th style="padding: 0.75rem; text-align: right;">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="employeesTableBody">
-                    <!-- Data ditarik oleh JS -->
-                </tbody>
-            </table>
         </div>
     </div>
-        </main>
-    </div>
-
-    <script type="module" src="../js/employees.js"></script>
+    
+    <script type="module" src="../js/team.js"></script>
 </body>
 </html>
