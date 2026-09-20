@@ -14,35 +14,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) logoutBtn.addEventListener('click', () => supabase.auth.signOut().then(() => window.location.href = '../pages/login.html'));
 
-    console.log("2. Mengenal pasti wayar DOM...");
     const taskDescInput = document.getElementById('taskDescInput');
-    const projectSelect = document.getElementById('projectSelect'); // Wayar baru kita
+    const projectSelect = document.getElementById('projectSelect');
+    const taskSelect = document.getElementById('taskSelect'); // Wayar Task baru
     const timerDisplay = document.getElementById('timerDisplay');
     const timerBtn = document.getElementById('timerBtn');
     const entriesContainer = document.getElementById('entriesContainer');
-
-    if (!projectSelect) console.error("Ralat: Dropdown 'projectSelect' tidak wujud dalam HTML.");
 
     let currentEmployeeId = null;
     let activeEntryId = null;
     let timerInterval = null;
     let startTime = null;
 
-    console.log("3. Menarik data Pekerja & Projek...");
     await initEmployee();
     await loadProjects();
     
-    // Pastikan ID pekerja wujud sebelum tarik rekod
     if (currentEmployeeId) {
         await checkActiveTimer();
         await loadRecentEntries();
     } else {
-        if(entriesContainer) entriesContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: #ef4444; font-weight:bold;">Akaun e-mel anda (${session.user.email}) belum didaftarkan di modul Team (Jadual Employees). Sistem tidak dapat merekod masa.</div>`;
+        if(entriesContainer) entriesContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: #ef4444; font-weight:bold;">Akaun e-mel anda (${session.user.email}) belum didaftarkan di modul Team. Sistem tidak dapat merekod masa.</div>`;
     }
 
-    // ==========================================
-    // FUNGSI PEMASA (TIMER LOGIC)
-    // ==========================================
+    // Fungsi dinamik: Tarik Task bila Project ditukar
+    if (projectSelect && taskSelect) {
+        projectSelect.addEventListener('change', async (e) => {
+            const pid = e.target.value;
+            if (!pid) {
+                taskSelect.style.display = 'none';
+                taskSelect.innerHTML = '<option value="">Select Task</option>';
+                return;
+            }
+            
+            const { data } = await supabase.from('tasks').select('id, task_name').eq('project_id', pid);
+            if (data && data.length > 0) {
+                taskSelect.style.display = 'block';
+                taskSelect.innerHTML = '<option value="">Select Task</option>' + data.map(t => `<option value="${t.id}">${t.task_name}</option>`).join('');
+            } else {
+                taskSelect.style.display = 'none';
+                taskSelect.innerHTML = '<option value="">Select Task</option>';
+            }
+        });
+    }
 
     if(timerBtn) {
         timerBtn.addEventListener('click', async () => {
@@ -57,14 +70,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function initEmployee() {
-        const { data, error } = await supabase.from('employees').select('id').eq('email', session.user.email).maybeSingle();
-        if (error) console.error("Ralat check pekerja:", error);
+        const { data } = await supabase.from('employees').select('id').eq('email', session.user.email).maybeSingle();
         if (data) currentEmployeeId = data.id;
     }
 
     async function loadProjects() {
-        const { data, error } = await supabase.from('projects').select('id, project_name').order('project_name', { ascending: true });
-        if (error) console.error("Ralat tarik projek:", error);
+        const { data } = await supabase.from('projects').select('id, project_name').order('project_name', { ascending: true });
         if (data && projectSelect) {
             projectSelect.innerHTML = '<option value="">⊕ Select Project</option>' + 
                 data.map(p => `<option value="${p.id}">${p.project_name}</option>`).join('');
@@ -72,7 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function checkActiveTimer() {
-        const { data, error } = await supabase.from('time_entries').select('*').eq('employee_id', currentEmployeeId).eq('status', 'RUNNING').maybeSingle();
+        const { data } = await supabase.from('time_entries').select('*').eq('employee_id', currentEmployeeId).eq('status', 'RUNNING').maybeSingle();
         if (data) {
             activeEntryId = data.id;
             startTime = new Date(data.start_time).getTime();
@@ -81,8 +92,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 taskDescInput.value = data.description || '';
                 taskDescInput.disabled = true;
             }
-            if (data.project_id && projectSelect) projectSelect.value = data.project_id;
-            if (projectSelect) projectSelect.disabled = true;
+            
+            if (data.project_id && projectSelect) {
+                projectSelect.value = data.project_id;
+                projectSelect.disabled = true;
+                
+                // Tarik task untuk projek yang sedang berjalan ini
+                const tasksReq = await supabase.from('tasks').select('id, task_name').eq('project_id', data.project_id);
+                if (tasksReq.data && tasksReq.data.length > 0 && taskSelect) {
+                    taskSelect.style.display = 'block';
+                    taskSelect.innerHTML = '<option value="">Select Task</option>' + tasksReq.data.map(t => `<option value="${t.id}">${t.task_name}</option>`).join('');
+                    if (data.task_id) taskSelect.value = data.task_id;
+                }
+            }
+            if(taskSelect) taskSelect.disabled = true;
             
             setButtonState('STOP');
             startClock();
@@ -90,9 +113,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function startTimer() {
-        if (!currentEmployeeId) return alert("Ralat: ID Pekerja anda tidak dijumpai dalam pangkalan data.");
+        if (!currentEmployeeId) return alert("Ralat: ID Pekerja anda tidak dijumpai.");
         
         const projectId = projectSelect ? projectSelect.value : null;
+        const taskId = (taskSelect && taskSelect.style.display !== 'none') ? taskSelect.value : null;
         const description = taskDescInput ? taskDescInput.value.trim() : '';
         
         const payload = {
@@ -105,6 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         if (projectId) payload.project_id = projectId;
+        if (taskId) payload.task_id = taskId;
 
         const { data, error } = await supabase.from('time_entries').insert([payload]).select().single();
 
@@ -118,6 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if(taskDescInput) taskDescInput.disabled = true;
         if(projectSelect) projectSelect.disabled = true;
+        if(taskSelect) taskSelect.disabled = true;
         
         setButtonState('STOP');
         startClock();
@@ -145,6 +171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if(taskDescInput) { taskDescInput.disabled = false; taskDescInput.value = ''; }
         if(projectSelect) { projectSelect.disabled = false; projectSelect.value = ''; }
+        if(taskSelect) { taskSelect.disabled = false; taskSelect.value = ''; taskSelect.style.display = 'none'; }
         
         setButtonState('START');
         await loadRecentEntries();
@@ -153,7 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function setButtonState(state) {
         if(!timerBtn) return;
         if (state === 'START') {
-            timerBtn.textContent = 'ADD'; // Atau START
+            timerBtn.textContent = 'START';
             timerBtn.style.backgroundColor = '#0ea5e9';
         } else {
             timerBtn.textContent = 'STOP';
@@ -174,7 +201,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==========================================
-    // FUNGSI PAPARAN REKOD (GROUP BY DATE)
+    // FUNGSI PAPARAN REKOD
     // ==========================================
 
     async function loadRecentEntries() {
@@ -182,15 +209,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         entriesContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Loading entries...</div>';
 
-const { data, error } = await supabase
-    .from('time_entries')
-    .select(`
-        *,
-        project:projects!fk_time_entries_project(project_name)
-    `)
-    .eq('employee_id', currentEmployeeId)
-    .eq('status', 'STOPPED')
-    .order('start_time', { ascending: false });
+        // Tarik rekod masa bersama data project dan task
+        const { data, error } = await supabase
+            .from('time_entries')
+            .select(`
+                *,
+                project:projects(project_name),
+                task:tasks(task_name)
+            `)
+            .eq('employee_id', currentEmployeeId)
+            .eq('status', 'STOPPED')
+            .order('start_time', { ascending: false });
 
         if (error) {
             console.error("Load Entries Error:", error);
@@ -239,15 +268,20 @@ const { data, error } = await supabase
                 const h = Math.floor((entry.duration_seconds || 0) / 3600);
                 const m = String(Math.floor(((entry.duration_seconds || 0) % 3600) / 60)).padStart(2, '0');
                 const s = String((entry.duration_seconds || 0) % 60).padStart(2, '0');
+                
                 const pName = entry.project ? entry.project.project_name : 'No Project';
+                const tName = entry.task ? entry.task.task_name : '';
+                
+                // Susunan paparan nama projek dan nama task
+                const displayProjTask = tName ? `${pName} <span style="color:#94a3b8; font-size:0.8rem; margin-left:5px;">&gt; ${tName}</span>` : pName;
 
                 htmlContent += `
                         <div style="display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border-color);">
                             <div style="flex: 1; color: #475569; font-size: 0.9rem;">${entry.description || '(No description)'}</div>
                             
                             <div style="width: 250px; color: #0ea5e9; font-weight: 500; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
-                                <span style="display:inline-block; width:6px; height:6px; background:#10b981; border-radius:50%;"></span>
-                                ${pName}
+                                <span style="display:inline-block; min-width:6px; height:6px; background:#10b981; border-radius:50%;"></span>
+                                <span>${displayProjTask}</span>
                             </div>
                             
                             <div style="width: 150px; text-align: right; color: #64748b; font-size: 0.85rem;">
