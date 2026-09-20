@@ -226,13 +226,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // FUNGSI PAPARAN REKOD (GROUP BY DATE)
     // ==========================================
 
+    // ==========================================
+    // FUNGSI PAPARAN REKOD (CLOCKIFY LAYOUT)
+    // ==========================================
+
     async function loadRecentEntries() {
         if (!entriesContainer) return;
         
-        entriesContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Loading entries...</div>';
+        entriesContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Memuatkan rekod...</div>';
 
-        // Tarik rekod masa bersama data project dan task
-
+        // Tarik rekod masa bersama data project dan task secara paksa
         const { data, error } = await supabase
             .from('time_entries')
             .select(`
@@ -276,47 +279,70 @@ document.addEventListener('DOMContentLoaded', async () => {
             const dM = String(Math.floor((group.totalSeconds % 3600) / 60)).padStart(2, '0');
 
             htmlContent += `
-                <div style="background: white; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; margin-bottom: 20px;">
+                <div style="background: white; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                    
+                    <!-- Header Hari (Contoh: Fri, Sep 4) -->
                     <div style="background: #f8fafc; padding: 10px 20px; display: flex; justify-content: space-between; font-size: 0.85rem; color: #94a3b8; border-bottom: 1px solid var(--border-color);">
                         <span>${dateString}</span>
-                        <span>Total: <strong style="color: #475569;">${dH}:${dM}</strong></span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span>Total: <strong style="color: #475569;">${dH}:${dM}</strong></span>
+                            <span style="cursor: pointer; font-size: 1rem;" title="Bulk Edit">📝</span>
+                        </div>
                     </div>
+                    
                     <div class="daily-entries-list">
             `;
 
             group.entries.forEach(entry => {
-                const sTime = new Date(entry.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                const eTime = entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-';
+                // Format Masa AM/PM
+                const sTime = new Date(entry.start_time).toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit', hour12: true});
+                const eTime = entry.end_time ? new Date(entry.end_time).toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit', hour12: true}) : '-';
                 
                 const h = Math.floor((entry.duration_seconds || 0) / 3600);
                 const m = String(Math.floor(((entry.duration_seconds || 0) % 3600) / 60)).padStart(2, '0');
-                const s = String((entry.duration_seconds || 0) % 60).padStart(2, '0');
                 
-                const pName = entry.project ? entry.project.project_name : 'No Project';
-                const tName = entry.task ? entry.task.task_name : '';
+                const pName = entry.project ? entry.project.project_name.toUpperCase() : 'NO PROJECT';
+                const tName = entry.task ? entry.task.task_name.toUpperCase() : '';
                 
-                // Format paparan Projek > Task
-                const displayProjTask = tName ? `${pName} <span style="color:#94a3b8; font-size:0.8rem; margin-left:5px;">&gt; ${tName}</span>` : pName;
+                const displayProjTask = tName ? `${pName} / ${tName}` : pName;
+                const descValue = entry.description ? entry.description : '';
 
                 htmlContent += `
+                        <!-- Baris Rekod -->
                         <div style="display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border-color);">
-                            <div style="flex: 1; color: #475569; font-size: 0.9rem;">${entry.description || '(No description)'}</div>
                             
-                            <div style="width: 250px; color: #0ea5e9; font-weight: 500; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
-                                <span style="display:inline-block; min-width:6px; height:6px; background:#10b981; border-radius:50%;"></span>
-                                <span>${displayProjTask}</span>
+                            <!-- Description (Sebagai Input Placeholder) -->
+                            <input type="text" placeholder="Add description" value="${descValue}" readonly style="flex: 1; border: none; outline: none; color: #94a3b8; font-size: 0.9rem; background: transparent;">
+                            
+                            <!-- Dot Color & Nama Projek -->
+                            <div style="width: 300px; color: #0ea5e9; font-weight: 500; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+                                <span style="display:inline-block; min-width:6px; height:6px; background:#0ea5e9; border-radius:50%;"></span>
+                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${displayProjTask}</span>
                             </div>
                             
-                            <div style="width: 150px; text-align: right; color: #64748b; font-size: 0.85rem;">
+                            <!-- Ikon Tag & Billable -->
+                            <div style="display: flex; gap: 15px; align-items: center; color: #cbd5e1; margin-right: 20px; font-size: 1.1rem;">
+                                <span style="cursor: pointer;" title="Tags">🏷️</span>
+                                <span style="cursor: pointer; font-weight: bold;" title="Billable">$</span>
+                            </div>
+                            
+                            <!-- Span Masa -->
+                            <div style="width: 140px; text-align: right; color: #64748b; font-size: 0.85rem;">
                                 ${sTime} - ${eTime}
                             </div>
                             
-                            <div style="width: 80px; font-weight: 600; color: #334155; text-align: right;">
-                                ${h}:${m}:${s}
+                            <!-- Ikon Kalendar -->
+                            <div style="margin: 0 15px; color: #cbd5e1; cursor: pointer; font-size: 1.1rem;">📅</div>
+                            
+                            <!-- Durasi -->
+                            <div style="width: 50px; font-weight: 600; color: #334155; text-align: right; font-size: 0.95rem;">
+                                ${h}:${m}
                             </div>
                             
-                            <div style="margin-left: 20px; display: flex; gap: 15px; color: #cbd5e1;">
-                                <span class="del-entry-btn" data-id="${entry.id}" style="cursor: pointer; font-size: 1.2rem; color: #ef4444;" title="Delete">✕</span>
+                            <!-- Butang Tindakan (Play & Titik Tiga) -->
+                            <div style="margin-left: 20px; display: flex; gap: 15px; color: #cbd5e1; align-items: center;">
+                                <span style="cursor: pointer; font-size: 1.2rem;" title="Continue">▶</span>
+                                <span class="del-entry-btn" data-id="${entry.id}" style="cursor: pointer; font-weight: bold; font-size: 1.2rem;" title="Delete">⋮</span>
                             </div>
                         </div>
                 `;
@@ -329,13 +355,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const grandM = String(Math.floor((grandTotalSeconds % 3600) / 60)).padStart(2, '0');
         
         entriesContainer.innerHTML = `
-            <div style="display: flex; justify-content: space-between; color: #94a3b8; font-size: 0.85rem; padding: 10px 0; margin-bottom: 10px;">
-                <span>Recent Entries</span>
-                <span>Total Tracked: <strong style="color: #475569;">${grandH}:${grandM}</strong></span>
+            <!-- Ringkasan Mingguan -->
+            <div style="display: flex; justify-content: space-between; color: #94a3b8; font-size: 0.85rem; padding: 10px 0; margin-bottom: 5px;">
+                <span>This Week</span>
+                <span>Week total: <strong style="color: #475569; font-size: 1rem;">${grandH}:${grandM}</strong></span>
             </div>
             ${htmlContent}
         `;
 
+        // Jadikan ikon Titik Tiga (⋮) sebagai butang Delete buat masa ini
         document.querySelectorAll('.del-entry-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 if(confirm('Padam rekod masa ini?')) {
