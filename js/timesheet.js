@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentEmployeeId = null;
     let currentDate = new Date(); 
 
-    // BINA KOTAK POP-UP DI LAPISAN PALING ATAS (BODY)
+    // BINA KOTAK POP-UP
     let popup = document.getElementById('projectPickerPopup');
     if (!popup) {
         popup = document.createElement('div');
@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.appendChild(popup);
     }
 
-    // Tutup pop-up jika klik di luar
     document.addEventListener('click', (e) => {
         if (popup.style.display === 'block' && 
             !popup.contains(e.target) && 
@@ -53,6 +52,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(tb) tb.innerHTML = `<tr><td colspan="10" style="padding:20px; text-align:center; color:red;">Akaun e-mel anda tiada dalam sistem Team.</td></tr>`;
     }
 
+    // ==========================================
+    // PENYAMBUNG BUTANG STATIK (Hanya Diikat Sekali)
+    // ==========================================
     document.getElementById('prevWeekBtn').addEventListener('click', () => {
         currentDate.setDate(currentDate.getDate() - 7);
         renderTimesheetHeader();
@@ -64,6 +66,152 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTimesheetHeader();
         loadTimesheetData();
     });
+
+    const togglePopup = async (e) => {
+        if(popup.style.display === 'block') { popup.style.display = 'none'; return; }
+        
+        const rect = e.currentTarget.getBoundingClientRect();
+        popup.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+        popup.style.left = (rect.left + window.scrollX) + 'px';
+        
+        popup.style.display = 'block';
+        popup.innerHTML = '<div style="padding:15px; color:#64748b; font-size:0.85rem; text-align:center;">Memuatkan senarai...</div>';
+        
+        const { data: projs } = await supabase.from('projects').select('*').order('project_name');
+        const { data: tasks } = await supabase.from('tasks').select('*');
+        
+        let pList = `
+            <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
+                <input type="text" placeholder="🔍 Search Project or Client" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:4px; outline:none; box-sizing:border-box; font-size:0.85rem;">
+            </div>
+            <div style="padding: 10px 15px; font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; font-weight: 600; display: flex; justify-content: space-between; background: #f8fafc;">
+                <span>NO CLIENT</span>
+                <span>${projs ? projs.length : 0} Projects ⌄</span>
+            </div>
+            <div style="max-height: 250px; overflow-y: auto;">
+        `;
+        
+        if (projs && projs.length > 0) {
+            projs.forEach(p => {
+                const tList = tasks ? tasks.filter(t => t.project_id === p.id) : [];
+                const hasTasks = tList.length > 0;
+                
+                pList += `
+                    <div class="proj-header" data-id="${p.id}" data-hastasks="${hasTasks}" style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; border-bottom: 1px solid #f1f5f9; cursor:pointer;">
+                        <span style="color:#475569; font-size:0.85rem; display:flex; align-items:center; gap:8px;">
+                            <span style="display:inline-block; width:6px; height:6px; background:#ef4444; border-radius:50%;"></span>
+                            ${p.project_name}
+                        </span>
+                        <span style="color:#0ea5e9; font-size:0.75rem; font-weight:500;">${hasTasks ? tList.length + ' Tasks ⌄' : 'Select'}</span>
+                    </div>
+                `;
+
+                if (hasTasks) {
+                    pList += `<div class="tasks-container" id="tasks-${p.id}" style="display:none; background:#f8fafc; border-bottom: 1px solid #f1f5f9;">`;
+                    pList += `<div class="task-select-item" data-pid="${p.id}" data-tid="" style="padding: 10px 15px 10px 30px; cursor:pointer; color:#0ea5e9; font-weight:600; font-size:0.8rem; border-top:1px dashed #e2e8f0;">(No Task)</div>`;
+                    tList.forEach(t => {
+                        pList += `<div class="task-select-item" data-pid="${p.id}" data-tid="${t.id}" style="padding: 10px 15px 10px 30px; cursor:pointer; color:#64748b; font-size:0.8rem; border-top:1px dashed #e2e8f0;">- ${t.task_name}</div>`;
+                    });
+                    pList += `</div>`;
+                }
+            });
+        } else {
+            pList += `<div style="padding:15px; text-align:center; color:#94a3b8; font-size:0.85rem;">Tiada Projek</div>`;
+        }
+        popup.innerHTML = pList + `</div>`;
+
+        document.querySelectorAll('.proj-header').forEach(item => {
+            item.addEventListener('click', async (e) => {
+                const selPid = e.currentTarget.getAttribute('data-id');
+                const hasTasks = e.currentTarget.getAttribute('data-hastasks') === 'true';
+                
+                if (hasTasks) {
+                    const tc = document.getElementById('tasks-' + selPid);
+                    tc.style.display = tc.style.display === 'none' ? 'block' : 'none';
+                } else {
+                    const { start } = getWeekRange(currentDate); 
+                    await saveTimeEntry(start.toLocaleDateString('en-CA'), selPid, null, 0, true);
+                    popup.style.display = 'none';
+                    loadTimesheetData();
+                }
+            });
+        });
+
+        document.querySelectorAll('.task-select-item').forEach(item => {
+            item.addEventListener('click', async (e) => {
+                const selPid = e.currentTarget.getAttribute('data-pid');
+                const selTid = e.currentTarget.getAttribute('data-tid') || null; 
+                
+                const { start } = getWeekRange(currentDate); 
+                await saveTimeEntry(start.toLocaleDateString('en-CA'), selPid, selTid, 0, true);
+                popup.style.display = 'none';
+                loadTimesheetData();
+            });
+        });
+    };
+
+    const addNewRowBtn = document.getElementById('addNewRowBtn');
+    if (addNewRowBtn) addNewRowBtn.addEventListener('click', togglePopup);
+
+    const copyLastWeekBtn = document.getElementById('copyLastWeekBtn');
+    if (copyLastWeekBtn) {
+        copyLastWeekBtn.addEventListener('click', async () => {
+            const btn = copyLastWeekBtn;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Copying...';
+            btn.disabled = true; // Kunci butang sementara supaya tak terklik banyak kali
+            
+            try {
+                const lwDate = new Date(currentDate);
+                lwDate.setDate(lwDate.getDate() - 7);
+                const { start: lwStart, end: lwEnd } = getWeekRange(lwDate);
+                const { start: cwStart } = getWeekRange(currentDate);
+                
+                const cwStartStr = cwStart.toLocaleDateString('en-CA');
+
+                const { data: lwData, error } = await supabase.from('time_entries')
+                    .select('project_id, task_id')
+                    .eq('employee_id', currentEmployeeId)
+                    .gte('work_date', lwStart.toLocaleDateString('en-CA'))
+                    .lte('work_date', lwEnd.toLocaleDateString('en-CA'));
+
+                if (error) throw error;
+
+                if (!lwData || lwData.length === 0) {
+                    alert(`Tiada rekod masa atau projek pada minggu lepas (${lwStart.toLocaleDateString('en-GB')} - ${lwEnd.toLocaleDateString('en-GB')}) untuk disalin.`);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                const uniquePairs = new Set();
+                lwData.forEach(item => uniquePairs.add(`${item.project_id || 'null'}|${item.task_id || 'null'}`));
+
+                for (const pair of uniquePairs) {
+                    const [p, t] = pair.split('|');
+                    const pid = p === 'null' ? null : p;
+                    const tid = t === 'null' ? null : t;
+                    await saveTimeEntry(cwStartStr, pid, tid, 0, true);
+                }
+
+                await loadTimesheetData();
+            } catch (err) {
+                alert("Gagal menyalin: " + err.message);
+            }
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+
+    const saveTemplateBtn = document.getElementById('saveTemplateBtn');
+    if (saveTemplateBtn) {
+        saveTemplateBtn.addEventListener('click', () => alert("Fungsi 'Save as template' akan datang dalam kemas kini modul seterusnya!"));
+    }
+
+    // ==========================================
+    // FUNGSI JADUAL & PENYAMBUNG DINAMIK
+    // ==========================================
 
     async function initEmployee() {
         const { data } = await supabase.from('employees').select('id').eq('email', session.user.email).maybeSingle();
@@ -199,7 +347,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </tr>`;
         }
         
-        // Baris Tambah Projek Baharu
         htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
             <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem;">
                 <span id="openPickerBtn" style="color: #0ea5e9; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
@@ -228,11 +375,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tFoot.innerHTML = footHtml;
         }
 
-        bindEvents();
-    }
-
-    function bindEvents() {
-        // 1. Simpan Masa
+        // BIND EVENTS UNTUK ELEMEN DALAM JADUAL SAHAJA (Dynamic)
         document.querySelectorAll('.time-input').forEach(input => {
             input.addEventListener('change', async (e) => {
                 const el = e.target;
@@ -248,7 +391,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // 2. Padam Baris
         document.querySelectorAll('.del-row-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 if(!confirm("Padam keseluruhan baris masa untuk projek ini pada minggu ini?")) return;
@@ -271,158 +413,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // 3. Pop-up Tambah Baris
         const openPickerBtn = document.getElementById('openPickerBtn');
-        const addNewRowBtn = document.getElementById('addNewRowBtn');
-        
-        const togglePopup = async (e) => {
-            if(popup.style.display === 'block') { popup.style.display = 'none'; return; }
-            
-            const rect = e.currentTarget.getBoundingClientRect();
-            popup.style.top = (rect.bottom + window.scrollY + 5) + 'px';
-            popup.style.left = (rect.left + window.scrollX) + 'px';
-            
-            popup.style.display = 'block';
-            popup.innerHTML = '<div style="padding:15px; color:#64748b; font-size:0.85rem; text-align:center;">Memuatkan senarai...</div>';
-            
-            const { data: projs } = await supabase.from('projects').select('*').order('project_name');
-            const { data: tasks } = await supabase.from('tasks').select('*');
-            
-            let pList = `
-                <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
-                    <input type="text" placeholder="🔍 Search Project or Client" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:4px; outline:none; box-sizing:border-box; font-size:0.85rem;">
-                </div>
-                <div style="padding: 10px 15px; font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; font-weight: 600; display: flex; justify-content: space-between; background: #f8fafc;">
-                    <span>NO CLIENT</span>
-                    <span>${projs ? projs.length : 0} Projects ⌄</span>
-                </div>
-                <div style="max-height: 250px; overflow-y: auto;">
-            `;
-            
-            if (projs && projs.length > 0) {
-                projs.forEach(p => {
-                    const tList = tasks ? tasks.filter(t => t.project_id === p.id) : [];
-                    const hasTasks = tList.length > 0;
-                    
-                    pList += `
-                        <div class="proj-header" data-id="${p.id}" data-hastasks="${hasTasks}" style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; border-bottom: 1px solid #f1f5f9; cursor:pointer;">
-                            <span style="color:#475569; font-size:0.85rem; display:flex; align-items:center; gap:8px;">
-                                <span style="display:inline-block; width:6px; height:6px; background:#ef4444; border-radius:50%;"></span>
-                                ${p.project_name}
-                            </span>
-                            <span style="color:#0ea5e9; font-size:0.75rem; font-weight:500;">${hasTasks ? tList.length + ' Tasks ⌄' : 'Select'}</span>
-                        </div>
-                    `;
-
-                    if (hasTasks) {
-                        pList += `<div class="tasks-container" id="tasks-${p.id}" style="display:none; background:#f8fafc; border-bottom: 1px solid #f1f5f9;">`;
-                        pList += `<div class="task-select-item" data-pid="${p.id}" data-tid="" style="padding: 10px 15px 10px 30px; cursor:pointer; color:#0ea5e9; font-weight:600; font-size:0.8rem; border-top:1px dashed #e2e8f0;">(No Task)</div>`;
-                        tList.forEach(t => {
-                            pList += `<div class="task-select-item" data-pid="${p.id}" data-tid="${t.id}" style="padding: 10px 15px 10px 30px; cursor:pointer; color:#64748b; font-size:0.8rem; border-top:1px dashed #e2e8f0;">- ${t.task_name}</div>`;
-                        });
-                        pList += `</div>`;
-                    }
-                });
-            } else {
-                pList += `<div style="padding:15px; text-align:center; color:#94a3b8; font-size:0.85rem;">Tiada Projek</div>`;
-            }
-            popup.innerHTML = pList + `</div>`;
-
-            document.querySelectorAll('.proj-header').forEach(item => {
-                item.addEventListener('click', async (e) => {
-                    const selPid = e.currentTarget.getAttribute('data-id');
-                    const hasTasks = e.currentTarget.getAttribute('data-hastasks') === 'true';
-                    
-                    if (hasTasks) {
-                        const tc = document.getElementById('tasks-' + selPid);
-                        tc.style.display = tc.style.display === 'none' ? 'block' : 'none';
-                    } else {
-                        const { start } = getWeekRange(currentDate); 
-                        await saveTimeEntry(start.toLocaleDateString('en-CA'), selPid, null, 0, true);
-                        popup.style.display = 'none';
-                        loadTimesheetData();
-                    }
-                });
-            });
-
-            document.querySelectorAll('.task-select-item').forEach(item => {
-                item.addEventListener('click', async (e) => {
-                    const selPid = e.currentTarget.getAttribute('data-pid');
-                    const selTid = e.currentTarget.getAttribute('data-tid') || null; 
-                    
-                    const { start } = getWeekRange(currentDate); 
-                    await saveTimeEntry(start.toLocaleDateString('en-CA'), selPid, selTid, 0, true);
-                    popup.style.display = 'none';
-                    loadTimesheetData();
-                });
-            });
-        };
-
         if (openPickerBtn) openPickerBtn.addEventListener('click', togglePopup);
-        if (addNewRowBtn) addNewRowBtn.addEventListener('click', togglePopup);
-
-        // ==========================================
-        // 4. FUNGSI COPY LAST WEEK
-        // ==========================================
-        const copyLastWeekBtn = document.getElementById('copyLastWeekBtn');
-        if (copyLastWeekBtn) {
-            copyLastWeekBtn.addEventListener('click', async () => {
-                const btn = copyLastWeekBtn;
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '⏳ Copying...';
-                
-                try {
-                    const lwDate = new Date(currentDate);
-                    lwDate.setDate(lwDate.getDate() - 7);
-                    const { start: lwStart, end: lwEnd } = getWeekRange(lwDate);
-                    const { start: cwStart } = getWeekRange(currentDate);
-                    
-                    const cwStartStr = cwStart.toLocaleDateString('en-CA');
-
-                    // Tarik data minggu lepas
-                    const { data: lwData, error } = await supabase.from('time_entries')
-                        .select('project_id, task_id')
-                        .eq('employee_id', currentEmployeeId)
-                        .gte('work_date', lwStart.toLocaleDateString('en-CA'))
-                        .lte('work_date', lwEnd.toLocaleDateString('en-CA'));
-
-                    if (error) throw error;
-
-                    if (!lwData || lwData.length === 0) {
-                        alert(`Tiada rekod masa atau projek pada minggu lepas (${lwStart.toLocaleDateString('en-GB')} - ${lwEnd.toLocaleDateString('en-GB')}) untuk disalin.`);
-                        btn.innerHTML = originalText;
-                        return;
-                    }
-
-                    // Tapis supaya tiada duplikat
-                    const uniquePairs = new Set();
-                    lwData.forEach(item => uniquePairs.add(`${item.project_id || 'null'}|${item.task_id || 'null'}`));
-
-                    // Cipta baris baharu (0 jam) untuk minggu ini
-                    for (const pair of uniquePairs) {
-                        const [p, t] = pair.split('|');
-                        const pid = p === 'null' ? null : p;
-                        const tid = t === 'null' ? null : t;
-                        await saveTimeEntry(cwStartStr, pid, tid, 0, true);
-                    }
-
-                    await loadTimesheetData();
-                } catch (err) {
-                    alert("Gagal menyalin: " + err.message);
-                }
-                
-                btn.innerHTML = originalText;
-            });
-        }
-        // ==========================================
-        // 5. FUNGSI SAVE AS TEMPLATE
-        // ==========================================
-        const saveTemplateBtn = document.getElementById('saveTemplateBtn');
-        if (saveTemplateBtn) {
-            saveTemplateBtn.addEventListener('click', () => {
-                alert("Fungsi 'Save as template' akan datang dalam kemas kini modul seterusnya!");
-            });
-        }
     }
 
     function parseTimeInput(inputVal) {
