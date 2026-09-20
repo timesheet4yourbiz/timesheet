@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (openPickerBtn) openPickerBtn.addEventListener('click', togglePopup);
         };
 
-        // 5. EVENT BINDING STATIK (Diikat sekali sahaja supaya tiada Double-Click Bug)
+        // 5. EVENT BINDING STATIK
         const prevWeekBtn = document.getElementById('prevWeekBtn');
         if (prevWeekBtn) {
             prevWeekBtn.addEventListener('click', () => {
@@ -402,6 +402,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const addNewRowBtn = document.getElementById('addNewRowBtn');
         if (addNewRowBtn) addNewRowBtn.addEventListener('click', togglePopup);
 
+        // ==========================================
+        // FUNGSI COPY LAST WEEK YANG DIKEMAS KINI
+        // ==========================================
         const copyLastWeekBtn = document.getElementById('copyLastWeekBtn');
         if (copyLastWeekBtn) {
             copyLastWeekBtn.addEventListener('click', async () => {
@@ -418,11 +421,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     const cwStartStr = cwStart.toLocaleDateString('en-CA');
 
+                    // GUNA START_TIME UNTUK CARIAN SUPAYA SEJAJAR DENGAN DATA TRACKER
+                    const lwStartIso = lwStart.toISOString().split('T')[0];
+                    const lwEndFull = new Date(lwEnd);
+                    lwEndFull.setHours(23, 59, 59, 999);
+                    const lwEndIso = lwEndFull.toISOString();
+
                     const { data: lwData, error } = await supabase.from('time_entries')
                         .select('project_id, task_id')
                         .eq('employee_id', currentEmployeeId)
-                        .gte('work_date', lwStart.toLocaleDateString('en-CA'))
-                        .lte('work_date', lwEnd.toLocaleDateString('en-CA'));
+                        .eq('status', 'STOPPED')
+                        .gte('start_time', lwStartIso)
+                        .lte('start_time', lwEndIso);
 
                     if (error) throw error;
 
