@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentEmployeeId = null;
     let currentDate = new Date(); 
 
-    // BINA KOTAK POP-UP DI LAPISAN PALING ATAS (BODY)
     let popup = document.getElementById('projectPickerPopup');
     if (!popup) {
         popup = document.createElement('div');
@@ -28,12 +27,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         popup.style.borderRadius = '4px';
         popup.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
         popup.style.width = '320px';
-        popup.style.zIndex = '9999'; // Tinggikan Z-Index supaya duduk paling atas
+        popup.style.zIndex = '9999'; 
         popup.style.textAlign = 'left';
         document.body.appendChild(popup);
     }
 
-    // Tutup pop-up jika klik di luar
     document.addEventListener('click', (e) => {
         if (popup.style.display === 'block' && 
             !popup.contains(e.target) && 
@@ -147,7 +145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         data.forEach(entry => {
             const pId = entry.project_id || 'no_project';
             const tId = entry.task_id || 'no_task';
-            const key = `${pId}_${tId}`; // Asingkan baris menggunakan kombinasi Project + Task
+            const key = `${pId}_${tId}`;
             
             const pName = entry.project ? entry.project.project_name : 'No Project';
             const tName = entry.task ? entry.task.task_name : '';
@@ -199,7 +197,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </tr>`;
         }
         
-        // Baris Tambah Projek Baharu - Buang popup tersembunyi dari dalam table
         htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
             <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem;">
                 <span id="openPickerBtn" style="color: #0ea5e9; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
@@ -269,14 +266,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // BUKA POP-UP PROJECT DAN TASK
         const openPickerBtn = document.getElementById('openPickerBtn');
         const addNewRowBtn = document.getElementById('addNewRowBtn');
         
         const togglePopup = async (e) => {
             if(popup.style.display === 'block') { popup.style.display = 'none'; return; }
             
-            // Posisikan kotak betul-betul di bawah butang yang diklik
             const rect = e.currentTarget.getBoundingClientRect();
             popup.style.top = (rect.bottom + window.scrollY + 5) + 'px';
             popup.style.left = (rect.left + window.scrollX) + 'px';
@@ -303,7 +298,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const tList = tasks ? tasks.filter(t => t.project_id === p.id) : [];
                     const hasTasks = tList.length > 0;
                     
-                    // Baris Induk Projek
                     pList += `
                         <div class="proj-header" data-id="${p.id}" data-hastasks="${hasTasks}" style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; border-bottom: 1px solid #f1f5f9; cursor:pointer;">
                             <span style="color:#475569; font-size:0.85rem; display:flex; align-items:center; gap:8px;">
@@ -314,9 +308,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     `;
 
-                    // Baris Anak Tasks (Boleh diklik secara berasingan)
                     if (hasTasks) {
                         pList += `<div class="tasks-container" id="tasks-${p.id}" style="display:none; background:#f8fafc; border-bottom: 1px solid #f1f5f9;">`;
+                        
+                        // Pilihan (No Task) membolehkan projek utama dipilih sebagai baris berasingan
+                        pList += `<div class="task-select-item" data-pid="${p.id}" data-tid="" style="padding: 10px 15px 10px 30px; cursor:pointer; color:#0ea5e9; font-weight:600; font-size:0.8rem; border-top:1px dashed #e2e8f0;">(No Task)</div>`;
+                        
                         tList.forEach(t => {
                             pList += `<div class="task-select-item" data-pid="${p.id}" data-tid="${t.id}" style="padding: 10px 15px 10px 30px; cursor:pointer; color:#64748b; font-size:0.8rem; border-top:1px dashed #e2e8f0;">- ${t.task_name}</div>`;
                         });
@@ -328,18 +325,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             popup.innerHTML = pList + `</div>`;
 
-            // Logik Klik Projek Utama
             document.querySelectorAll('.proj-header').forEach(item => {
                 item.addEventListener('click', async (e) => {
                     const selPid = e.currentTarget.getAttribute('data-id');
                     const hasTasks = e.currentTarget.getAttribute('data-hastasks') === 'true';
                     
                     if (hasTasks) {
-                        // Kembangkan atau sembunyikan senarai task
                         const tc = document.getElementById('tasks-' + selPid);
                         tc.style.display = tc.style.display === 'none' ? 'block' : 'none';
                     } else {
-                        // Pilih terus projek jika tiada task
                         const { start } = getWeekRange(currentDate); 
                         await saveTimeEntry(start.toLocaleDateString('en-CA'), selPid, null, 0, true);
                         popup.style.display = 'none';
@@ -348,11 +342,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             });
 
-            // Logik Klik Task
             document.querySelectorAll('.task-select-item').forEach(item => {
                 item.addEventListener('click', async (e) => {
                     const selPid = e.currentTarget.getAttribute('data-pid');
-                    const selTid = e.currentTarget.getAttribute('data-tid');
+                    const selTid = e.currentTarget.getAttribute('data-tid') || null; 
                     
                     const { start } = getWeekRange(currentDate); 
                     await saveTimeEntry(start.toLocaleDateString('en-CA'), selPid, selTid, 0, true);
@@ -392,7 +385,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const exists = existing && existing.length > 0;
 
         if (isInit) {
-            // Elakkan rekod terpadam atau ditulis ganti (overwrite) jika projek/task yang sama dipilih semula
             if (exists) return; 
         } else {
             if (totalSeconds === 0) {
