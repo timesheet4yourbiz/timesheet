@@ -368,42 +368,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (copyLastWeekBtn) {
             copyLastWeekBtn.addEventListener('click', async () => {
                 const btn = copyLastWeekBtn;
+                const originalText = btn.innerHTML;
                 btn.innerHTML = '⏳ Copying...';
                 
-                const lwDate = new Date(currentDate);
-                lwDate.setDate(lwDate.getDate() - 7);
-                const { start: lwStart, end: lwEnd } = getWeekRange(lwDate);
-                const { start: cwStart } = getWeekRange(currentDate);
+                try {
+                    const lwDate = new Date(currentDate);
+                    lwDate.setDate(lwDate.getDate() - 7);
+                    const { start: lwStart, end: lwEnd } = getWeekRange(lwDate);
+                    const { start: cwStart } = getWeekRange(currentDate);
+                    
+                    const cwStartStr = cwStart.toLocaleDateString('en-CA');
+
+                    // Tarik data minggu lepas
+                    const { data: lwData, error } = await supabase.from('time_entries')
+                        .select('project_id, task_id')
+                        .eq('employee_id', currentEmployeeId)
+                        .gte('work_date', lwStart.toLocaleDateString('en-CA'))
+                        .lte('work_date', lwEnd.toLocaleDateString('en-CA'));
+
+                    if (error) throw error;
+
+                    if (!lwData || lwData.length === 0) {
+                        alert(`Tiada rekod masa atau projek pada minggu lepas (${lwStart.toLocaleDateString('en-GB')} - ${lwEnd.toLocaleDateString('en-GB')}) untuk disalin.`);
+                        btn.innerHTML = originalText;
+                        return;
+                    }
+
+                    // Tapis supaya tiada duplikat
+                    const uniquePairs = new Set();
+                    lwData.forEach(item => uniquePairs.add(`${item.project_id || 'null'}|${item.task_id || 'null'}`));
+
+                    // Cipta baris baharu (0 jam) untuk minggu ini
+                    for (const pair of uniquePairs) {
+                        const [p, t] = pair.split('|');
+                        const pid = p === 'null' ? null : p;
+                        const tid = t === 'null' ? null : t;
+                        await saveTimeEntry(cwStartStr, pid, tid, 0, true);
+                    }
+
+                    await loadTimesheetData();
+                } catch (err) {
+                    alert("Gagal menyalin: " + err.message);
+                }
                 
-                const cwStartStr = cwStart.toLocaleDateString('en-CA');
-
-                const { data: lwData } = await supabase.from('time_entries')
-                    .select('project_id, task_id')
-                    .eq('employee_id', currentEmployeeId)
-                    .gte('work_date', lwStart.toLocaleDateString('en-CA'))
-                    .lte('work_date', lwEnd.toLocaleDateString('en-CA'));
-
-                if (!lwData || lwData.length === 0) {
-                    alert("Tiada projek pada minggu lepas untuk disalin.");
-                    btn.innerHTML = '📄 Copy last week ▼';
-                    return;
-                }
-
-                const uniquePairs = new Set();
-                lwData.forEach(item => uniquePairs.add(`${item.project_id || 'null'}|${item.task_id || 'null'}`));
-
-                for (const pair of uniquePairs) {
-                    const [p, t] = pair.split('|');
-                    const pid = p === 'null' ? null : p;
-                    const tid = t === 'null' ? null : t;
-                    await saveTimeEntry(cwStartStr, pid, tid, 0, true);
-                }
-
-                loadTimesheetData();
-                btn.innerHTML = '📄 Copy last week ▼';
+                btn.innerHTML = originalText;
             });
         }
-
         // ==========================================
         // 5. FUNGSI SAVE AS TEMPLATE
         // ==========================================
