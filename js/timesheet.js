@@ -16,6 +16,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentEmployeeId = null;
     let currentDate = new Date(); 
 
+    // BINA KOTAK POP-UP DI LAPISAN PALING ATAS (BODY)
+    let popup = document.getElementById('projectPickerPopup');
+    if (!popup) {
+        popup = document.createElement('div');
+        popup.id = 'projectPickerPopup';
+        popup.style.display = 'none';
+        popup.style.position = 'absolute';
+        popup.style.background = 'white';
+        popup.style.border = '1px solid #cbd5e1';
+        popup.style.borderRadius = '4px';
+        popup.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+        popup.style.width = '320px';
+        popup.style.zIndex = '9999'; // Tinggikan Z-Index supaya duduk paling atas
+        popup.style.textAlign = 'left';
+        document.body.appendChild(popup);
+    }
+
+    // Tutup pop-up jika klik di luar
+    document.addEventListener('click', (e) => {
+        if (popup.style.display === 'block' && 
+            !popup.contains(e.target) && 
+            !e.target.closest('#openPickerBtn') && 
+            !e.target.closest('#addNewRowBtn')) {
+            popup.style.display = 'none';
+        }
+    });
+
     await initEmployee();
     
     if (currentEmployeeId) {
@@ -23,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadTimesheetData();
     } else {
         const tb = document.getElementById('timesheetTableBody');
-        if(tb) tb.innerHTML = `<tr><td colspan="10" style="padding:20px; text-align:center; color:red;">Akaun e-mel anda (${session.user.email}) tiada dalam sistem Team.</td></tr>`;
+        if(tb) tb.innerHTML = `<tr><td colspan="10" style="padding:20px; text-align:center; color:red;">Akaun e-mel anda tiada dalam sistem Team.</td></tr>`;
     }
 
     document.getElementById('prevWeekBtn').addEventListener('click', () => {
@@ -120,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         data.forEach(entry => {
             const pId = entry.project_id || 'no_project';
             const tId = entry.task_id || 'no_task';
-            const key = `${pId}_${tId}`;
+            const key = `${pId}_${tId}`; // Asingkan baris menggunakan kombinasi Project + Task
             
             const pName = entry.project ? entry.project.project_name : 'No Project';
             const tName = entry.task ? entry.task.task_name : '';
@@ -172,14 +199,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </tr>`;
         }
         
-        // Baris Tambah Projek Baharu
+        // Baris Tambah Projek Baharu - Buang popup tersembunyi dari dalam table
         htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
-            <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem; position: relative;">
+            <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem;">
                 <span id="openPickerBtn" style="color: #0ea5e9; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 1.2rem;">⊕</span> Select project
                 </span>
-                <div id="projectPickerPopup" style="display: none; position: absolute; top: 40px; left: 20px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); width: 320px; z-index: 50; text-align: left;">
-                </div>
             </td>`;
             
         for(let i=0; i<7; i++) {
@@ -207,7 +232,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function bindEvents() {
-        // 1. Simpan Masa apabila input ditukar
         document.querySelectorAll('.time-input').forEach(input => {
             input.addEventListener('change', async (e) => {
                 const el = e.target;
@@ -223,7 +247,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // 2. Padam Keseluruhan Baris
         document.querySelectorAll('.del-row-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 if(!confirm("Padam keseluruhan baris masa untuk projek ini pada minggu ini?")) return;
@@ -246,13 +269,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // 3. Logik Buka Pop-up Project
+        // BUKA POP-UP PROJECT DAN TASK
         const openPickerBtn = document.getElementById('openPickerBtn');
-        const addNewRowBtn = document.getElementById('addNewRowBtn'); // Butang di bawah sekali
+        const addNewRowBtn = document.getElementById('addNewRowBtn');
         
-        const togglePopup = async () => {
-            const popup = document.getElementById('projectPickerPopup');
+        const togglePopup = async (e) => {
             if(popup.style.display === 'block') { popup.style.display = 'none'; return; }
+            
+            // Posisikan kotak betul-betul di bawah butang yang diklik
+            const rect = e.currentTarget.getBoundingClientRect();
+            popup.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+            popup.style.left = (rect.left + window.scrollX) + 'px';
             
             popup.style.display = 'block';
             popup.innerHTML = '<div style="padding:15px; color:#64748b; font-size:0.85rem; text-align:center;">Memuatkan senarai...</div>';
@@ -274,32 +301,62 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (projs && projs.length > 0) {
                 projs.forEach(p => {
                     const tList = tasks ? tasks.filter(t => t.project_id === p.id) : [];
-                    const taskLabel = tList.length > 0 ? `${tList.length} Tasks ⌄` : 'Create Task ☆';
+                    const hasTasks = tList.length > 0;
                     
+                    // Baris Induk Projek
                     pList += `
-                        <div class="proj-select-item" data-id="${p.id}" style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; border-bottom: 1px solid #f1f5f9; cursor:pointer;">
+                        <div class="proj-header" data-id="${p.id}" data-hastasks="${hasTasks}" style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; border-bottom: 1px solid #f1f5f9; cursor:pointer;">
                             <span style="color:#475569; font-size:0.85rem; display:flex; align-items:center; gap:8px;">
                                 <span style="display:inline-block; width:6px; height:6px; background:#ef4444; border-radius:50%;"></span>
                                 ${p.project_name}
                             </span>
-                            <span style="color:#0ea5e9; font-size:0.75rem; font-weight:500;">${taskLabel}</span>
+                            <span style="color:#0ea5e9; font-size:0.75rem; font-weight:500;">${hasTasks ? tList.length + ' Tasks ⌄' : 'Select'}</span>
                         </div>
                     `;
+
+                    // Baris Anak Tasks (Boleh diklik secara berasingan)
+                    if (hasTasks) {
+                        pList += `<div class="tasks-container" id="tasks-${p.id}" style="display:none; background:#f8fafc; border-bottom: 1px solid #f1f5f9;">`;
+                        tList.forEach(t => {
+                            pList += `<div class="task-select-item" data-pid="${p.id}" data-tid="${t.id}" style="padding: 10px 15px 10px 30px; cursor:pointer; color:#64748b; font-size:0.8rem; border-top:1px dashed #e2e8f0;">- ${t.task_name}</div>`;
+                        });
+                        pList += `</div>`;
+                    }
                 });
             } else {
                 pList += `<div style="padding:15px; text-align:center; color:#94a3b8; font-size:0.85rem;">Tiada Projek</div>`;
             }
             popup.innerHTML = pList + `</div>`;
 
-            // Bina baris baharu (Placeholder 0 saat) apabila projek diklik
-            document.querySelectorAll('.proj-select-item').forEach(item => {
+            // Logik Klik Projek Utama
+            document.querySelectorAll('.proj-header').forEach(item => {
                 item.addEventListener('click', async (e) => {
                     const selPid = e.currentTarget.getAttribute('data-id');
-                    // Guna tarikh hari Isnin minggu tersebut supaya baris masuk di grid yang betul
-                    const { start } = getWeekRange(currentDate); 
+                    const hasTasks = e.currentTarget.getAttribute('data-hastasks') === 'true';
                     
-                    // isInit = true membenarkan 0 saat disimpan tanpa didelete
-                    await saveTimeEntry(start.toLocaleDateString('en-CA'), selPid, null, 0, true);
+                    if (hasTasks) {
+                        // Kembangkan atau sembunyikan senarai task
+                        const tc = document.getElementById('tasks-' + selPid);
+                        tc.style.display = tc.style.display === 'none' ? 'block' : 'none';
+                    } else {
+                        // Pilih terus projek jika tiada task
+                        const { start } = getWeekRange(currentDate); 
+                        await saveTimeEntry(start.toLocaleDateString('en-CA'), selPid, null, 0, true);
+                        popup.style.display = 'none';
+                        loadTimesheetData();
+                    }
+                });
+            });
+
+            // Logik Klik Task
+            document.querySelectorAll('.task-select-item').forEach(item => {
+                item.addEventListener('click', async (e) => {
+                    const selPid = e.currentTarget.getAttribute('data-pid');
+                    const selTid = e.currentTarget.getAttribute('data-tid');
+                    
+                    const { start } = getWeekRange(currentDate); 
+                    await saveTimeEntry(start.toLocaleDateString('en-CA'), selPid, selTid, 0, true);
+                    popup.style.display = 'none';
                     loadTimesheetData();
                 });
             });
@@ -326,25 +383,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         return (hrs * 3600) + (mins * 60);
     }
 
-    // Fungsi menyimpan / delete data ke Supabase
     async function saveTimeEntry(dateStr, pid, tid, totalSeconds, isInit = false) {
-        let query = supabase.from('time_entries').select('id').eq('employee_id', currentEmployeeId).eq('work_date', dateStr);
+        let query = supabase.from('time_entries').select('id, duration_seconds').eq('employee_id', currentEmployeeId).eq('work_date', dateStr);
         if (pid) query = query.eq('project_id', pid); else query = query.is('project_id', null);
         if (tid) query = query.eq('task_id', tid); else query = query.is('task_id', null);
 
         const { data: existing } = await query;
+        const exists = existing && existing.length > 0;
 
-        // Jika letak 0 atau padam teks (bukan sedang tambah baris baru), delete rekod hari tersebut
-        if (totalSeconds === 0 && !isInit) {
-            if (existing && existing.length > 0) {
-                await supabase.from('time_entries').delete().in('id', existing.map(e => e.id));
+        if (isInit) {
+            // Elakkan rekod terpadam atau ditulis ganti (overwrite) jika projek/task yang sama dipilih semula
+            if (exists) return; 
+        } else {
+            if (totalSeconds === 0) {
+                if (exists) await supabase.from('time_entries').delete().in('id', existing.map(e => e.id));
+                return; 
             }
-            return; 
         }
 
         const totalMinutes = Math.floor(totalSeconds / 60);
         
-        if (existing && existing.length > 0) {
+        if (exists) {
             await supabase.from('time_entries').update({
                 duration_seconds: totalSeconds,
                 total_minutes: totalMinutes
