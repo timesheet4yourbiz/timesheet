@@ -1,115 +1,150 @@
 import { supabase } from './supabase.js';
 import { loadSidebar } from './sidebar.js';
 
+let membersData = [];
+
 document.addEventListener('DOMContentLoaded', async () => {
-    loadSidebar();
+    try {
+        loadSidebar();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return window.location.href = '../pages/login.html';
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return window.location.href = '../pages/login.html';
-    
-    document.getElementById('userEmail').textContent = session.user.email;
-    
-    const employeesTableBody = document.getElementById('employeesTableBody');
-    const searchInput = document.getElementById('searchInput');
-    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-    const bulkApproveBtn = document.getElementById('bulkApproveBtn');
-    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+        const userEmailEl = document.getElementById('userEmail');
+        if (userEmailEl) userEmailEl.textContent = session.user.email;
 
-    let allEmployees = []; // Simpan data untuk fungsi carian
-
-    await loadEmployees();
-
-    // --- 1. FUNGSI TARIK DATA & RENDER JADUAL ---
-    async function loadEmployees() {
-        const { data, error } = await supabase.from('employees').select('*').order('created_at', { ascending: false });
-
-        if (error || !data || data.length === 0) {
-            employeesTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 1.5rem;">No employees found.</td></tr>';
-            return;
-        }
-
-        allEmployees = data;
-        renderTable(allEmployees);
-    }
-
-    function renderTable(data) {
-        employeesTableBody.innerHTML = data.map(emp => {
-            const isPending = emp.status === 'PENDING';
-            const statusBadge = isPending 
-                ? '<span style="background:#fef3c7; color:#d97706; padding:0.2rem 0.6rem; border-radius:4px; font-size:0.8rem;">PENDING</span>'
-                : '<span style="background:#ecfdf5; color:#10b981; padding:0.2rem 0.6rem; border-radius:4px; font-size:0.8rem;">ACTIVE</span>';
-
-            return `
-                <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 0.8rem;"><input type="checkbox" class="row-checkbox" value="${emp.id}"></td>
-                    <td style="padding: 0.8rem; font-weight: 500;">${emp.email}</td>
-                    <td style="padding: 0.8rem; color: var(--text-muted);">${emp.role}</td>
-                    <td style="padding: 0.8rem;">${statusBadge}</td>
-                    <td style="padding: 0.8rem; text-align: right;">
-                        ${isPending ? `<button class="approve-btn" data-id="${emp.id}" style="border:none; background:none; color:#3ecf8e; cursor:pointer; margin-right: 1rem; font-weight: bold;">✔ Approve</button>` : ''}
-                        <button class="delete-btn" data-id="${emp.id}" style="border:none; background:none; color:#ef4444; cursor:pointer;">✖ Remove</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-        attachActionListeners();
-    }
-
-    // --- 2. FUNGSI CARIAN (SEARCH) ---
-    searchInput.addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        const filtered = allEmployees.filter(emp => emp.email.toLowerCase().includes(term) || emp.role.toLowerCase().includes(term));
-        renderTable(filtered);
-    });
-
-    // --- 3. FUNGSI SELECT ALL KOTAK SEMAK ---
-    selectAllCheckbox.addEventListener('change', (e) => {
-        const checkboxes = document.querySelectorAll('.row-checkbox');
-        checkboxes.forEach(cb => cb.checked = e.target.checked);
-    });
-
-    // --- 4. FUNGSI PUKAL (BULK ACTIONS) ---
-    function getSelectedIds() {
-        const checkboxes = document.querySelectorAll('.row-checkbox:checked');
-        return Array.from(checkboxes).map(cb => cb.value);
-    }
-
-    bulkApproveBtn.addEventListener('click', async () => {
-        const ids = getSelectedIds();
-        if (ids.length === 0) return alert('Sila tanda (tick) pekerja terlebih dahulu.');
+        bindFilters();
+        setupNavigation();
         
-        await supabase.from('employees').update({ status: 'ACTIVE' }).in('id', ids);
-        selectAllCheckbox.checked = false;
-        loadEmployees();
-    });
+        await fetchMembers();
 
-    bulkDeleteBtn.addEventListener('click', async () => {
-        const ids = getSelectedIds();
-        if (ids.length === 0) return alert('Sila tanda (tick) pekerja terlebih dahulu.');
-        
-        if (confirm(`Padam ${ids.length} pekerja ini secara serentak?`)) {
-            await supabase.from('employees').delete().in('id', ids);
-            selectAllCheckbox.checked = false;
-            loadEmployees();
-        }
-    });
-
-    // --- 5. FUNGSI BUTANG INDIVIDU ---
-    function attachActionListeners() {
-        document.querySelectorAll('.approve-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                await supabase.from('employees').update({ status: 'ACTIVE' }).eq('id', e.target.getAttribute('data-id'));
-                loadEmployees();
-            });
-        });
-
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                if (confirm('Padam pekerja ini?')) {
-                    await supabase.from('employees').delete().eq('id', e.target.getAttribute('data-id'));
-                    loadEmployees();
-                }
-            });
-        });
+    } catch (error) {
+        console.error("Team Module Init Error:", error);
     }
 });
+
+function setupNavigation() {
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            const tab = e.target.getAttribute('data-tab');
+            if(tab !== 'members') {
+                document.getElementById('moduleContent').innerHTML = `
+                    <div class="table-card" style="padding: 40px; text-align: center; color: #64748b;">
+                        <h3>Modul ${tab.toUpperCase()} Akan Datang</h3>
+                        <p>Bahagian ini dijadualkan untuk fasa seterusnya.</p>
+                    </div>`;
+            } else {
+                window.location.reload(); // Quick reset untuk demo fasa ini
+            }
+        });
+    });
+}
+
+function bindFilters() {
+    const searchInput = document.getElementById('searchMember');
+    const roleSelect = document.getElementById('filterRole');
+    const statusSelect = document.getElementById('filterStatus');
+
+    const filterTable = () => {
+        const term = searchInput.value.toLowerCase();
+        const role = roleSelect.value;
+        const status = statusSelect.value;
+
+        const filtered = membersData.filter(m => {
+            const matchName = (m.name || '').toLowerCase().includes(term) || (m.email || '').toLowerCase().includes(term);
+            const matchRole = role === 'all' || m.system_role === role;
+            const matchStatus = status === 'all' || m.status === status;
+            return matchName && matchRole && matchStatus;
+        });
+        renderTable(filtered);
+    };
+
+    if (searchInput) searchInput.addEventListener('keyup', filterTable);
+    if (roleSelect) roleSelect.addEventListener('change', filterTable);
+    if (statusSelect) statusSelect.addEventListener('change', filterTable);
+    
+    const btnAdd = document.getElementById('btnAddMember');
+    if (btnAdd) {
+        btnAdd.addEventListener('click', () => {
+            alert('Modul "Add New Member" akan menyusul pada fasa profil. Buat masa ini, kita fokus memaparkan senarai pekerja.');
+        });
+    }
+}
+
+function getInitials(name) {
+    if(!name) return '?';
+    const parts = name.split(/[\s.@]+/);
+    let init = parts[0].charAt(0).toUpperCase();
+    if(parts.length > 1 && parts[1].length > 0) init += parts[1].charAt(0).toUpperCase();
+    return init;
+}
+
+async function fetchMembers() {
+    const tbody = document.getElementById('membersTableBody');
+    tbody.innerHTML = '<tr><td colspan="7" class="loading-overlay">Menyedut data pangkalan data...</td></tr>';
+
+    // Mengambil pekerja berserta nama kumpulan (group) melalui Foreign Key
+    const { data, error } = await supabase
+        .from('employees')
+        .select(`
+            id, name, email, employee_no, department, position, 
+            system_role, billable_rate, status, avatar_url,
+            groups(group_name)
+        `)
+        .order('name');
+
+    if (error) {
+        console.error("Error fetching members:", error);
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#ef4444;">Gagal memuatkan data. ${error.message}</td></tr>`;
+        return;
+    }
+
+    membersData = data || [];
+    renderTable(membersData);
+}
+
+function renderTable(data) {
+    const tbody = document.getElementById('membersTableBody');
+    tbody.innerHTML = '';
+
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tiada rekod pekerja dijumpai.</td></tr>';
+        return;
+    }
+
+    data.forEach(member => {
+        const init = getInitials(member.name || member.email);
+        const dispName = member.name || 'Tiada Nama';
+        const empNo = member.employee_no ? ` | ID: ${member.employee_no}` : '';
+        const role = member.system_role || 'Employee';
+        const group = member.groups ? member.groups.group_name : '<span style="color:#94a3b8;">-</span>';
+        const rate = member.billable_rate ? parseFloat(member.billable_rate).toFixed(2) : '0.00';
+        
+        const statusClass = member.status === 'Active' ? 'status-active' : 'status-inactive';
+        const statusText = member.status || 'Active';
+
+        tbody.innerHTML += `
+            <tr>
+                <td><input type="checkbox"></td>
+                <td>
+                    <div class="member-info">
+                        <div class="avatar">${init}</div>
+                        <div>
+                            <div class="m-name" style="text-transform: capitalize;">${dispName}</div>
+                            <div class="m-meta">${member.email}${empNo}</div>
+                        </div>
+                    </div>
+                </td>
+                <td><span style="font-weight:500;">${role}</span><br><span style="font-size:0.75rem; color:#64748b;">${member.position || 'No Position'}</span></td>
+                <td>${group}</td>
+                <td>${rate}</td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td style="text-align: center;">
+                    <button class="action-btn" title="More Actions">⋮</button>
+                </td>
+            </tr>
+        `;
+    });
+}
