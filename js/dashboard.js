@@ -12,7 +12,7 @@ let filterState = {
 let chartBar = null;
 let chartDonut = null;
 
-// Palet warna. Fungsi akan beri warna yang sama untuk nama projek yang sama.
+// Sistem warna konsisten untuk Projek
 const colorPalette = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#f43f5e', '#14b8a6', '#84cc16'];
 function getProjectColor(name) {
     let hash = 0;
@@ -95,6 +95,18 @@ function bindFilters() {
         filterState.projectId = e.target.value;
         refreshDashboardData();
     });
+    
+    // Fungsi Search Team Member secara Real-time
+    const searchInput = document.getElementById('searchTeam');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', (e) => {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('#teamActivitiesBody tr').forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+    }
 }
 
 async function loadProjectDropdown() {
@@ -120,23 +132,27 @@ async function refreshDashboardData() {
     const startIso = new Date(`${filterState.startDate}T00:00:00`).toISOString();
     const endIso = new Date(`${filterState.endDate}T23:59:59.999`).toISOString();
 
-    // 1. Sedut data Time Entries
+    // 1. Sedut data Time Entries (Guna alias yang dah disahkan berfungsi)
     let query = supabase.from('time_entries')
-        .select(`duration_seconds, start_time, work_date, status, description, employee_id, project_id, project:projects!fk_time_entries_project(project_name), task:tasks!fk_time_entries_task(task_name)`)
+        .select(`duration_seconds, start_time, work_date, status, description, employee_id, project_id, project:projects!fk_time_entries_project(project_name)`)
         .gte('start_time', startIso).lte('start_time', endIso)
         .order('start_time', { ascending: false });
         
     if (filterState.projectId !== 'all') query = query.eq('project_id', filterState.projectId);
 
-    const { data: entries } = await query;
+    const { data: entries, error } = await query;
+    if (error) {
+        console.error("Query Error:", error);
+        return;
+    }
     
-    // 2. Sedut data Semua Pekerja (Untuk Fungsi Kejar)
-    const { data: employees } = await supabase.from('employees').select('id, email, name');
+    // 2. Sedut data Pekerja (Kebal Ralat: ambil id & email sahaja untuk elak error jika lajur 'name' tiada)
+    const { data: employees } = await supabase.from('employees').select('id, email').catch(() => ({ data: [] }));
 
     processKPI(entries);
     processBarChart(entries);
     processDonutAndRanking(entries);
-    processTeamActivities(entries, employees);
+    processTeamActivities(entries, employees || []);
 }
 
 function processKPI(entries) {
@@ -156,13 +172,14 @@ function processKPI(entries) {
 
     document.getElementById('kpiTotalTime').textContent = formatHMS(totalSec);
     document.getElementById('kpiTopProject').textContent = topP;
-    document.getElementById('donutTotal').textContent = formatHMS(totalSec);
+    
+    const donutTotal = document.getElementById('donutTotal');
+    if (donutTotal) donutTotal.textContent = formatHMS(totalSec);
 }
 
 function processBarChart(entries) {
     const dateArr = getDatesArray(filterState.startDate, filterState.endDate);
     const labels = dateArr.map(d => new Date(d).toLocaleDateString('en-US', {month:'short', day:'numeric'}));
-    
     const projDateMap = {};
     
     (entries || []).forEach(e => {
@@ -190,6 +207,7 @@ function processBarChart(entries) {
     });
 
     const ctx = document.getElementById('stackedBarChart');
+    if (!ctx) return;
     if (chartBar) chartBar.destroy();
     
     chartBar = new Chart(ctx, {
@@ -220,30 +238,30 @@ function processDonutAndRanking(entries) {
 
     const sortedProjs = Object.entries(projMap).sort((a,b) => b[1] - a[1]);
     
-    // Render Ranking List
     const rankCont = document.getElementById('projectRankingList');
-    rankCont.innerHTML = '';
-    
-    if (sortedProjs.length === 0) {
-        rankCont.innerHTML = '<div style="color:#94a3b8; text-align:center; padding: 20px;">Tiada data</div>';
-    } else {
-        sortedProjs.forEach(item => {
-            const pName = item[0]; const sec = item[1];
-            const perc = grandTotal > 0 ? ((sec / grandTotal) * 100).toFixed(1) : 0;
-            const clr = getProjectColor(pName);
-            
-            rankCont.innerHTML += `
-                <div class="ranking-item">
-                    <div class="r-name"><span class="color-dot" style="background:${clr};"></span> ${pName}</div>
-                    <div class="r-dur">${formatHMS(sec)}</div>
-                    <div class="r-perc">${perc}%</div>
-                </div>
-            `;
-        });
+    if (rankCont) {
+        rankCont.innerHTML = '';
+        if (sortedProjs.length === 0) {
+            rankCont.innerHTML = '<div style="color:#94a3b8; text-align:center; padding: 20px;">Tiada data</div>';
+        } else {
+            sortedProjs.forEach(item => {
+                const pName = item[0]; const sec = item[1];
+                const perc = grandTotal > 0 ? ((sec / grandTotal) * 100).toFixed(1) : 0;
+                const clr = getProjectColor(pName);
+                
+                rankCont.innerHTML += `
+                    <div class="ranking-item">
+                        <div class="r-name"><span class="color-dot" style="background:${clr};"></span> ${pName}</div>
+                        <div class="r-dur">${formatHMS(sec)}</div>
+                        <div class="r-perc">${perc}%</div>
+                    </div>
+                `;
+            });
+        }
     }
 
-    // Render Donut
     const ctx = document.getElementById('donutChart');
+    if (!ctx) return;
     if (chartDonut) chartDonut.destroy();
     
     chartDonut = new Chart(ctx, {
@@ -266,61 +284,96 @@ function processDonutAndRanking(entries) {
 function processTeamActivities(entries, employees) {
     const teamMap = {};
     
-    // Daftar semua pekerja supaya yang 0 jam tetap keluar
-    (employees || []).forEach(emp => {
+    // 1. Daftar semua pekerja dari jadual employees
+    employees.forEach(emp => {
         teamMap[emp.id] = { 
-            name: emp.name || emp.email, 
+            name: emp.email.split('@')[0], // Guna email sebagai nama fallback jika tiada nama
             email: emp.email, 
             totalSec: 0, 
             latest: null,
-            isTracking: false
+            isTracking: false,
+            projects: {} // Untuk progress bar multi-color
         };
     });
 
+    // 2. Kumpul data dari Time Entries
     (entries || []).forEach(e => {
-        if (!teamMap[e.employee_id]) return;
+        if (!e.employee_id) return;
         
-        if (e.status === 'IN_PROGRESS') {
+        // Jika pekerja tiada dalam jadual employees, daftar secara on-the-fly
+        if (!teamMap[e.employee_id]) {
+            teamMap[e.employee_id] = {
+                name: 'ID: ' + String(e.employee_id).substring(0,6),
+                email: 'Tiada Emel',
+                totalSec: 0, latest: null, isTracking: false, projects: {}
+            };
+        }
+        
+        if (e.status === 'IN_PROGRESS' || e.status === 'RUNNING') {
             teamMap[e.employee_id].isTracking = true;
             if (!teamMap[e.employee_id].latest) teamMap[e.employee_id].latest = e;
         } else {
-            teamMap[e.employee_id].totalSec += (e.duration_seconds || 0);
+            const sec = e.duration_seconds || 0;
+            const pName = e.project ? e.project.project_name : 'No Project';
+            
+            teamMap[e.employee_id].totalSec += sec;
+            teamMap[e.employee_id].projects[pName] = (teamMap[e.employee_id].projects[pName] || 0) + sec;
+            
             if (!teamMap[e.employee_id].latest) teamMap[e.employee_id].latest = e;
         }
     });
 
     const tbody = document.getElementById('teamActivitiesBody');
+    if (!tbody) return;
     tbody.innerHTML = '';
     
-    const sortedTeam = Object.values(teamMap).sort((a,b) => a.totalSec - b.totalSec);
+    // Susun dari Total Jam paling banyak ke paling sikit
+    const sortedTeam = Object.values(teamMap).sort((a,b) => b.totalSec - a.totalSec);
+
+    if (sortedTeam.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#94a3b8; padding: 20px;">Tiada pekerja dijumpai dalam pangkalan data.</td></tr>';
+        return;
+    }
 
     sortedTeam.forEach(member => {
         const init = getInitials(member.name);
         const formatTime = formatHMS(member.totalSec);
         
+        // --- Lajur: Latest Activity ---
         let activityHtml = `<div class="act-proj">(Tiada Rekod)</div>`;
         if (member.isTracking && member.latest) {
-            const p = member.latest.project ? member.latest.project.project_name : 'No Project';
-            activityHtml = `<div class="act-title" style="color:#10b981;">▶ Sedang Berjalan</div><div class="act-proj">${p}</div>`;
+            const p = member.latest.project ? member.latest.project.project_name : '(Without Project)';
+            activityHtml = `<div class="act-title" style="color:#10b981;">▶ Sedang Berjalan (In Progress)</div><div class="act-proj">${p}</div>`;
         } else if (member.latest) {
-            const p = member.latest.project ? member.latest.project.project_name : 'No Project';
-            const desc = member.latest.description || '(Tiada Nota)';
+            const p = member.latest.project ? member.latest.project.project_name : '(Without Project)';
+            const desc = member.latest.description || '(no description)';
             activityHtml = `<div class="act-title">${desc}</div><div class="act-proj">${p}</div>`;
         }
 
-        // FUNGSI ADMIN CHASE UNTUK 0 JAM
+        // --- Lajur: Total Tracked (Multi-color Progress Bar / Fungsi Admin Chase) ---
         let trackedHtml = '';
         if (member.totalSec === 0 && !member.isTracking) {
+            // Pekerja culas (0 jam)
             trackedHtml = `
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span class="zero-hours">0:00</span>
-                    <button class="btn-chase" onclick="alert('Email amaran dihantar ke ${member.email}!')">Peringatan</button>
+                    <button class="btn-chase" onclick="alert('Fungsi amaran emel akan dihantar ke ${member.email} pada fasa integrasi emel.')">Peringatan</button>
                 </div>
             `;
         } else {
+            // Bina segment warna progress bar mengikut pecahan projek
+            let barSegments = '';
+            for (const [pName, pSec] of Object.entries(member.projects)) {
+                if (pSec > 0) {
+                    const perc = (pSec / member.totalSec) * 100;
+                    const clr = getProjectColor(pName);
+                    barSegments += `<div class="prog-bar-segment" style="width: ${perc}%; background-color: ${clr};" title="${pName}: ${formatHMS(pSec)}"></div>`;
+                }
+            }
+
             trackedHtml = `
                 <div style="font-weight:600; color:#334155;">${formatTime}</div>
-                <div class="prog-bar-bg"><div class="prog-bar-fill" style="width: 100%;"></div></div>
+                <div class="prog-bar-bg">${barSegments}</div>
             `;
         }
 
@@ -330,7 +383,7 @@ function processTeamActivities(entries, employees) {
                     <div class="member-info">
                         <div class="avatar">${init}</div>
                         <div>
-                            <div class="m-name">${member.name}</div>
+                            <div class="m-name" style="text-transform: capitalize;">${member.name}</div>
                             <div class="m-email">${member.email}</div>
                         </div>
                     </div>
