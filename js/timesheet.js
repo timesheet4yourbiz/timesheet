@@ -228,7 +228,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         bindEvents();
     }
 
-    function bindEvents() {
+function bindEvents() {
+        // 1. Simpan Masa
         document.querySelectorAll('.time-input').forEach(input => {
             input.addEventListener('change', async (e) => {
                 const el = e.target;
@@ -244,6 +245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
+        // 2. Padam Baris
         document.querySelectorAll('.del-row-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 if(!confirm("Padam keseluruhan baris masa untuk projek ini pada minggu ini?")) return;
@@ -266,6 +268,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
+        // 3. Pop-up Tambah Baris
         const openPickerBtn = document.getElementById('openPickerBtn');
         const addNewRowBtn = document.getElementById('addNewRowBtn');
         
@@ -310,10 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (hasTasks) {
                         pList += `<div class="tasks-container" id="tasks-${p.id}" style="display:none; background:#f8fafc; border-bottom: 1px solid #f1f5f9;">`;
-                        
-                        // Pilihan (No Task) membolehkan projek utama dipilih sebagai baris berasingan
                         pList += `<div class="task-select-item" data-pid="${p.id}" data-tid="" style="padding: 10px 15px 10px 30px; cursor:pointer; color:#0ea5e9; font-weight:600; font-size:0.8rem; border-top:1px dashed #e2e8f0;">(No Task)</div>`;
-                        
                         tList.forEach(t => {
                             pList += `<div class="task-select-item" data-pid="${p.id}" data-tid="${t.id}" style="padding: 10px 15px 10px 30px; cursor:pointer; color:#64748b; font-size:0.8rem; border-top:1px dashed #e2e8f0;">- ${t.task_name}</div>`;
                         });
@@ -355,6 +355,62 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         };
 
+        if (openPickerBtn) openPickerBtn.addEventListener('click', togglePopup);
+        if (addNewRowBtn) addNewRowBtn.addEventListener('click', togglePopup);
+
+        // ==========================================
+        // 4. FUNGSI COPY LAST WEEK
+        // ==========================================
+        const copyLastWeekBtn = document.getElementById('copyLastWeekBtn');
+        if (copyLastWeekBtn) {
+            copyLastWeekBtn.addEventListener('click', async () => {
+                const btn = copyLastWeekBtn;
+                btn.innerHTML = '⏳ Copying...';
+                
+                const lwDate = new Date(currentDate);
+                lwDate.setDate(lwDate.getDate() - 7);
+                const { start: lwStart, end: lwEnd } = getWeekRange(lwDate);
+                const { start: cwStart } = getWeekRange(currentDate);
+                
+                const cwStartStr = cwStart.toLocaleDateString('en-CA');
+
+                const { data: lwData } = await supabase.from('time_entries')
+                    .select('project_id, task_id')
+                    .eq('employee_id', currentEmployeeId)
+                    .gte('work_date', lwStart.toLocaleDateString('en-CA'))
+                    .lte('work_date', lwEnd.toLocaleDateString('en-CA'));
+
+                if (!lwData || lwData.length === 0) {
+                    alert("Tiada projek pada minggu lepas untuk disalin.");
+                    btn.innerHTML = '📄 Copy last week ▼';
+                    return;
+                }
+
+                const uniquePairs = new Set();
+                lwData.forEach(item => uniquePairs.add(`${item.project_id || 'null'}|${item.task_id || 'null'}`));
+
+                for (const pair of uniquePairs) {
+                    const [p, t] = pair.split('|');
+                    const pid = p === 'null' ? null : p;
+                    const tid = t === 'null' ? null : t;
+                    await saveTimeEntry(cwStartStr, pid, tid, 0, true);
+                }
+
+                loadTimesheetData();
+                btn.innerHTML = '📄 Copy last week ▼';
+            });
+        }
+
+        // ==========================================
+        // 5. FUNGSI SAVE AS TEMPLATE
+        // ==========================================
+        const saveTemplateBtn = document.getElementById('saveTemplateBtn');
+        if (saveTemplateBtn) {
+            saveTemplateBtn.addEventListener('click', () => {
+                alert("Fungsi 'Save as template' akan datang dalam kemas kini modul seterusnya!");
+            });
+        }
+    }
         if (openPickerBtn) openPickerBtn.addEventListener('click', togglePopup);
         if (addNewRowBtn) addNewRowBtn.addEventListener('click', togglePopup);
     }
