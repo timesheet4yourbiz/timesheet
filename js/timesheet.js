@@ -53,7 +53,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const theadRow = document.getElementById('timesheetHeadRow');
         if (!theadRow) return;
 
-        // Styling Header menyerupai gambar (Latar abu-abu terang)
         theadRow.style.background = '#edf2f7';
         theadRow.style.color = '#718096';
         theadRow.style.fontSize = '0.85rem';
@@ -141,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let dayTotals = { 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0 };
         let grandTotal = 0;
 
-        // Baris data dinamis
+        // Baris data sedia ada (Readonly dibuang supaya boleh diedit)
         for (const [key, rowData] of Object.entries(matrix)) {
             let rowTotal = 0;
             const displayTask = rowData.taskName && rowData.taskName !== 'No Task' ? `<span style="color:#a0aec0; margin-left: 5px;">- ${rowData.taskName}</span>` : '';
@@ -159,8 +158,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 dayTotals[index] += seconds;
                 
                 const valStr = seconds > 0 ? formatHMS(seconds) : '';
+                // Input di sini kini BOLEH DITAIP
                 htmlContent += `<td style="text-align: center;">
-                                    <input type="text" value="${valStr}" readonly style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; font-size: 0.85rem; color: #475569; outline: none; background: white;">
+                                    <input type="text" value="${valStr}" placeholder="0:00" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; font-size: 0.85rem; color: #475569; outline: none; background: white;">
                                 </td>`;
             });
 
@@ -170,16 +170,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </tr>`;
         }
         
-        // Tambahkan baris statis "Select project" di bagian paling bawah
+        // Baris Tambah Projek Baharu & Butang Dropdown
         htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
-            <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem;">
-                <span style="color: #3182ce; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+            <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem; position: relative;">
+                <span id="openPickerBtn" style="color: #0ea5e9; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 1.2rem;">⊕</span> Select project
                 </span>
+                
+                <!-- Kotak Dropdown Clockify Style (Tersembunyi secara lalai) -->
+                <div id="projectPickerPopup" style="display: none; position: absolute; top: 40px; left: 20px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); width: 320px; z-index: 50; text-align: left;">
+                    <!-- Diisi oleh fungsi JS di bawah -->
+                </div>
             </td>`;
+            
         for(let i=0; i<7; i++) {
+            // Input baharu diletakkan dalam keadaan kosong tapi boleh ditaip (disabled dibuang)
             htmlContent += `<td style="text-align: center;">
-                                <input type="text" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; background: white;" disabled>
+                                <input type="text" placeholder="0:00" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; background: white; outline: none; color: #475569;">
                             </td>`;
         }
         htmlContent += `<td style="font-weight: 500; color: #718096; font-size: 0.9rem; text-align: center; border-left: 1px dotted #e2e8f0;">0:00</td>
@@ -198,6 +205,67 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             footHtml += `<td style="padding: 15px 10px; text-align: center; color: #4a5568;">${formatHMS(grandTotal)}</td><td></td></tr>`;
             tFoot.innerHTML = footHtml;
+        }
+
+        // ==========================================
+        // FUNGSI DROPDOWN PROJECT/TASK (KLIK)
+        // ==========================================
+        const openPickerBtn = document.getElementById('openPickerBtn');
+        if (openPickerBtn) {
+            openPickerBtn.addEventListener('click', async () => {
+                const popup = document.getElementById('projectPickerPopup');
+                
+                // Jika sedang buka, tutup.
+                if(popup.style.display === 'block') {
+                    popup.style.display = 'none';
+                    return;
+                }
+                
+                popup.style.display = 'block';
+                popup.innerHTML = '<div style="padding:15px; color:#64748b; font-size:0.85rem; text-align:center;">Memuatkan senarai...</div>';
+                
+                // Tarik data dari DB
+                const { data: projs } = await supabase.from('projects').select('*').order('project_name');
+                const { data: tasks } = await supabase.from('tasks').select('*');
+                
+                // Bina struktur UI kotak pop-up
+                let pList = `
+                    <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
+                        <input type="text" placeholder="🔍 Search Project or Client" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:4px; outline:none; box-sizing:border-box; font-size:0.85rem;">
+                    </div>
+                    <div style="padding: 10px 15px; font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; font-weight: 600; display: flex; justify-content: space-between; background: #f8fafc;">
+                        <span>NO CLIENT</span>
+                        <span>${projs ? projs.length : 0} Projects ⌄</span>
+                    </div>
+                    <div style="max-height: 250px; overflow-y: auto;">
+                `;
+                
+                if (projs && projs.length > 0) {
+                    projs.forEach(p => {
+                        const tList = tasks ? tasks.filter(t => t.project_id === p.id) : [];
+                        const taskLabel = tList.length > 0 ? `${tList.length} Tasks ⌄` : 'Create Task ☆';
+                        
+                        pList += `
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; border-bottom: 1px solid #f1f5f9; cursor:pointer;">
+                                <span style="color:#475569; font-size:0.85rem; display:flex; align-items:center; gap:8px;">
+                                    <span style="display:inline-block; width:6px; height:6px; background:#ef4444; border-radius:50%;"></span>
+                                    ${p.project_name}
+                                </span>
+                                <span style="color:#0ea5e9; font-size:0.75rem; font-weight:500;">${taskLabel}</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    pList += `<div style="padding:15px; text-align:center; color:#94a3b8; font-size:0.85rem;">Tiada Projek</div>`;
+                }
+                
+                pList += `</div>
+                <div style="padding: 12px 15px; border-top: 1px solid #e2e8f0; color: #0ea5e9; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; background: #f8fafc;">
+                    <span style="font-size: 1.1rem;">⊕</span> Create new Project
+                </div>`;
+                
+                popup.innerHTML = pList;
+            });
         }
     }
 
