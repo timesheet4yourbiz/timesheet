@@ -44,19 +44,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (projectSelect && taskSelect) {
         projectSelect.addEventListener('change', async (e) => {
             const pid = e.target.value;
+            
+            // Jika tiada projek dipilih, sembunyikan kotak task
             if (!pid) {
                 taskSelect.style.display = 'none';
                 taskSelect.innerHTML = '<option value="">Select Task</option>';
                 return;
             }
             
-            const { data } = await supabase.from('tasks').select('id, task_name').eq('project_id', pid);
+            // Munculkan kotak task dan letak status loading
+            taskSelect.style.display = 'block';
+            taskSelect.innerHTML = '<option value="">Loading tasks...</option>';
+            
+            const { data, error } = await supabase.from('tasks').select('id, task_name').eq('project_id', pid);
+            
+            if (error) {
+                console.error("Ralat tarik task:", error);
+                taskSelect.innerHTML = '<option value="">Error loading</option>';
+                return;
+            }
+            
             if (data && data.length > 0) {
-                taskSelect.style.display = 'block';
+                // Jika ada task, senaraikan
                 taskSelect.innerHTML = '<option value="">Select Task</option>' + data.map(t => `<option value="${t.id}">${t.task_name}</option>`).join('');
             } else {
-                taskSelect.style.display = 'none';
-                taskSelect.innerHTML = '<option value="">Select Task</option>';
+                // Jika projek tak ada task, tunjuk amaran jelas
+                taskSelect.innerHTML = '<option value="">No Tasks Found</option>';
             }
         });
     }
