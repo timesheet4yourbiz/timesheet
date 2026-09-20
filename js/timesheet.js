@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentEmployeeId = null;
     let currentDate = new Date(); 
 
+    // BINA KOTAK POP-UP DI LAPISAN PALING ATAS (BODY)
     let popup = document.getElementById('projectPickerPopup');
     if (!popup) {
         popup = document.createElement('div');
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.appendChild(popup);
     }
 
+    // Tutup pop-up jika klik di luar
     document.addEventListener('click', (e) => {
         if (popup.style.display === 'block' && 
             !popup.contains(e.target) && 
@@ -197,6 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </tr>`;
         }
         
+        // Baris Tambah Projek Baharu
         htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
             <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem;">
                 <span id="openPickerBtn" style="color: #0ea5e9; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
@@ -228,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         bindEvents();
     }
 
-function bindEvents() {
+    function bindEvents() {
         // 1. Simpan Masa
         document.querySelectorAll('.time-input').forEach(input => {
             input.addEventListener('change', async (e) => {
@@ -410,9 +413,6 @@ function bindEvents() {
                 alert("Fungsi 'Save as template' akan datang dalam kemas kini modul seterusnya!");
             });
         }
-    }
-        if (openPickerBtn) openPickerBtn.addEventListener('click', togglePopup);
-        if (addNewRowBtn) addNewRowBtn.addEventListener('click', togglePopup);
     }
 
     function parseTimeInput(inputVal) {
