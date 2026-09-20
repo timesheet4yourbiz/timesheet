@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tFoot = document.getElementById('timesheetFootRow');
         if (!tBody) return;
 
-        tBody.innerHTML = '<tr><td colspan="10" style="padding:20px; text-align:center; color:#888;">Memuatkan data Timesheet...</td></tr>';
+        tBody.innerHTML = '<tr><td colspan="10" style="padding:20px; text-align:center; color:#888;">Memuatkan data...</td></tr>';
 
         const { start, end, days } = getWeekRange(currentDate);
         const startIso = start.toISOString().split('T')[0];
@@ -124,10 +124,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const pName = entry.project ? entry.project.project_name : 'No Project';
             const tName = entry.task ? entry.task.task_name : '';
-            const localDate = new Date(entry.start_time).toLocaleDateString('en-CA');
+            // Guna work_date jika ada, atau extract dari start_time
+            const localDate = entry.work_date || new Date(entry.start_time).toLocaleDateString('en-CA');
 
             if (!matrix[key]) {
-                matrix[key] = { projectName: pName, taskName: tName, dailyData: {} };
+                matrix[key] = { projectId: entry.project_id, taskId: entry.task_id, projectName: pName, taskName: tName, dailyData: {} };
                 days.forEach(d => matrix[key].dailyData[d.toLocaleDateString('en-CA')] = 0);
             }
             
@@ -140,11 +141,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         let dayTotals = { 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0 };
         let grandTotal = 0;
 
-        // Baris data sedia ada (Readonly dibuang supaya boleh diedit)
         for (const [key, rowData] of Object.entries(matrix)) {
             let rowTotal = 0;
             const displayTask = rowData.taskName && rowData.taskName !== 'No Task' ? `<span style="color:#a0aec0; margin-left: 5px;">- ${rowData.taskName}</span>` : '';
             
+            const pidAttr = rowData.projectId || '';
+            const tidAttr = rowData.taskId || '';
+
             htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
                 <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem; color: #4a5568;">
                     <span style="display:inline-block; width:6px; height:6px; background:#8b5cf6; border-radius:50%; margin-right:8px;"></span>
@@ -158,35 +161,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 dayTotals[index] += seconds;
                 
                 const valStr = seconds > 0 ? formatHMS(seconds) : '';
-                // Input di sini kini BOLEH DITAIP
+                
                 htmlContent += `<td style="text-align: center;">
-                                    <input type="text" value="${valStr}" placeholder="0:00" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; font-size: 0.85rem; color: #475569; outline: none; background: white;">
+                                    <input type="text" class="time-input" data-date="${dateKey}" data-pid="${pidAttr}" data-tid="${tidAttr}" value="${valStr}" placeholder="0:00" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; font-size: 0.85rem; color: #475569; outline: none; background: white;">
                                 </td>`;
             });
 
             grandTotal += rowTotal;
             htmlContent += `<td style="font-weight: 500; color: #718096; font-size: 0.9rem; text-align: center; border-left: 1px dotted #e2e8f0;">${formatHMS(rowTotal)}</td>
-                            <td style="color: #a0aec0; cursor: pointer; font-size: 1.2rem; text-align: center; font-weight: 300;">✕</td>
+                            <td class="del-row-btn" data-pid="${pidAttr}" data-tid="${tidAttr}" style="color: #a0aec0; cursor: pointer; font-size: 1.2rem; text-align: center; font-weight: 300;" title="Delete Row">✕</td>
                         </tr>`;
         }
         
-        // Baris Tambah Projek Baharu & Butang Dropdown
+        // Baris Tambah Projek Baharu
         htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
             <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem; position: relative;">
                 <span id="openPickerBtn" style="color: #0ea5e9; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 1.2rem;">⊕</span> Select project
                 </span>
-                
-                <!-- Kotak Dropdown Clockify Style (Tersembunyi secara lalai) -->
                 <div id="projectPickerPopup" style="display: none; position: absolute; top: 40px; left: 20px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); width: 320px; z-index: 50; text-align: left;">
-                    <!-- Diisi oleh fungsi JS di bawah -->
                 </div>
             </td>`;
             
         for(let i=0; i<7; i++) {
-            // Input baharu diletakkan dalam keadaan kosong tapi boleh ditaip (disabled dibuang)
             htmlContent += `<td style="text-align: center;">
-                                <input type="text" placeholder="0:00" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; background: white; outline: none; color: #475569;">
+                                <input type="text" placeholder="0:00" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; background: white; outline: none; color: #475569;" disabled>
                             </td>`;
         }
         htmlContent += `<td style="font-weight: 500; color: #718096; font-size: 0.9rem; text-align: center; border-left: 1px dotted #e2e8f0;">0:00</td>
@@ -198,37 +197,72 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (tFoot) {
             let footHtml = `<tr style="background: #edf2f7; font-weight: 500; color: #718096; font-size: 0.9rem; border-top: 1px solid #e2e8f0;">
                                 <td style="padding: 15px 20px; text-align: left;">Total:</td>`;
-            
             for (let i = 0; i < 7; i++) {
                 footHtml += `<td style="padding: 15px 10px; text-align: center;">${dayTotals[i] > 0 ? formatHMS(dayTotals[i]) : '0:00'}</td>`;
             }
-            
             footHtml += `<td style="padding: 15px 10px; text-align: center; color: #4a5568;">${formatHMS(grandTotal)}</td><td></td></tr>`;
             tFoot.innerHTML = footHtml;
         }
 
-        // ==========================================
-        // FUNGSI DROPDOWN PROJECT/TASK (KLIK)
-        // ==========================================
+        bindEvents();
+    }
+
+    // ==========================================
+    // FUNGSI LOGIK: SAVE MASA & DELETE BARIS
+    // ==========================================
+    function bindEvents() {
+        // 1. Simpan Masa apabila input ditukar
+        document.querySelectorAll('.time-input').forEach(input => {
+            input.addEventListener('change', async (e) => {
+                const el = e.target;
+                const dateStr = el.getAttribute('data-date');
+                const pid = el.getAttribute('data-pid') || null;
+                const tid = el.getAttribute('data-tid') || null;
+                const rawVal = el.value.trim();
+
+                el.style.opacity = '0.5'; // Kesan loading
+                const totalSeconds = parseTimeInput(rawVal);
+                await saveTimeEntry(dateStr, pid, tid, totalSeconds);
+                loadTimesheetData(); // Muat semula jadual supaya total bertukar
+            });
+        });
+
+        // 2. Padam Keseluruhan Baris
+        document.querySelectorAll('.del-row-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                if(!confirm("Padam keseluruhan baris masa untuk projek ini pada minggu ini?")) return;
+                
+                const pid = e.target.getAttribute('data-pid') || null;
+                const tid = e.target.getAttribute('data-tid') || null;
+                const { start, end } = getWeekRange(currentDate);
+                
+                let query = supabase.from('time_entries')
+                    .delete()
+                    .eq('employee_id', currentEmployeeId)
+                    .gte('work_date', start.toLocaleDateString('en-CA'))
+                    .lte('work_date', end.toLocaleDateString('en-CA'));
+                
+                if (pid) query = query.eq('project_id', pid); else query = query.is('project_id', null);
+                if (tid) query = query.eq('task_id', tid); else query = query.is('task_id', null);
+
+                await query;
+                loadTimesheetData();
+            });
+        });
+
+        // 3. Buka Pop-up Project
         const openPickerBtn = document.getElementById('openPickerBtn');
         if (openPickerBtn) {
             openPickerBtn.addEventListener('click', async () => {
                 const popup = document.getElementById('projectPickerPopup');
-                
-                // Jika sedang buka, tutup.
-                if(popup.style.display === 'block') {
-                    popup.style.display = 'none';
-                    return;
-                }
+                if(popup.style.display === 'block') { popup.style.display = 'none'; return; }
                 
                 popup.style.display = 'block';
                 popup.innerHTML = '<div style="padding:15px; color:#64748b; font-size:0.85rem; text-align:center;">Memuatkan senarai...</div>';
                 
-                // Tarik data dari DB
                 const { data: projs } = await supabase.from('projects').select('*').order('project_name');
                 const { data: tasks } = await supabase.from('tasks').select('*');
                 
-                // Bina struktur UI kotak pop-up
                 let pList = `
                     <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
                         <input type="text" placeholder="🔍 Search Project or Client" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:4px; outline:none; box-sizing:border-box; font-size:0.85rem;">
@@ -246,7 +280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const taskLabel = tList.length > 0 ? `${tList.length} Tasks ⌄` : 'Create Task ☆';
                         
                         pList += `
-                            <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; border-bottom: 1px solid #f1f5f9; cursor:pointer;">
+                            <div class="proj-select-item" data-id="${p.id}" style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; border-bottom: 1px solid #f1f5f9; cursor:pointer;">
                                 <span style="color:#475569; font-size:0.85rem; display:flex; align-items:center; gap:8px;">
                                     <span style="display:inline-block; width:6px; height:6px; background:#ef4444; border-radius:50%;"></span>
                                     ${p.project_name}
@@ -258,14 +292,77 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } else {
                     pList += `<div style="padding:15px; text-align:center; color:#94a3b8; font-size:0.85rem;">Tiada Projek</div>`;
                 }
-                
-                pList += `</div>
-                <div style="padding: 12px 15px; border-top: 1px solid #e2e8f0; color: #0ea5e9; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; background: #f8fafc;">
-                    <span style="font-size: 1.1rem;">⊕</span> Create new Project
-                </div>`;
-                
-                popup.innerHTML = pList;
+                popup.innerHTML = pList + `</div>`;
+
+                // Jika pengguna klik projek pada pop-up
+                document.querySelectorAll('.proj-select-item').forEach(item => {
+                    item.addEventListener('click', async (e) => {
+                        const selPid = e.currentTarget.getAttribute('data-id');
+                        // Cipta satu entri masa 0 saat untuk paparkan baris ini dalam grid
+                        await saveTimeEntry(new Date().toLocaleDateString('en-CA'), selPid, null, 0);
+                        loadTimesheetData();
+                    });
+                });
             });
+        }
+    }
+
+    // Penukar format masa input (e.g., "1:30" atau "2.5" menjadi saat)
+    function parseTimeInput(inputVal) {
+        if (!inputVal) return 0;
+        let hrs = 0, mins = 0;
+        if (inputVal.includes(':')) {
+            const parts = inputVal.split(':');
+            hrs = parseInt(parts[0]) || 0;
+            mins = parseInt(parts[1]) || 0;
+        } else if (inputVal.includes('.')) {
+            const val = parseFloat(inputVal);
+            hrs = Math.floor(val);
+            mins = Math.round((val - hrs) * 60);
+        } else {
+            hrs = parseInt(inputVal) || 0;
+        }
+        return (hrs * 3600) + (mins * 60);
+    }
+
+    // Fungsi menyimpan data ke Supabase
+    async function saveTimeEntry(dateStr, pid, tid, totalSeconds) {
+        let query = supabase.from('time_entries').select('id').eq('employee_id', currentEmployeeId).eq('work_date', dateStr);
+        if (pid) query = query.eq('project_id', pid); else query = query.is('project_id', null);
+        if (tid) query = query.eq('task_id', tid); else query = query.is('task_id', null);
+
+        const { data: existing } = await query;
+
+        // Jika letak 0 atau padam teks, delete rekod pada hari tersebut
+        if (totalSeconds === 0) {
+            if (existing && existing.length > 0) {
+                await supabase.from('time_entries').delete().in('id', existing.map(e => e.id));
+            }
+            return;
+        }
+
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        
+        if (existing && existing.length > 0) {
+            // Update jika wujud
+            await supabase.from('time_entries').update({
+                duration_seconds: totalSeconds,
+                total_minutes: totalMinutes
+            }).eq('id', existing[0].id);
+        } else {
+            // Insert baru jika tiada
+            await supabase.from('time_entries').insert([{
+                employee_id: currentEmployeeId,
+                project_id: pid,
+                task_id: tid,
+                work_date: dateStr,
+                start_time: `${dateStr}T09:00:00`, // mock masa mula
+                duration_seconds: totalSeconds,
+                total_minutes: totalMinutes,
+                status: 'STOPPED',
+                entry_type: 'Manual',
+                description: 'Timesheet Entry'
+            }]);
         }
     }
 
