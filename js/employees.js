@@ -2,6 +2,7 @@ import { supabase } from './supabase.js';
 import { loadSidebar } from './sidebar.js';
 
 let membersData = [];
+let groupsData = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -14,7 +15,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         bindFilters();
         setupNavigation();
+        setupModal();
         
+        await fetchGroups(); // Fetch groups for dropdowns
         await fetchMembers();
 
     } catch (error) {
@@ -32,8 +35,8 @@ function setupNavigation() {
             if(tab !== 'members') {
                 document.getElementById('moduleContent').innerHTML = `
                     <div class="table-card" style="padding: 40px; text-align: center; color: #64748b;">
-                        <h3>Modul ${tab.toUpperCase()} Akan Datang</h3>
-                        <p>Bahagian ini dijadualkan untuk fasa seterusnya.</p>
+                        <h3>${tab.toUpperCase()} Module Coming Soon</h3>
+                        <p>This section is scheduled for the next development phase.</p>
                     </div>`;
             } else {
                 window.location.reload(); 
@@ -64,13 +67,6 @@ function bindFilters() {
     if (searchInput) searchInput.addEventListener('keyup', filterTable);
     if (roleSelect) roleSelect.addEventListener('change', filterTable);
     if (statusSelect) statusSelect.addEventListener('change', filterTable);
-    
-    const btnAdd = document.getElementById('btnAddMember');
-    if (btnAdd) {
-        btnAdd.addEventListener('click', () => {
-            alert('Modul "Add New Member" akan menyusul pada fasa profil. Buat masa ini, kita fokus memaparkan senarai pekerja.');
-        });
-    }
 }
 
 function getInitials(name) {
@@ -81,23 +77,100 @@ function getInitials(name) {
     return init;
 }
 
+// --- MODAL & DATA SAVE LOGIC ---
+function setupModal() {
+    const modal = document.getElementById('memberModal');
+    const btnClose = document.getElementById('btnCloseModal');
+    const btnAdd = document.getElementById('btnAddMember');
+    const form = document.getElementById('memberForm');
+
+    btnClose.addEventListener('click', () => modal.style.display = 'none');
+    
+    btnAdd.addEventListener('click', () => {
+        alert("To add a completely new user, they must first sign up via Supabase Auth. For now, you can Edit existing user profiles.");
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btnSave = document.getElementById('btnSaveMember');
+        btnSave.textContent = "Saving...";
+        btnSave.disabled = true;
+
+        const empId = document.getElementById('formMemberId').value;
+        const payload = {
+            name: document.getElementById('formName').value,
+            employee_no: document.getElementById('formEmpNo').value,
+            phone: document.getElementById('formPhone').value,
+            department: document.getElementById('formDept').value,
+            position: document.getElementById('formPosition').value,
+            system_role: document.getElementById('formRole').value,
+            group_id: document.getElementById('formGroup').value || null,
+            billable_rate: parseFloat(document.getElementById('formRate').value || 0),
+            status: document.getElementById('formStatus').value
+        };
+
+        const { error } = await supabase.from('employees').update(payload).eq('id', empId);
+        
+        btnSave.textContent = "Save Profile";
+        btnSave.disabled = false;
+
+        if (error) {
+            alert("Failed to save profile: " + error.message);
+        } else {
+            modal.style.display = 'none';
+            fetchMembers(); // Refresh table
+        }
+    });
+}
+
+window.openEditModal = function(id) {
+    const member = membersData.find(m => m.id === id);
+    if (!member) return;
+
+    document.getElementById('formMemberId').value = member.id;
+    document.getElementById('formEmail').value = member.email || '';
+    document.getElementById('formName').value = member.name || '';
+    document.getElementById('formEmpNo').value = member.employee_no || '';
+    document.getElementById('formPhone').value = member.phone || '';
+    document.getElementById('formDept').value = member.department || '';
+    document.getElementById('formPosition').value = member.position || '';
+    document.getElementById('formRole').value = member.system_role || 'Employee';
+    document.getElementById('formGroup').value = member.group_id || '';
+    document.getElementById('formRate').value = member.billable_rate || '0.00';
+    document.getElementById('formStatus').value = member.status || 'Active';
+
+    document.getElementById('memberModal').style.display = 'flex';
+};
+
+async function fetchGroups() {
+    const { data } = await supabase.from('groups').select('id, group_name');
+    groupsData = data || [];
+    
+    const grpSelect = document.getElementById('formGroup');
+    if (grpSelect) {
+        groupsData.forEach(g => {
+            grpSelect.innerHTML += `<option value="${g.id}">${g.group_name}</option>`;
+        });
+    }
+}
+
 async function fetchMembers() {
     const tbody = document.getElementById('membersTableBody');
-    tbody.innerHTML = '<tr><td colspan="7" class="loading-overlay">Menyedut data pangkalan data...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="loading-overlay">Loading team members...</td></tr>';
 
-    // PENYELESAIAN DI SINI: Tambah !group_id untuk elak kekeliruan relationship
     const { data, error } = await supabase
         .from('employees')
         .select(`
-            id, name, email, employee_no, department, position, 
-            system_role, billable_rate, status, avatar_url,
+            id, name, email, employee_no, phone, department, position, 
+            system_role, group_id, billable_rate, status, avatar_url,
             groups!group_id(group_name)
         `)
         .order('name');
 
     if (error) {
         console.error("Error fetching members:", error);
-        tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#ef4444;">Gagal memuatkan data. ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#ef4444;">Failed to load data. ${error.message}</td></tr>`;
         return;
     }
 
@@ -110,13 +183,13 @@ function renderTable(data) {
     tbody.innerHTML = '';
 
     if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tiada rekod pekerja dijumpai.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No team members found.</td></tr>';
         return;
     }
 
     data.forEach(member => {
         const init = getInitials(member.name || member.email);
-        const dispName = member.name || 'Tiada Nama';
+        const dispName = member.name || 'Unknown Name';
         const empNo = member.employee_no ? ` | ID: ${member.employee_no}` : '';
         const role = member.system_role || 'Employee';
         const group = member.groups ? member.groups.group_name : '<span style="color:#94a3b8;">-</span>';
@@ -142,7 +215,7 @@ function renderTable(data) {
                 <td>${rate}</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td style="text-align: center;">
-                    <button class="action-btn" title="More Actions">⋮</button>
+                    <button class="action-btn" title="Edit Profile" onclick="openEditModal('${member.id}')">✎</button>
                 </td>
             </tr>
         `;
