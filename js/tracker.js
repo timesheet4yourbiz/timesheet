@@ -182,12 +182,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         entriesContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Loading entries...</div>';
 
-        const { data, error } = await supabase
-            .from('time_entries')
-            .select('*, projects(project_name)')
-            .eq('employee_id', currentEmployeeId)
-            .eq('status', 'STOPPED')
-            .order('start_time', { ascending: false });
+const { data, error } = await supabase
+    .from('time_entries')
+    .select(`
+        *,
+        project:projects!fk_time_entries_project(project_name)
+    `)
+    .eq('employee_id', currentEmployeeId)
+    .eq('status', 'STOPPED')
+    .order('start_time', { ascending: false });
 
         if (error) {
             console.error("Load Entries Error:", error);
@@ -236,7 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const h = Math.floor((entry.duration_seconds || 0) / 3600);
                 const m = String(Math.floor(((entry.duration_seconds || 0) % 3600) / 60)).padStart(2, '0');
                 const s = String((entry.duration_seconds || 0) % 60).padStart(2, '0');
-                const pName = entry.projects ? entry.projects.project_name : 'No Project';
+                const pName = entry.project ? entry.project.project_name : 'No Project';
 
                 htmlContent += `
                         <div style="display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border-color);">
