@@ -58,8 +58,8 @@
 
         .form-group { margin-bottom: 16px; }
         .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
-        .form-input, .form-select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.9rem; box-sizing: border-box; outline: none; }
-        .form-input:focus, .form-select:focus { border-color: #0ea5e9; }
+        .form-input, .form-select, .form-textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.9rem; box-sizing: border-box; outline: none; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #0ea5e9; }
         .form-row { display: flex; gap: 16px; }
         .form-row .form-group { flex: 1; }
         
@@ -83,49 +83,91 @@
         </div>
 
         <div id="moduleContent">
-            <div class="toolbar">
-                <div class="filter-group">
-                    <input type="text" id="searchMember" class="control-input" placeholder="Search by name or email...">
-                    <select id="filterRole" class="control-select">
-                        <option value="all">All Roles</option>
-                        <option value="Admin">Admin</option>
-                        <option value="Manager">Manager</option>
-                        <option value="Supervisor">Supervisor</option>
-                        <option value="Employee">Employee</option>
-                    </select>
-                    <select id="filterStatus" class="control-select">
-                        <option value="all">All Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
+            
+            <!-- ================= VIEW: MEMBERS ================= -->
+            <div id="membersView">
+                <div class="toolbar">
+                    <div class="filter-group">
+                        <input type="text" id="searchMember" class="control-input" placeholder="Search by name or email...">
+                        <select id="filterRole" class="control-select">
+                            <option value="all">All Roles</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Manager">Manager</option>
+                            <option value="Supervisor">Supervisor</option>
+                            <option value="Employee">Employee</option>
+                        </select>
+                        <select id="filterStatus" class="control-select">
+                            <option value="all">All Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" id="btnAddMember">+ ADD NEW MEMBER</button>
                 </div>
-                <button class="btn-primary" id="btnAddMember">+ ADD NEW MEMBER</button>
+
+                <div class="table-card">
+                    <div class="table-container">
+                        <table class="team-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Group</th>
+                                    <th>Rate (RM)</th>
+                                    <th>Status</th>
+                                    <th style="width: 50px; text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="membersTableBody">
+                                <tr><td colspan="7" class="loading-overlay">Loading team members...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
-            <div class="table-card">
-                <div class="table-container">
-                    <table class="team-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
-                                <th>Name</th>
-                                <th>Role</th>
-                                <th>Group</th>
-                                <th>Rate (RM)</th>
-                                <th>Status</th>
-                                <th style="width: 50px; text-align: center;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="membersTableBody">
-                            <tr><td colspan="7" class="loading-overlay">Loading team members...</td></tr>
-                        </tbody>
-                    </table>
+            <!-- ================= VIEW: GROUPS ================= -->
+            <div id="groupsView" style="display: none;">
+                <div class="toolbar">
+                    <div class="filter-group">
+                        <input type="text" id="searchGroup" class="control-input" placeholder="Search groups...">
+                    </div>
+                    <button class="btn-primary" id="btnAddGroup">+ ADD NEW GROUP</button>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-container">
+                        <table class="team-table">
+                            <thead>
+                                <tr>
+                                    <th>Group Name</th>
+                                    <th>Manager</th>
+                                    <th>Members Count</th>
+                                    <th>Status</th>
+                                    <th style="width: 50px; text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="groupsTableBody">
+                                <tr><td colspan="5" class="loading-overlay">Loading groups...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+
+            <!-- ================= VIEW: REMINDERS ================= -->
+            <div id="remindersView" style="display: none;">
+                <div class="table-card" style="padding: 40px; text-align: center; color: #64748b;">
+                    <h3>REMINDERS Module Coming Soon</h3>
+                    <p>This section is scheduled for the next development phase.</p>
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <!-- ADD/EDIT MEMBER MODAL -->
+    <!-- MODAL: ADD/EDIT MEMBER -->
     <div class="modal-overlay" id="memberModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -193,6 +235,41 @@
                     </div>
                 </div>
                 <button type="submit" class="btn-save" id="btnSaveMember">Save Member</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD/EDIT GROUP -->
+    <div class="modal-overlay" id="groupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="groupModalTitle">Group Details</h2>
+                <button class="close-btn" id="btnCloseGroupModal">&times;</button>
+            </div>
+            <form id="groupForm">
+                <input type="hidden" id="formGroupId">
+                <div class="form-group">
+                    <label class="form-label">Group Name</label>
+                    <input type="text" id="formGroupName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="formGroupDesc" class="form-textarea" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Group Manager</label>
+                    <select id="formGroupManager" class="form-select">
+                        <option value="">- Select Manager -</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="formGroupStatus" class="form-select">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-save" id="btnSaveGroup">Save Group</button>
             </form>
         </div>
     </div>
