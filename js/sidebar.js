@@ -81,12 +81,12 @@ export async function loadSidebar() {
             <nav class="sidebar-nav" style="padding: 10px 0; flex: 1; overflow-y: auto;">
                 <div class="sidebar-category" style="margin-top: 10px;">Analyze</div>
                 <a href="dashboard.html" class="sidebar-link ${currentPath.includes('dashboard.html') ? 'active' : ''}">Dashboard</a>
-                <a href="#" class="sidebar-link">Time Tracker</a>
-                <a href="#" class="sidebar-link">Timesheet</a>
+                <a href="time-tracker.html" class="sidebar-link ${currentPath.includes('time-tracker.html') ? 'active' : ''}">Time Tracker</a>
+                <a href="timesheet.html" class="sidebar-link ${currentPath.includes('timesheet.html') ? 'active' : ''}">Timesheet</a>
                 
                 <div class="sidebar-category">Manage</div>
                 <a href="employees.html" class="sidebar-link ${currentPath.includes('employees.html') ? 'active' : ''}">Team</a>
-                <a href="#" class="sidebar-link">Projects</a>
+                <a href="projects.html" class="sidebar-link ${currentPath.includes('projects.html') ? 'active' : ''}">Projects</a>
                 
                 <div class="sidebar-category">Others</div>
                 <a href="profile.html" class="sidebar-link ${currentPath.includes('profile.html') ? 'active' : ''}">My Profile</a>
