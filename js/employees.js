@@ -77,7 +77,7 @@ function getInitials(name) {
     return init;
 }
 
-// --- MODAL & DATA SAVE LOGIC ---
+// --- MODAL & DATA SAVE LOGIC (TANPA EDGE FUNCTION) ---
 function setupModal() {
     const modal = document.getElementById('memberModal');
     const btnClose = document.getElementById('btnCloseModal');
@@ -113,9 +113,11 @@ function setupModal() {
         btnSave.disabled = true;
 
         const empId = document.getElementById('formMemberId').value;
+        const emailInput = document.getElementById('formEmail').value;
+        const nameInput = document.getElementById('formName').value;
+        
         const payload = {
-            email: document.getElementById('formEmail').value,
-            name: document.getElementById('formName').value,
+            name: nameInput,
             employee_no: document.getElementById('formEmpNo').value,
             phone: document.getElementById('formPhone').value,
             department: document.getElementById('formDept').value,
@@ -127,7 +129,7 @@ function setupModal() {
         };
 
         if (empId) {
-            // UPDATE PROFILE SEDIA ADA
+            // JIKA ADA ID: UPDATE PROFILE SEDIA ADA
             const result = await supabase.from('employees').update(payload).eq('id', empId);
             
             btnSave.textContent = "Save Member";
@@ -140,27 +142,42 @@ function setupModal() {
                 fetchMembers(); 
             }
         } else {
-            // INSERT: JEMPUT AHLI BARU (EDGE FUNCTION)
-            btnSave.textContent = "Sending Invite...";
+            // JIKA TIADA ID: JEMPUT AHLI BARU (Daftar melalui Auth UI)
+            btnSave.textContent = "Creating Account...";
             
-            const { data, error } = await supabase.functions.invoke('invite_member', {
-                body: { 
-                    email: payload.email, 
-                    name: payload.name,
-                    role: payload.system_role,
-                    department: payload.department
-                }
+            // 1. Daftarkan e-mel secara rasmi di Supabase Auth (Tanpa CORS Error)
+            // Kita letak kata laluan sementara rawak (staf boleh Reset Password nanti)
+            const tempPassword = "TempPwd" + Math.floor(Math.random() * 1000000) + "!";
+            
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: emailInput,
+                password: tempPassword,
             });
-            
+
             btnSave.textContent = "Save Member";
             btnSave.disabled = false;
 
-            if (error || (data && data.error)) {
-                alert("Failed to send invite: " + (error?.message || data?.error));
+            if (authError) {
+                alert("Failed to create user account: " + authError.message);
+                return;
+            }
+
+            // 2. Jika Auth berjaya, masukkan profil ke jadual employees
+            if (authData.user) {
+                payload.id = authData.user.id;
+                payload.email = emailInput;
+                
+                const { error: dbError } = await supabase.from('employees').insert([payload]);
+                
+                if (dbError) {
+                    alert("Account created, but failed to save profile info: " + dbError.message);
+                } else {
+                    alert(`Success! User has been added.\n\nIMPORTANT: Since this is an admin creation, the user's temporary password is:\n${tempPassword}\n\nPlease share this with them or ask them to click 'Forgot Password' on the login page.`);
+                    modal.style.display = 'none';
+                    fetchMembers(); 
+                }
             } else {
-                alert("Success! An invitation email has been sent to " + payload.email);
-                modal.style.display = 'none';
-                fetchMembers(); 
+                alert("Unknown error: User data was not returned.");
             }
         }
     });
