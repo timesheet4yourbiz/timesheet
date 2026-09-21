@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - WorkTime</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <!-- Chart.js untuk Graf Weekly Man-Hour -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { margin: 0; background: #f1f5f9; font-family: 'Inter', sans-serif; color: #0f172a; }
+        .main-content { margin-left: 250px; padding: 24px; min-height: 100vh; box-sizing: border-box; }
+        
+        /* Bar Kawalan (Sembunyi bila Print) */
+        .control-bar {
+            background: white; padding: 16px 24px; border-radius: 8px; border: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .filter-group { display: flex; gap: 12px; align-items: center; }
+        .filter-group select, .filter-group input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; font-size: 0.9rem; }
+        
+        .btn-print { background: #0284c7; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-print:hover { background: #0369a1; }
+
+        /* KERTAS REPORT A4 */
+        .report-paper {
+            background: white; padding: 40px; border-radius: 8px; border: 1px solid #cbd5e1;
+            max-width: 960px; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* HEADER LAPORAN */
+        .report-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 16px; margin-bottom: 20px; }
+        .company-title { font-size: 1.6rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.5px; }
+        .report-subtitle { font-size: 0.75rem; font-weight: 600; color: #64748b; letter-spacing: 0.5px; margin-top: 4px; text-transform: uppercase; }
+        .month-badge { background: #0f172a; color: white; padding: 8px 16px; border-radius: 4px; text-align: center; font-weight: 700; font-size: 0.9rem; }
+
+        .section-title { font-size: 0.85rem; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; border-left: 4px solid #0ea5e9; padding-left: 8px; }
+
+        /* JADUAL WEEKLY MAN-HOUR SUMMARY */
+        .report-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 0.85rem; }
+        .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: center; }
+        .report-table th { background: #f8fafc; font-weight: 700; color: #334155; }
+        .report-table td.project-name { text-align: left; font-weight: 600; color: #0f172a; }
+        
+        /* BARIS TOTAL DI BAWAH JADUAL */
+        .report-table tr.total-row { background: #e0f2fe; font-weight: 800; color: #0369a1; }
+        .report-table tr.total-row td { border-top: 2px solid #0284c7; border-bottom: 2px solid #0284c7; }
+
+        /* GRID CARTA & METRIK SUMMARY */
+        .metrics-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .chart-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; background: #fafafa; }
+        .summary-card { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+        .summary-value { font-size: 2.2rem; font-weight: 800; color: #0284c7; margin: 8px 0; }
+        .summary-label { font-size: 0.75rem; font-weight: 700; color: #0369a1; text-transform: uppercase; }
+
+        /* HIGHLIGHTS & REMARKS */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .info-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; background: white; }
+        .info-box ul { margin: 0; padding-left: 18px; font-size: 0.8rem; color: #475569; line-height: 1.6; }
+
+        /* TANDATANGAN */
+        .signature-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 40px; padding-top: 20px; text-align: center; font-size: 0.8rem; }
+        .sig-line { border-top: 1px solid #94a3b8; margin-top: 50px; margin-bottom: 8px; width: 80%; margin-left: auto; margin-right: auto; }
+
+        /* GAYA ATURAN CETAKAN (A4 PRINT) */
+        @media print {
+            #sidebar-container, .control-bar { display: none !important; }
+            .main-content { margin-left: 0 !important; padding: 0 !important; }
+            .report-paper { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+            body { background: white !important; }
+            @page { size: A4 portrait; margin: 1.5cm; }
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar-container"></div>
+
+    <div class="main-content">
+        <!-- BAR KAWALAN (DAPATKAN LAPORAN & CETAK) -->
+        <div class="control-bar">
+            <div class="filter-group">
+                <label style="font-weight: 600; font-size: 0.85rem;">Select Month:</label>
+                <select id="reportMonth">
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9" selected>September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+                <input type="number" id="reportYear" value="2026" style="width: 80px;">
+                <button id="btnGenerate" style="background:#0ea5e9; color:white; border:none; padding:8px 16px; border-radius:4px; font-weight:600; cursor:pointer;">Generate Report</button>
+            </div>
+
+            <button id="btnPrint" class="btn-print">
+                🖨️ Print / Save as PDF
+            </button>
+        </div>
+
+        <!-- REKA BENTUK LAPORAN (A4 FORMAT) -->
+        <div class="report-paper">
+            <!-- HEADER -->
+            <div class="report-header">
+                <div>
+                    <h1 class="company-title" id="reportCompany">PROJECT MAN-HOUR REPORT</h1>
+                    <div class="report-subtitle">MONTHLY SUMMARY | ACCURATE TIME • EFFICIENT PROJECTS • STRONGER RESULTS</div>
+                </div>
+                <div class="month-badge" id="badgeMonthYear">
+                    SEPTEMBER<br>2026
+                </div>
+            </div>
+
+            <!-- JADUAL UTAMA (WEEKLY MAN-HOUR SUMMARY) -->
+            <div class="section-title">WEEKLY MAN-HOUR SUMMARY</div>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">Project</th>
+                        <th>Week 1<br><span style="font-size:0.7rem; font-weight:normal;">(01-07)</span></th>
+                        <th>Week 2<br><span style="font-size:0.7rem; font-weight:normal;">(08-14)</span></th>
+                        <th>Week 3<br><span style="font-size:0.7rem; font-weight:normal;">(15-21)</span></th>
+                        <th>Week 4<br><span style="font-size:0.7rem; font-weight:normal;">(22-28)</span></th>
+                        <th>Week 5<br><span style="font-size:0.7rem; font-weight:normal;">(29-30)</span></th>
+                        <th style="width: 15%;">Total Manhour</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBodyProjects">
+                    <!-- Data projek akan dimuatkan di sini -->
+                </tbody>
+                <tfoot>
+                    <!-- BARIS TOTAL BAGI SETIAP LAJUR -->
+                    <tr class="total-row">
+                        <td style="text-align: left;">TOTAL</td>
+                        <td id="totW1">0</td>
+                        <td id="totW2">0</td>
+                        <td id="totW3">0</td>
+                        <td id="totW4">0</td>
+                        <td id="totW5">0</td>
+                        <td id="totGrand" style="font-size: 0.95rem;">0 Hours</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <!-- GRAF & METRIK RINGKASAN -->
+            <div class="metrics-grid">
+                <div class="chart-box">
+                    <div class="section-title" style="border-left-color: #10b981;">WEEKLY MAN-HOUR CHART</div>
+                    <div style="height: 180px;">
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="summary-card">
+                    <div class="summary-label">TOTAL MAN-HOUR</div>
+                    <div class="summary-value" id="cardTotalHours">0 Hours</div>
+                    <div style="font-size:0.75rem; color:#64748b; font-weight:600;" id="cardVsPrev">VS. PREVIOUS MONTH: 1,395 HOURS</div>
+                </div>
+            </div>
+
+            <!-- KEY HIGHLIGHTS & REMARKS -->
+            <div class="info-grid">
+                <div class="info-box">
+                    <div class="section-title" style="border-left-color: #f59e0b;">KEY HIGHLIGHTS</div>
+                    <ul>
+                        <li>Total man-hours tracked accurately across active project tasks.</li>
+                        <li>Workforce efficiency monitored on a weekly milestone basis.</li>
+                        <li>Project progress is maintained within target resource limits.</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <div class="section-title" style="border-left-color: #6366f1;">REMARKS</div>
+                    <ul>
+                        <li>Workforce deployment aligned with project milestones.</li>
+                        <li>Continuous monitoring to ensure efficient utilization of manpower.</li>
+                        <li>No major delays reported for the evaluated cycle.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- RUANG TANDATANGAN PENGESAHAN -->
+            <div class="signature-grid">
+                <div>
+                    <div>Prepared by,</div>
+                    <div class="sig-line"></div>
+                    <strong id="prepName">Siti Nur Aisyah</strong><br>
+                    <span style="color:#64748b;">Project Coordinator</span><br>
+                    <span style="font-size:0.75rem; color:#94a3b8;" id="prepDate">Date: 02 Oct 2026</span>
+                </div>
+                <div>
+                    <div>Reviewed by,</div>
+                    <div class="sig-line"></div>
+                    <strong id="revName">Ahmad Faizal bin Rahman</strong><br>
+                    <span style="color:#64748b;">Project Manager</span><br>
+                    <span style="font-size:0.75rem; color:#94a3b8;" id="revDate">Date: 02 Oct 2026</span>
+                </div>
+                <div>
+                    <div>Approved by,</div>
+                    <div class="sig-line"></div>
+                    <strong id="appName">Ir. Mohd Kamarul Ismail</strong><br>
+                    <span style="color:#64748b;">Operations Director</span><br>
+                    <span style="font-size:0.75rem; color:#94a3b8;" id="appDate">Date: 02 Oct 2026</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module" src="../js/reports.js"></script>
+</body>
+</html>
