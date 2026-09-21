@@ -81,23 +81,23 @@ export async function loadSidebar() {
             <!-- SENARAI MENU LENGKAP -->
             <nav class="sidebar-nav" style="padding: 8px 0; flex: 1; overflow-y: auto;">
                 <div class="sidebar-category">ANALYZE</div>
-                <a href="dashboard.html" class="sidebar-link ${currentPath.includes('dashboard.html') ? 'active' : ''}">Dashboard</a>
-                <a href="time-tracker.html" class="sidebar-link ${currentPath.includes('time-tracker.html') ? 'active' : ''}">Time Tracker</a>
-                <a href="timesheet.html" class="sidebar-link ${currentPath.includes('timesheet.html') ? 'active' : ''}">Timesheet</a>
-                <a href="reports.html" class="sidebar-link ${currentPath.includes('reports.html') ? 'active' : ''}">Reports</a>
+                <a href="dashboard.html" class="sidebar-link ${currentPath.includes('dashboard.html') ? 'active' : ''}">DASHBOARD</a>
+                <a href="tracker.html" class="sidebar-link ${currentPath.includes('time-tracker.html') ? 'active' : ''}">TIME TRACKER</a>
+                <a href="timesheet.html" class="sidebar-link ${currentPath.includes('timesheet.html') ? 'active' : ''}">TIMESHEET</a>
+                <a href="reports.html" class="sidebar-link ${currentPath.includes('reports.html') ? 'active' : ''}">REPORTS</a>
                 
                 <div class="sidebar-category">MANAGE</div>
-                <a href="projects.html" class="sidebar-link ${currentPath.includes('projects.html') ? 'active' : ''}">Projects</a>
-                <a href="tags.html" class="sidebar-link ${currentPath.includes('tags.html') ? 'active' : ''}">Tags</a>
-                <a href="employees.html" class="sidebar-link ${currentPath.includes('employees.html') ? 'active' : ''}">Team</a>
-                <a href="clients.html" class="sidebar-link ${currentPath.includes('clients.html') ? 'active' : ''}">Clients</a>
+                <a href="projects.html" class="sidebar-link ${currentPath.includes('projects.html') ? 'active' : ''}">PROJECTS</a>
+                <a href="tags.html" class="sidebar-link ${currentPath.includes('tags.html') ? 'active' : ''}">TAGS</a>
+                <a href="employees.html" class="sidebar-link ${currentPath.includes('employees.html') ? 'active' : ''}">EMPLOYEES</a>
+                <a href="clients.html" class="sidebar-link ${currentPath.includes('clients.html') ? 'active' : ''}">CLIENTS</a>
                 
                 <div class="sidebar-category">OTHERS</div>
-                <a href="attendance.html" class="sidebar-link ${currentPath.includes('attendance.html') ? 'active' : ''}">Attendance</a>
-                <a href="approvals.html" class="sidebar-link ${currentPath.includes('approvals.html') ? 'active' : ''}">Approvals</a>
-                <a href="departments.html" class="sidebar-link ${currentPath.includes('departments.html') ? 'active' : ''}">Departments</a>
-                <a href="profile.html" class="sidebar-link ${currentPath.includes('profile.html') ? 'active' : ''}">My Profile</a>
-                <a href="settings.html" class="sidebar-link ${currentPath.includes('settings.html') ? 'active' : ''}">Settings</a>
+                <a href="attendance.html" class="sidebar-link ${currentPath.includes('attendance.html') ? 'active' : ''}">ATTENDANCE</a>
+                <a href="approvals.html" class="sidebar-link ${currentPath.includes('approvals.html') ? 'active' : ''}">APPROVALS</a>
+                <a href="departments.html" class="sidebar-link ${currentPath.includes('departments.html') ? 'active' : ''}">DEPARTMENTS</a>
+                <a href="profile.html" class="sidebar-link ${currentPath.includes('profile.html') ? 'active' : ''}">MY PROFILE</a>
+                <a href="settings.html" class="sidebar-link ${currentPath.includes('settings.html') ? 'active' : ''}">SETTINGS</a>
             </nav>
 
             <div class="sidebar-footer" style="padding: 16px 20px; border-top: 1px solid #e2e8f0;">
