@@ -142,11 +142,9 @@ function setupModal() {
                 fetchMembers(); 
             }
         } else {
-            // JIKA TIADA ID: JEMPUT AHLI BARU (Daftar melalui Auth UI)
+            // JIKA TIADA ID: DAFTAR AKAUN BARU
             btnSave.textContent = "Creating Account...";
             
-            // 1. Daftarkan e-mel secara rasmi di Supabase Auth (Tanpa CORS Error)
-            // Kita letak kata laluan sementara rawak (staf boleh Reset Password nanti)
             const tempPassword = "TempPwd" + Math.floor(Math.random() * 1000000) + "!";
             
             const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -154,34 +152,33 @@ function setupModal() {
                 password: tempPassword,
             });
 
-            btnSave.textContent = "Save Member";
-            btnSave.disabled = false;
-
             if (authError) {
-                alert("Failed to create user account: " + authError.message);
+                btnSave.textContent = "Save Member";
+                btnSave.disabled = false;
+                alert("Gagal mendaftar e-mel (Mungkin e-mel ini sudah wujud): " + authError.message);
                 return;
             }
 
-            // 2. Jika Auth berjaya, masukkan profil ke jadual employees
             if (authData.user) {
                 payload.id = authData.user.id;
                 payload.email = emailInput;
                 
-                const { error: dbError } = await supabase.from('employees').insert([payload]);
+                // PENYELESAIAN DI SINI: Guna UPSERT untuk elak ralat Duplicate Key
+                const { error: dbError } = await supabase.from('employees').upsert([payload]);
                 
+                btnSave.textContent = "Save Member";
+                btnSave.disabled = false;
+
                 if (dbError) {
                     alert("Account created, but failed to save profile info: " + dbError.message);
                 } else {
-                    alert(`Success! User has been added.\n\nIMPORTANT: Since this is an admin creation, the user's temporary password is:\n${tempPassword}\n\nPlease share this with them or ask them to click 'Forgot Password' on the login page.`);
+                    alert(`Success! User has been added.\n\nIMPORTANT: Since this is an admin creation, the user's temporary password is:\n${tempPassword}\n\nPlease share this with them.`);
                     modal.style.display = 'none';
                     fetchMembers(); 
                 }
-            } else {
-                alert("Unknown error: User data was not returned.");
             }
         }
     });
-}
 
 // FUNGSI EDIT PROFIL PEKERJA
 window.openEditModal = function(id) {
