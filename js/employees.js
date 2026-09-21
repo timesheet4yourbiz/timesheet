@@ -163,7 +163,9 @@ function renderMembersTable(data) {
                 <td>${rate}</td>
                 <td><span class="status-badge ${statusClass}">${member.status || 'Active'}</span></td>
                 <td style="text-align: center;">
-                    <button class="action-btn" onclick="openEditModal('${member.id}')">✎</button>
+                    ${window.currentUserRole === 'Admin' 
+                        ? `<button class="action-btn" onclick="openEditModal('${member.id}')">✎</button>` 
+                        : `<span style="font-size:0.8rem; color:#cbd5e1;">🔒</span>`}
                 </td>
             </tr>
         `;
@@ -312,6 +314,10 @@ function renderGroupsTable(data) {
                 <td><span style="background:#e2e8f0; padding:2px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold;">${memberCount} members</span></td>
                 <td><span class="status-badge ${statusClass}">${group.status || 'Active'}</span></td>
                 <td style="text-align: center;">
+                    ${window.currentUserRole === 'Admin' 
+                        ? `<button class="action-btn" onclick="openEditGroupModal('${group.id}')">✎</button>` 
+                        : `<span style="font-size:0.8rem; color:#cbd5e1;">🔒</span>`}
+                </td>
                     <button class="action-btn" onclick="openEditGroupModal('${group.id}')">✎</button>
                 </td>
             </tr>
