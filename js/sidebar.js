@@ -1,82 +1,102 @@
-// Fail: /js/sidebar.js
+import { supabase } from './supabase.js';
 
-export function loadSidebar() {
+export async function loadSidebar() {
+    const container = document.getElementById('sidebar-container');
+    
+    // Pastikan container ada (untuk mencegah error console yang bos alami)
+    if (!container) {
+        console.error("Sidebar container not found!");
+        return;
+    }
+
+    let userName = "User";
+    let userRole = "Employee";
+    let avatarUrl = "https://ui-avatars.com/api/?name=User&background=e0f2fe&color=0284c7";
+
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            const { data: profile } = await supabase
+                .from('employees')
+                .select('name, system_role, avatar_url')
+                .eq('id', session.user.id)
+                .single();
+
+            if (profile) {
+                userName = profile.name || session.user.email.split('@')[0];
+                userRole = profile.system_role || 'Employee';
+                // Jika tidak ada gambar, gunakan inisial nama secara otomatis
+                avatarUrl = profile.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=e0f2fe&color=0284c7`;
+            }
+        }
+    } catch (err) {
+        console.error("Error loading profile for sidebar:", err);
+    }
+
+    const currentPath = window.location.pathname;
+    
     const sidebarHTML = `
-        <aside class="sidebar">
-            <div class="sidebar-header"><h2>WorkTime</h2></div>
-            <nav class="sidebar-nav">
-                <div class="nav-section-title">Analyze</div>
-                <a href="dashboard.html" class="nav-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                    Dashboard
-                </a>
-                <a href="tracker.html" class="nav-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    Time Tracker
-                </a>
-                <a href="timesheet.html" class="nav-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    Timesheet
-                </a>
-                <a href="reports.html" class="nav-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                    Reports
-                </a>
+        <aside class="sidebar" style="width: 250px; background: white; height: 100vh; position: fixed; left: 0; top: 0; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; z-index: 100;">
+            
+            <!-- PROFIL MINI DI ATAS -->
+            <div class="sidebar-header" style="padding: 24px 20px; text-align: center; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                <img src="${avatarUrl}" alt="Profile" onclick="showEnlargedAvatar('${avatarUrl}')" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; margin-bottom: 12px;">
+                <h3 style="margin: 0 0 4px 0; font-size: 1rem; color: #0f172a; text-transform: capitalize;">${userName}</h3>
+                <span style="background: #e0f2fe; color: #0284c7; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">${userRole}</span>
+            </div>
 
-                <div class="nav-section-title">Manage</div>
-                <a href="projects.html" class="nav-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                    Projects
-                </a>
-                <a href="tags.html" class="nav-item">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-    Tags
-</a>
-                <a href="employees.html" class="nav-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    Team
-                </a>
-                <a href="clients.html" class="nav-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    Clients
-                </a>
-
-                <div class="nav-section-title">Others</div>
-                <a href="attendance.html" class="nav-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
-                    Attendance
-                </a>
-                <a href="approvals.html" class="nav-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                    Approvals
-                </a>
-                <a href="departments.html" class="nav-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                    Departments
-                </a>
-                <a href="settings.html" class="nav-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                    Settings
-                </a>
+            <!-- MENU NAVIGASI -->
+            <nav class="sidebar-nav" style="padding: 20px 0; flex: 1; overflow-y: auto;">
+                <div style="padding: 0 20px; font-size: 0.7rem; font-weight: 700; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Analyze</div>
+                <a href="dashboard.html" class="nav-item ${currentPath.includes('dashboard.html') ? 'active' : ''}">Dashboard</a>
+                <a href="#" class="nav-item">Time Tracker</a>
+                <a href="#" class="nav-item">Timesheet</a>
+                
+                <div style="padding: 0 20px; font-size: 0.7rem; font-weight: 700; color: #94a3b8; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px;">Manage</div>
+                <a href="employees.html" class="nav-item ${currentPath.includes('employees.html') ? 'active' : ''}">Team</a>
+                <a href="#" class="nav-item">Projects</a>
+                
+                <div style="padding: 0 20px; font-size: 0.7rem; font-weight: 700; color: #94a3b8; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px;">Others</div>
+                <a href="profile.html" class="nav-item ${currentPath.includes('profile.html') ? 'active' : ''}">My Profile</a>
+                <a href="settings.html" class="nav-item ${currentPath.includes('settings.html') ? 'active' : ''}">Settings</a>
             </nav>
-            <div class="sidebar-footer">
-                <button id="logoutBtn" class="btn-logout">Logout</button>
+
+            <div class="sidebar-footer" style="padding: 20px; border-top: 1px solid #e2e8f0;">
+                <button id="logoutBtn" style="width: 100%; padding: 10px; background: transparent; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; font-weight: 600; cursor: pointer;">Logout</button>
             </div>
         </aside>
     `;
 
-    // Masukkan HTML ke dalam bekas sidebar di halaman
-    document.getElementById('sidebar-container').innerHTML = sidebarHTML;
+    container.innerHTML = sidebarHTML;
 
-    // Logik auto-active: Serlahkan menu berdasarkan URL semasa
-    const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
-    const navItems = document.querySelectorAll('.nav-item');
-    
-    navItems.forEach(item => {
-        if (item.getAttribute('href') === currentPage) {
-            item.classList.add('active');
+    // Logika Logout
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = '../pages/login.html';
+        });
+    }
+
+    // Fungsi Pop-up Gambar (Ukuran Paspor)
+    window.showEnlargedAvatar = function(url) {
+        let modal = document.getElementById('avatarModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'avatarModal';
+            modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:1000;';
+            modal.onclick = () => modal.style.display = 'none';
+            
+            const img = document.createElement('img');
+            img.src = url;
+            // Ukuran paspor membesar saat diklik
+            img.style.cssText = 'width: 150px; height: 200px; object-fit: cover; border-radius: 8px; border: 4px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.5);';
+            
+            modal.appendChild(img);
+            document.body.appendChild(modal);
         } else {
-            item.classList.remove('active');
+            modal.querySelector('img').src = url;
+            modal.style.display = 'flex';
         }
-    });
+    };
 }
