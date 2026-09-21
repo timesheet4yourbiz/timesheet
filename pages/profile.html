@@ -8,41 +8,54 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* INI PENAWAR BORANG TERSOROK */
+        body { margin: 0; background: #f4f7f6; font-family: 'Inter', sans-serif; color: #334155; }
+        .main-content { margin-left: 250px; padding: 32px; min-height: 100vh; box-sizing: border-box; }
+        
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .settings-card { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; max-width: 600px; }
+        .form-group { margin-bottom: 16px; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; outline: none; }
+        .form-control:focus { border-color: #0ea5e9; }
+        .btn-primary { background: #10b981; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: 600; width: 100%; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #059669; }
+    </style>
 </head>
 <body>
     <div id="sidebar-container"></div>
 
     <div class="main-content">
-        <header class="topbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <header class="topbar">
             <h3 style="margin: 0; font-size: 1.5rem;">My Profile</h3>
             <div class="user-info"><span id="userEmail" style="color:#64748b; font-size:0.85rem;">Loading...</span></div>
         </header>
 
-        <div class="content-area" style="display: flex; flex-direction: column; gap: 24px; max-width: 600px;">
+        <div class="content-area">
             
             <!-- MAKLUMAT DIRI -->
-            <div class="settings-card" style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <div class="settings-card">
                 <h3 style="margin-top: 0; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">Account Details</h3>
-                <p><strong>Email:</strong> <span id="profileEmail">Loading...</span></p>
-                <p><strong>Name:</strong> <span id="profileName">Loading...</span></p>
-                <p><strong>System Role:</strong> <span id="profileRole" style="background:#e0f2fe; color:#0284c7; padding:2px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">Loading...</span></p>
+                <p style="margin: 8px 0;"><strong>Email:</strong> <span id="profileEmail">Loading...</span></p>
+                <p style="margin: 8px 0;"><strong>Name:</strong> <span id="profileName">Loading...</span></p>
+                <p style="margin: 8px 0;"><strong>System Role:</strong> <span id="profileRole" style="background:#e0f2fe; color:#0284c7; padding:2px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">Loading...</span></p>
             </div>
 
             <!-- TUKAR KATA LALUAN -->
-            <div class="settings-card" style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <div class="settings-card">
                 <h3 style="margin-top: 0; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; color: #ef4444;">Change Password</h3>
                 <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 16px;">Update your password to keep your account secure. (Min. 8 characters)</p>
                 
                 <form id="changePwdForm">
-                    <div class="form-group" style="margin-bottom: 16px;">
+                    <div class="form-group">
                         <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">New Password</label>
-                        <input type="password" id="newPwd" class="form-control" required minlength="8" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+                        <input type="password" id="newPwd" class="form-control" required minlength="8">
                     </div>
                     <div class="form-group" style="margin-bottom: 24px;">
                         <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">Confirm New Password</label>
-                        <input type="password" id="confirmPwd" class="form-control" required minlength="8" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+                        <input type="password" id="confirmPwd" class="form-control" required minlength="8">
                     </div>
-                    <button type="submit" id="btnUpdatePwd" class="btn-primary" style="background: #10b981; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: 600; width: 100%; cursor: pointer;">UPDATE PASSWORD</button>
+                    <button type="submit" id="btnUpdatePwd" class="btn-primary">UPDATE PASSWORD</button>
                 </form>
             </div>
 
