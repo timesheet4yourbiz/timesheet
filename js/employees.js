@@ -318,8 +318,6 @@ function renderGroupsTable(data) {
                         ? `<button class="action-btn" onclick="openEditGroupModal('${group.id}')">✎</button>` 
                         : `<span style="font-size:0.8rem; color:#cbd5e1;">🔒</span>`}
                 </td>
-                    <button class="action-btn" onclick="openEditGroupModal('${group.id}')">✎</button>
-                </td>
             </tr>
         `;
     });
