@@ -4,6 +4,9 @@ import { loadSidebar } from './sidebar.js';
 let membersData = [];
 let groupsData = [];
 
+// Tambah pembolehubah global untuk simpan jawatan pengguna semasa
+window.currentUserRole = 'Employee'; 
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         loadSidebar();
@@ -13,10 +16,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userEmailEl = document.getElementById('userEmail');
         if (userEmailEl) userEmailEl.textContent = session.user.email;
 
+        // KAWALAN KESELAMATAN: Semak jawatan (role) pengguna yang sedang log masuk
+        const { data: profile } = await supabase
+            .from('employees')
+            .select('system_role')
+            .eq('id', session.user.id)
+            .single();
+
+        if (profile) {
+            window.currentUserRole = profile.system_role;
+        }
+
+        // Jika BUKAN Admin, sorokkan butang "+ ADD"
+        if (window.currentUserRole !== 'Admin') {
+            const btnAddMember = document.getElementById('btnAddMember');
+            const btnAddGroup = document.getElementById('btnAddGroup');
+            if (btnAddMember) btnAddMember.style.display = 'none';
+            if (btnAddGroup) btnAddGroup.style.display = 'none';
+        }
+
         setupNavigation();
         bindFilters();
-        setupMemberModal();
-        setupGroupModal();
+        
+        // Hanya Admin boleh guna Modal Add/Edit
+        if (window.currentUserRole === 'Admin') {
+            setupMemberModal();
+            setupGroupModal();
+        }
         
         await fetchMembers(); 
         await fetchGroups();
@@ -25,7 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Team Module Init Error:", error);
     }
 });
-
 // --- TAB NAVIGATION LOGIC ---
 function setupNavigation() {
     document.querySelectorAll('.nav-item').forEach(item => {
