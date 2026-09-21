@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupNavigation();
         setupModal();
         
-        await fetchGroups(); // Fetch groups for dropdowns
+        await fetchGroups();
         await fetchMembers();
 
     } catch (error) {
@@ -89,9 +89,9 @@ function setupModal() {
     // FUNGSI TAMBAH PEKERJA BARU
     btnAdd.addEventListener('click', () => {
         document.getElementById('modalTitle').textContent = "Add New Member";
-        document.getElementById('formMemberId').value = ''; // Kosongkan ID untuk rekod baru
+        document.getElementById('formMemberId').value = ''; 
         document.getElementById('formEmail').value = '';
-        document.getElementById('formEmail').disabled = false; // Boleh taip emel
+        document.getElementById('formEmail').disabled = false; 
         document.getElementById('formName').value = '';
         document.getElementById('formEmpNo').value = '';
         document.getElementById('formPhone').value = '';
@@ -127,7 +127,7 @@ function setupModal() {
         };
 
         if (empId) {
-            // JIKA ADA ID: Kemas kini profil sedia ada (Update)
+            // UPDATE PROFILE SEDIA ADA
             const result = await supabase.from('employees').update(payload).eq('id', empId);
             
             btnSave.textContent = "Save Member";
@@ -137,13 +137,12 @@ function setupModal() {
                 alert("Database Error: " + result.error.message);
             } else {
                 modal.style.display = 'none';
-                fetchMembers(); // Segarkan jadual
+                fetchMembers(); 
             }
         } else {
-            // JIKA TIADA ID: Jemput pekerja baru melalui Edge Function!
+            // INSERT: JEMPUT AHLI BARU (EDGE FUNCTION)
             btnSave.textContent = "Sending Invite...";
             
-            // Panggil Edge Function
             const { data, error } = await supabase.functions.invoke('invite_member', {
                 body: { 
                     email: payload.email, 
@@ -161,10 +160,11 @@ function setupModal() {
             } else {
                 alert("Success! An invitation email has been sent to " + payload.email);
                 modal.style.display = 'none';
-                fetchMembers(); // Segarkan jadual
+                fetchMembers(); 
             }
         }
     });
+}
 
 // FUNGSI EDIT PROFIL PEKERJA
 window.openEditModal = function(id) {
@@ -174,7 +174,7 @@ window.openEditModal = function(id) {
     document.getElementById('modalTitle').textContent = "Edit Member Profile";
     document.getElementById('formMemberId').value = member.id;
     document.getElementById('formEmail').value = member.email || '';
-    document.getElementById('formEmail').disabled = true; // Elak ubah e-mel log masuk
+    document.getElementById('formEmail').disabled = true; 
     document.getElementById('formName').value = member.name || '';
     document.getElementById('formEmpNo').value = member.employee_no || '';
     document.getElementById('formPhone').value = member.phone || '';
