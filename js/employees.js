@@ -77,7 +77,7 @@ function getInitials(name) {
     return init;
 }
 
-// --- MODAL & DATA SAVE LOGIC (TANPA EDGE FUNCTION) ---
+// --- MODAL & DATA SAVE LOGIC ---
 function setupModal() {
     const modal = document.getElementById('memberModal');
     const btnClose = document.getElementById('btnCloseModal');
@@ -142,7 +142,7 @@ function setupModal() {
                 fetchMembers(); 
             }
         } else {
-            // JIKA TIADA ID: DAFTAR AKAUN BARU
+            // JIKA TIADA ID: DAFTAR AKAUN BARU & UPSERT PROFIL
             btnSave.textContent = "Creating Account...";
             
             const tempPassword = "TempPwd" + Math.floor(Math.random() * 1000000) + "!";
@@ -163,7 +163,6 @@ function setupModal() {
                 payload.id = authData.user.id;
                 payload.email = emailInput;
                 
-                // PENYELESAIAN DI SINI: Guna UPSERT untuk elak ralat Duplicate Key
                 const { error: dbError } = await supabase.from('employees').upsert([payload]);
                 
                 btnSave.textContent = "Save Member";
@@ -179,6 +178,7 @@ function setupModal() {
             }
         }
     });
+}
 
 // FUNGSI EDIT PROFIL PEKERJA
 window.openEditModal = function(id) {
