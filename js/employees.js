@@ -13,44 +13,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userEmailEl = document.getElementById('userEmail');
         if (userEmailEl) userEmailEl.textContent = session.user.email;
 
-        bindFilters();
         setupNavigation();
-        setupModal();
+        bindFilters();
+        setupMemberModal();
+        setupGroupModal();
         
+        await fetchMembers(); // Fetch members first to populate managers dropdown
         await fetchGroups();
-        await fetchMembers();
 
     } catch (error) {
         console.error("Team Module Init Error:", error);
     }
 });
 
+// --- TAB NAVIGATION LOGIC ---
 function setupNavigation() {
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', (e) => {
+            // Update Active Tab Styling
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             e.target.classList.add('active');
             
+            // Hide all views
+            document.getElementById('membersView').style.display = 'none';
+            document.getElementById('groupsView').style.display = 'none';
+            document.getElementById('remindersView').style.display = 'none';
+            
+            // Show selected view
             const tab = e.target.getAttribute('data-tab');
-            if(tab !== 'members') {
-                document.getElementById('moduleContent').innerHTML = `
-                    <div class="table-card" style="padding: 40px; text-align: center; color: #64748b;">
-                        <h3>${tab.toUpperCase()} Module Coming Soon</h3>
-                        <p>This section is scheduled for the next development phase.</p>
-                    </div>`;
-            } else {
-                window.location.reload(); 
-            }
+            document.getElementById(tab + 'View').style.display = 'block';
         });
     });
 }
 
+// ==========================================
+// MEMBERS MODULE LOGIC
+// ==========================================
 function bindFilters() {
+    // Member filters
     const searchInput = document.getElementById('searchMember');
     const roleSelect = document.getElementById('filterRole');
     const statusSelect = document.getElementById('filterStatus');
 
-    const filterTable = () => {
+    const filterMembers = () => {
         const term = searchInput.value.toLowerCase();
         const role = roleSelect.value;
         const status = statusSelect.value;
@@ -61,12 +66,22 @@ function bindFilters() {
             const matchStatus = status === 'all' || m.status === status;
             return matchName && matchRole && matchStatus;
         });
-        renderTable(filtered);
+        renderMembersTable(filtered);
     };
 
-    if (searchInput) searchInput.addEventListener('keyup', filterTable);
-    if (roleSelect) roleSelect.addEventListener('change', filterTable);
-    if (statusSelect) statusSelect.addEventListener('change', filterTable);
+    if (searchInput) searchInput.addEventListener('keyup', filterMembers);
+    if (roleSelect) roleSelect.addEventListener('change', filterMembers);
+    if (statusSelect) statusSelect.addEventListener('change', filterMembers);
+
+    // Group filters
+    const searchGroup = document.getElementById('searchGroup');
+    if(searchGroup) {
+        searchGroup.addEventListener('keyup', () => {
+            const term = searchGroup.value.toLowerCase();
+            const filtered = groupsData.filter(g => (g.group_name || '').toLowerCase().includes(term));
+            renderGroupsTable(filtered);
+        });
+    }
 }
 
 function getInitials(name) {
@@ -77,8 +92,65 @@ function getInitials(name) {
     return init;
 }
 
-// --- MODAL & DATA SAVE LOGIC ---
-function setupModal() {
+async function fetchMembers() {
+    const { data, error } = await supabase
+        .from('employees')
+        .select(`
+            id, name, email, employee_no, phone, department, position, 
+            system_role, group_id, billable_rate, status, avatar_url,
+            groups!group_id(group_name)
+        `)
+        .order('name');
+
+    if (!error) {
+        membersData = data || [];
+        renderMembersTable(membersData);
+        populateManagerDropdown(); // Update Manager Dropdown in Group form
+    }
+}
+
+function renderMembersTable(data) {
+    const tbody = document.getElementById('membersTableBody');
+    tbody.innerHTML = '';
+
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No team members found.</td></tr>';
+        return;
+    }
+
+    data.forEach(member => {
+        const init = getInitials(member.name || member.email);
+        const dispName = member.name || 'Unknown Name';
+        const empNo = member.employee_no ? ` | ID: ${member.employee_no}` : '';
+        const group = member.groups ? member.groups.group_name : '<span style="color:#94a3b8;">-</span>';
+        const rate = member.billable_rate ? parseFloat(member.billable_rate).toFixed(2) : '0.00';
+        const statusClass = member.status === 'Active' ? 'status-active' : 'status-inactive';
+
+        tbody.innerHTML += `
+            <tr>
+                <td><input type="checkbox"></td>
+                <td>
+                    <div class="member-info">
+                        <div class="avatar">${init}</div>
+                        <div>
+                            <div class="m-name" style="text-transform: capitalize;">${dispName}</div>
+                            <div class="m-meta">${member.email}${empNo}</div>
+                        </div>
+                    </div>
+                </td>
+                <td><span style="font-weight:500;">${member.system_role || 'Employee'}</span><br><span style="font-size:0.75rem; color:#64748b;">${member.position || 'No Position'}</span></td>
+                <td>${group}</td>
+                <td>${rate}</td>
+                <td><span class="status-badge ${statusClass}">${member.status || 'Active'}</span></td>
+                <td style="text-align: center;">
+                    <button class="action-btn" onclick="openEditModal('${member.id}')">✎</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function setupMemberModal() {
     const modal = document.getElementById('memberModal');
     const btnClose = document.getElementById('btnCloseModal');
     const btnAdd = document.getElementById('btnAddMember');
@@ -86,38 +158,28 @@ function setupModal() {
 
     btnClose.addEventListener('click', () => modal.style.display = 'none');
     
-    // FUNGSI TAMBAH PEKERJA BARU
     btnAdd.addEventListener('click', () => {
         document.getElementById('modalTitle').textContent = "Add New Member";
         document.getElementById('formMemberId').value = ''; 
         document.getElementById('formEmail').value = '';
         document.getElementById('formEmail').disabled = false; 
         document.getElementById('formName').value = '';
-        document.getElementById('formEmpNo').value = '';
-        document.getElementById('formPhone').value = '';
-        document.getElementById('formDept').value = '';
-        document.getElementById('formPosition').value = '';
+        form.reset(); // quick reset
         document.getElementById('formRole').value = 'Employee';
-        document.getElementById('formGroup').value = '';
         document.getElementById('formRate').value = '0.00';
         document.getElementById('formStatus').value = 'Active';
-        
         modal.style.display = 'flex';
     });
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const btnSave = document.getElementById('btnSaveMember');
-        btnSave.textContent = "Saving...";
         btnSave.disabled = true;
 
         const empId = document.getElementById('formMemberId').value;
         const emailInput = document.getElementById('formEmail').value;
-        const nameInput = document.getElementById('formName').value;
-        
         const payload = {
-            name: nameInput,
+            name: document.getElementById('formName').value,
             employee_no: document.getElementById('formEmpNo').value,
             phone: document.getElementById('formPhone').value,
             department: document.getElementById('formDept').value,
@@ -129,58 +191,28 @@ function setupModal() {
         };
 
         if (empId) {
-            // JIKA ADA ID: UPDATE PROFILE SEDIA ADA
-            const result = await supabase.from('employees').update(payload).eq('id', empId);
+            await supabase.from('employees').update(payload).eq('id', empId);
+            modal.style.display = 'none';
+            fetchMembers(); 
+        } else {
+            const tempPassword = "TempPwd" + Math.floor(Math.random() * 1000000) + "!";
+            const { data: authData, error: authError } = await supabase.auth.signUp({ email: emailInput, password: tempPassword });
             
-            btnSave.textContent = "Save Member";
-            btnSave.disabled = false;
-
-            if (result.error) {
-                alert("Database Error: " + result.error.message);
-            } else {
+            if (authError) {
+                alert("Failed: " + authError.message);
+            } else if (authData.user) {
+                payload.id = authData.user.id;
+                payload.email = emailInput;
+                await supabase.from('employees').upsert([payload]);
+                alert(`User Added! Temporary password:\n${tempPassword}`);
                 modal.style.display = 'none';
                 fetchMembers(); 
             }
-        } else {
-            // JIKA TIADA ID: DAFTAR AKAUN BARU & UPSERT PROFIL
-            btnSave.textContent = "Creating Account...";
-            
-            const tempPassword = "TempPwd" + Math.floor(Math.random() * 1000000) + "!";
-            
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: emailInput,
-                password: tempPassword,
-            });
-
-            if (authError) {
-                btnSave.textContent = "Save Member";
-                btnSave.disabled = false;
-                alert("Gagal mendaftar e-mel (Mungkin e-mel ini sudah wujud): " + authError.message);
-                return;
-            }
-
-            if (authData.user) {
-                payload.id = authData.user.id;
-                payload.email = emailInput;
-                
-                const { error: dbError } = await supabase.from('employees').upsert([payload]);
-                
-                btnSave.textContent = "Save Member";
-                btnSave.disabled = false;
-
-                if (dbError) {
-                    alert("Account created, but failed to save profile info: " + dbError.message);
-                } else {
-                    alert(`Success! User has been added.\n\nIMPORTANT: Since this is an admin creation, the user's temporary password is:\n${tempPassword}\n\nPlease share this with them.`);
-                    modal.style.display = 'none';
-                    fetchMembers(); 
-                }
-            }
         }
+        btnSave.disabled = false;
     });
 }
 
-// FUNGSI EDIT PROFIL PEKERJA
 window.openEditModal = function(id) {
     const member = membersData.find(m => m.id === id);
     if (!member) return;
@@ -202,81 +234,133 @@ window.openEditModal = function(id) {
     document.getElementById('memberModal').style.display = 'flex';
 };
 
-async function fetchGroups() {
-    const { data } = await supabase.from('groups').select('id, group_name');
-    groupsData = data || [];
-    
-    const grpSelect = document.getElementById('formGroup');
-    if (grpSelect) {
-        groupsData.forEach(g => {
-            grpSelect.innerHTML += `<option value="${g.id}">${g.group_name}</option>`;
-        });
-    }
-}
 
-async function fetchMembers() {
-    const tbody = document.getElementById('membersTableBody');
-    tbody.innerHTML = '<tr><td colspan="7" class="loading-overlay">Loading team members...</td></tr>';
+// ==========================================
+// GROUPS MODULE LOGIC
+// ==========================================
+async function fetchGroups() {
+    const tbody = document.getElementById('groupsTableBody');
+    tbody.innerHTML = '<tr><td colspan="5" class="loading-overlay">Loading groups...</td></tr>';
 
     const { data, error } = await supabase
-        .from('employees')
-        .select(`
-            id, name, email, employee_no, phone, department, position, 
-            system_role, group_id, billable_rate, status, avatar_url,
-            groups!group_id(group_name)
-        `)
-        .order('name');
+        .from('groups')
+        .select(`id, group_name, description, manager_id, status`)
+        .order('group_name');
 
-    if (error) {
-        console.error("Error fetching members:", error);
-        tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#ef4444;">Failed to load data. ${error.message}</td></tr>`;
-        return;
+    if (!error) {
+        groupsData = data || [];
+        populateGroupDropdowns(); // Update group options in member form
+        renderGroupsTable(groupsData);
     }
-
-    membersData = data || [];
-    renderTable(membersData);
 }
 
-function renderTable(data) {
-    const tbody = document.getElementById('membersTableBody');
+function renderGroupsTable(data) {
+    const tbody = document.getElementById('groupsTableBody');
     tbody.innerHTML = '';
 
     if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No team members found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No groups created yet.</td></tr>';
         return;
     }
 
-    data.forEach(member => {
-        const init = getInitials(member.name || member.email);
-        const dispName = member.name || 'Unknown Name';
-        const empNo = member.employee_no ? ` | ID: ${member.employee_no}` : '';
-        const role = member.system_role || 'Employee';
-        const group = member.groups ? member.groups.group_name : '<span style="color:#94a3b8;">-</span>';
-        const rate = member.billable_rate ? parseFloat(member.billable_rate).toFixed(2) : '0.00';
+    data.forEach(group => {
+        // Calculate total members in this group using membersData
+        const memberCount = membersData.filter(m => m.group_id === group.id).length;
         
-        const statusClass = member.status === 'Active' ? 'status-active' : 'status-inactive';
-        const statusText = member.status || 'Active';
+        // Find manager name
+        const managerObj = membersData.find(m => m.id === group.manager_id);
+        const managerName = managerObj ? managerObj.name : '<span style="color:#94a3b8;">- No Manager -</span>';
+        
+        const statusClass = group.status === 'Active' ? 'status-active' : 'status-inactive';
 
         tbody.innerHTML += `
             <tr>
-                <td><input type="checkbox"></td>
-                <td>
-                    <div class="member-info">
-                        <div class="avatar">${init}</div>
-                        <div>
-                            <div class="m-name" style="text-transform: capitalize;">${dispName}</div>
-                            <div class="m-meta">${member.email}${empNo}</div>
-                        </div>
-                    </div>
-                </td>
-                <td><span style="font-weight:500;">${role}</span><br><span style="font-size:0.75rem; color:#64748b;">${member.position || 'No Position'}</span></td>
-                <td>${group}</td>
-                <td>${rate}</td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td><span style="font-weight:600; color:#334155;">${group.group_name}</span></td>
+                <td>${managerName}</td>
+                <td><span style="background:#e2e8f0; padding:2px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold;">${memberCount} members</span></td>
+                <td><span class="status-badge ${statusClass}">${group.status || 'Active'}</span></td>
                 <td style="text-align: center;">
-                    <button class="action-btn" title="Edit Profile" onclick="openEditModal('${member.id}')">✎</button>
+                    <button class="action-btn" onclick="openEditGroupModal('${group.id}')">✎</button>
                 </td>
             </tr>
         `;
+    });
+}
+
+function setupGroupModal() {
+    const modal = document.getElementById('groupModal');
+    const btnClose = document.getElementById('btnCloseGroupModal');
+    const btnAdd = document.getElementById('btnAddGroup');
+    const form = document.getElementById('groupForm');
+
+    btnClose.addEventListener('click', () => modal.style.display = 'none');
+    
+    btnAdd.addEventListener('click', () => {
+        document.getElementById('groupModalTitle').textContent = "Create New Group";
+        document.getElementById('formGroupId').value = ''; 
+        document.getElementById('formGroupName').value = '';
+        document.getElementById('formGroupDesc').value = '';
+        document.getElementById('formGroupManager').value = '';
+        document.getElementById('formGroupStatus').value = 'Active';
+        modal.style.display = 'flex';
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btnSave = document.getElementById('btnSaveGroup');
+        btnSave.disabled = true;
+
+        const groupId = document.getElementById('formGroupId').value;
+        const payload = {
+            group_name: document.getElementById('formGroupName').value,
+            description: document.getElementById('formGroupDesc').value,
+            manager_id: document.getElementById('formGroupManager').value || null,
+            status: document.getElementById('formGroupStatus').value
+        };
+
+        if (groupId) {
+            await supabase.from('groups').update(payload).eq('id', groupId);
+        } else {
+            await supabase.from('groups').insert([payload]);
+        }
+        
+        modal.style.display = 'none';
+        btnSave.disabled = false;
+        fetchGroups(); // Refresh groups
+    });
+}
+
+window.openEditGroupModal = function(id) {
+    const group = groupsData.find(g => g.id === id);
+    if (!group) return;
+
+    document.getElementById('groupModalTitle').textContent = "Edit Group";
+    document.getElementById('formGroupId').value = group.id;
+    document.getElementById('formGroupName').value = group.group_name || '';
+    document.getElementById('formGroupDesc').value = group.description || '';
+    document.getElementById('formGroupManager').value = group.manager_id || '';
+    document.getElementById('formGroupStatus').value = group.status || 'Active';
+
+    document.getElementById('groupModal').style.display = 'flex';
+};
+
+// Utilities for populating select dropdowns dynamically
+function populateGroupDropdowns() {
+    const select = document.getElementById('formGroup');
+    if(!select) return;
+    select.innerHTML = '<option value="">- No Group -</option>';
+    groupsData.forEach(g => {
+        select.innerHTML += `<option value="${g.id}">${g.group_name}</option>`;
+    });
+}
+
+function populateManagerDropdown() {
+    const select = document.getElementById('formGroupManager');
+    if(!select) return;
+    select.innerHTML = '<option value="">- Select Manager -</option>';
+    // Only show people with Manager, Admin, or Supervisor roles as options
+    const eligibleManagers = membersData.filter(m => ['Admin', 'Manager', 'Supervisor'].includes(m.system_role));
+    eligibleManagers.forEach(m => {
+        select.innerHTML += `<option value="${m.id}">${m.name} (${m.system_role})</option>`;
     });
 }
