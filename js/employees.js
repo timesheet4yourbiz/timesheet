@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupMemberModal();
         setupGroupModal();
         
-        await fetchMembers(); // Fetch members first to populate managers dropdown
+        await fetchMembers(); 
         await fetchGroups();
 
     } catch (error) {
@@ -30,16 +30,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupNavigation() {
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', (e) => {
-            // Update Active Tab Styling
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             e.target.classList.add('active');
             
-            // Hide all views
             document.getElementById('membersView').style.display = 'none';
             document.getElementById('groupsView').style.display = 'none';
             document.getElementById('remindersView').style.display = 'none';
             
-            // Show selected view
             const tab = e.target.getAttribute('data-tab');
             document.getElementById(tab + 'View').style.display = 'block';
         });
@@ -50,7 +47,6 @@ function setupNavigation() {
 // MEMBERS MODULE LOGIC
 // ==========================================
 function bindFilters() {
-    // Member filters
     const searchInput = document.getElementById('searchMember');
     const roleSelect = document.getElementById('filterRole');
     const statusSelect = document.getElementById('filterStatus');
@@ -73,7 +69,6 @@ function bindFilters() {
     if (roleSelect) roleSelect.addEventListener('change', filterMembers);
     if (statusSelect) statusSelect.addEventListener('change', filterMembers);
 
-    // Group filters
     const searchGroup = document.getElementById('searchGroup');
     if(searchGroup) {
         searchGroup.addEventListener('keyup', () => {
@@ -105,7 +100,7 @@ async function fetchMembers() {
     if (!error) {
         membersData = data || [];
         renderMembersTable(membersData);
-        populateManagerDropdown(); // Update Manager Dropdown in Group form
+        populateManagerDropdown(); 
     }
 }
 
@@ -164,7 +159,7 @@ function setupMemberModal() {
         document.getElementById('formEmail').value = '';
         document.getElementById('formEmail').disabled = false; 
         document.getElementById('formName').value = '';
-        form.reset(); // quick reset
+        form.reset(); 
         document.getElementById('formRole').value = 'Employee';
         document.getElementById('formRate').value = '0.00';
         document.getElementById('formStatus').value = 'Active';
@@ -191,12 +186,25 @@ function setupMemberModal() {
         };
 
         if (empId) {
+            // UPDATE: Rekod Sedia Ada
             await supabase.from('employees').update(payload).eq('id', empId);
             modal.style.display = 'none';
             fetchMembers(); 
         } else {
-            const tempPassword = "TempPwd" + Math.floor(Math.random() * 1000000) + "!";
-            const { data: authData, error: authError } = await supabase.auth.signUp({ email: emailInput, password: tempPassword });
+            // INSERT: Jemput Ahli Baru & Arahkan ke Set Password
+            btnSave.textContent = "Sending Invite...";
+
+            // Cipta password rawak (kita rahsiakan dari semua orang)
+            const tempPassword = "Pwd" + Math.floor(Math.random() * 10000000) + "A!";
+            
+            const { data: authData, error: authError } = await supabase.auth.signUp({ 
+                email: emailInput, 
+                password: tempPassword,
+                options: {
+                    // Ini kunci utama! Arahkan ke page Set Password selepas klik link
+                    emailRedirectTo: 'https://timesheet4yourbiz.github.io/timesheet/pages/set-password.html'
+                }
+            });
             
             if (authError) {
                 alert("Failed: " + authError.message);
@@ -204,11 +212,14 @@ function setupMemberModal() {
                 payload.id = authData.user.id;
                 payload.email = emailInput;
                 await supabase.from('employees').upsert([payload]);
-                alert(`User Added! Temporary password:\n${tempPassword}`);
+                
+                // Mesej baharu yang lebih profesional
+                alert(`Success! An invitation email has been sent to ${emailInput}.\n\nWhen they click the link in the email, they will be asked to create their own password.`);
                 modal.style.display = 'none';
                 fetchMembers(); 
             }
         }
+        btnSave.textContent = "Save Member";
         btnSave.disabled = false;
     });
 }
@@ -249,7 +260,7 @@ async function fetchGroups() {
 
     if (!error) {
         groupsData = data || [];
-        populateGroupDropdowns(); // Update group options in member form
+        populateGroupDropdowns(); 
         renderGroupsTable(groupsData);
     }
 }
@@ -264,13 +275,9 @@ function renderGroupsTable(data) {
     }
 
     data.forEach(group => {
-        // Calculate total members in this group using membersData
         const memberCount = membersData.filter(m => m.group_id === group.id).length;
-        
-        // Find manager name
         const managerObj = membersData.find(m => m.id === group.manager_id);
         const managerName = managerObj ? managerObj.name : '<span style="color:#94a3b8;">- No Manager -</span>';
-        
         const statusClass = group.status === 'Active' ? 'status-active' : 'status-inactive';
 
         tbody.innerHTML += `
@@ -326,7 +333,7 @@ function setupGroupModal() {
         
         modal.style.display = 'none';
         btnSave.disabled = false;
-        fetchGroups(); // Refresh groups
+        fetchGroups(); 
     });
 }
 
@@ -344,7 +351,6 @@ window.openEditGroupModal = function(id) {
     document.getElementById('groupModal').style.display = 'flex';
 };
 
-// Utilities for populating select dropdowns dynamically
 function populateGroupDropdowns() {
     const select = document.getElementById('formGroup');
     if(!select) return;
@@ -358,7 +364,6 @@ function populateManagerDropdown() {
     const select = document.getElementById('formGroupManager');
     if(!select) return;
     select.innerHTML = '<option value="">- Select Manager -</option>';
-    // Only show people with Manager, Admin, or Supervisor roles as options
     const eligibleManagers = membersData.filter(m => ['Admin', 'Manager', 'Supervisor'].includes(m.system_role));
     eligibleManagers.forEach(m => {
         select.innerHTML += `<option value="${m.id}">${m.name} (${m.system_role})</option>`;
