@@ -34,7 +34,7 @@ export async function loadSidebar() {
     const currentPath = window.location.pathname;
     
     const sidebarHTML = `
-        <aside class="sidebar" style="width: 250px; background: white; height: 100vh; position: fixed; left: 0; top: 0; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; z-index: 100;">
+        <aside class="sidebar" style="width: 250px; background: white; height: 100%; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column;">
             
             <!-- PROFIL COMEL (SEBELAH-MENYEBELAH) -->
             <div class="sidebar-header" style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; display: flex; align-items: center; gap: 12px;">
