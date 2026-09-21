@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - WorkTime</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body { margin: 0; background: #f4f7f6; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; color: #334155; }
+        .main-content { position: absolute; top: 0; left: 250px; right: 0; padding: 24px 32px; min-height: 100vh; box-sizing: border-box; }
+        
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { margin: 0; font-size: 1.5rem; font-weight: 600; color: #0f172a; }
+        
+        .settings-card { background: white; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.02); padding: 32px; max-width: 500px; }
+        .section-title { font-size: 1.1rem; font-weight: 600; color: #0f172a; margin-top: 0; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; }
+        .section-desc { font-size: 0.85rem; color: #64748b; margin-bottom: 24px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.9rem; box-sizing: border-box; outline: none; }
+        .form-input:focus { border-color: #0ea5e9; }
+        
+        .btn-save { background: #0ea5e9; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-save:hover { background: #0284c7; }
+        .btn-save:disabled { opacity: 0.7; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <!-- Tempat Sidebar Dimuatkan -->
+    <div id="sidebar-container"></div>
+    
+    <div class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">Account Settings</h1>
+            <span id="userEmail" style="color:#64748b; font-size:0.85rem;"></span>
+        </div>
+
+        <div class="settings-card">
+            <h2 class="section-title">Change Password</h2>
+            <p class="section-desc">Update your password to keep your account secure. If you were given a temporary password, please change it immediately.</p>
+            
+            <form id="changePwdForm">
+                <div class="form-group">
+                    <label class="form-label">New Password (Min. 8 characters)</label>
+                    <input type="password" id="newPwd" class="form-input" placeholder="Enter new password" required minlength="8">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" id="confirmPwd" class="form-input" placeholder="Re-enter new password" required minlength="8">
+                </div>
+                
+                <button type="submit" class="btn-save" id="btnUpdatePwd">Update Password</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from '../js/supabase.js';
+        import { loadSidebar } from '../js/sidebar.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadSidebar();
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return window.location.href = '../pages/login.html';
+            
+            const userEmailEl = document.getElementById('userEmail');
+            if (userEmailEl) userEmailEl.textContent = session.user.email;
+        });
+
+        document.getElementById('changePwdForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnUpdatePwd');
+            const pwd1 = document.getElementById('newPwd').value;
+            const pwd2 = document.getElementById('confirmPwd').value;
+
+            if (pwd1 !== pwd2) {
+                alert("Passwords do not match! Please try again.");
+                return;
+            }
+
+            btn.textContent = "Updating...";
+            btn.disabled = true;
+
+            const { data, error } = await supabase.auth.updateUser({
+                password: pwd1
+            });
+
+            btn.textContent = "Update Password";
+            btn.disabled = false;
+
+            if (error) {
+                alert("Failed to update password: " + error.message);
+            } else {
+                alert("Success! Your password has been updated securely.");
+                document.getElementById('changePwdForm').reset();
+            }
+        });
+    </script>
+</body>
+</html>
