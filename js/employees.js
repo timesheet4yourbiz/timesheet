@@ -126,28 +126,45 @@ function setupModal() {
             status: document.getElementById('formStatus').value
         };
 
-        let result;
         if (empId) {
-            // Jika ada empId, bermaksud kita UPDATE rekod sedia ada
-            result = await supabase.from('employees').update(payload).eq('id', empId);
-        } else {
-            // Jika tiada empId, bermaksud kita INSERT rekod baru (dummy user)
-            // Catatan: Jika DB bos ketat pasal Foreign Key (auth.users), ini mungkin gagal.
-            result = await supabase.from('employees').insert([payload]);
-        }
-        
-        btnSave.textContent = "Save Member";
-        btnSave.disabled = false;
+            // JIKA ADA ID: Kemas kini profil sedia ada (Update)
+            const result = await supabase.from('employees').update(payload).eq('id', empId);
+            
+            btnSave.textContent = "Save Member";
+            btnSave.disabled = false;
 
-        if (result.error) {
-            // Mesej Ralat dalam English
-            alert("Database Error: " + result.error.message + "\n\n(If it mentions 'Foreign Key Constraint', it means you MUST register this user via Supabase Auth first).");
+            if (result.error) {
+                alert("Database Error: " + result.error.message);
+            } else {
+                modal.style.display = 'none';
+                fetchMembers(); // Segarkan jadual
+            }
         } else {
-            modal.style.display = 'none';
-            fetchMembers(); // Segarkan jadual selepas simpan
+            // JIKA TIADA ID: Jemput pekerja baru melalui Edge Function!
+            btnSave.textContent = "Sending Invite...";
+            
+            // Panggil Edge Function
+            const { data, error } = await supabase.functions.invoke('invite_member', {
+                body: { 
+                    email: payload.email, 
+                    name: payload.name,
+                    role: payload.system_role,
+                    department: payload.department
+                }
+            });
+            
+            btnSave.textContent = "Save Member";
+            btnSave.disabled = false;
+
+            if (error || (data && data.error)) {
+                alert("Failed to send invite: " + (error?.message || data?.error));
+            } else {
+                alert("Success! An invitation email has been sent to " + payload.email);
+                modal.style.display = 'none';
+                fetchMembers(); // Segarkan jadual
+            }
         }
     });
-}
 
 // FUNGSI EDIT PROFIL PEKERJA
 window.openEditModal = function(id) {
