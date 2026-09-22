@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Man-Hour Report - Cranetrack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        body { margin: 0; background: #f1f5f9; font-family: 'Inter', sans-serif; color: #0f172a; }
+        
+        .main-content { 
+            margin-left: 250px; 
+            padding: 24px; 
+            min-height: 100vh; 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 24px; 
+        }
+        
+        /* CONTROL BAR */
+        .control-bar {
+            background: white; padding: 16px 24px; border-radius: 8px; border: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 16px;
+        }
+        .filter-group { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filter-group select, .filter-group input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; font-size: 0.9rem; }
+        
+        .action-btns { display: flex; gap: 10px; }
+        .btn-action { padding: 10px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; border: none; font-size: 0.85rem; }
+        .btn-generate { background: #0f172a; color: white; }
+        .btn-generate:hover { background: #1e293b; }
+        .btn-print { background: #0284c7; color: white; }
+        .btn-print:hover { background: #0369a1; }
+        .btn-excel { background: #16a34a; color: white; }
+        .btn-excel:hover { background: #15803d; }
+
+        /* A4 REPORT PAPER */
+        .report-paper {
+            background: white; padding: 40px; border-radius: 8px; border: 1px solid #cbd5e1;
+            width: 100%; max-width: 960px; margin: 0 auto; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            position: relative; box-sizing: border-box; overflow-x: auto;
+        }
+
+        /* HEADER */
+        .report-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0f172a; padding-bottom: 16px; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;}
+        .company-title { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.5px; }
+        .report-subtitle { font-size: 0.8rem; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-top: 4px; text-transform: uppercase; }
+        .month-badge { background: #0f172a; color: white; padding: 10px 20px; border-radius: 6px; text-align: center; font-weight: 800; font-size: 1rem; line-height: 1.2; }
+
+        .section-title { font-size: 0.9rem; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; border-left: 4px solid #0284c7; padding-left: 10px; }
+
+        /* TABLE */
+        .report-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 0.85rem; min-width: 700px; }
+        .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 12px; text-align: center; }
+        .report-table th { background: #0f172a; color: white; font-weight: 700; line-height: 1.4; }
+        .report-table th span.date-range { font-size: 0.7rem; font-weight: 500; color: #94a3b8; display: block; margin-top: 2px; }
+        .report-table td.project-name { text-align: left; font-weight: 700; color: #1e293b; }
+        
+        /* TOTAL ROW (BLUE EMPHASIS) */
+        .report-table tr.total-row { background: #e0f2fe; font-weight: 800; color: #0f172a; }
+        .report-table tr.total-row td { border-top: 2px solid #0284c7; border-bottom: 2px solid #0284c7; }
+        .report-table tr.total-row td.grand-total-cell { font-size: 1rem; color: #0369a1; }
+
+        /* A4 PRINT CSS */
+        @media print {
+            @page { size: A4 portrait; margin: 10mm; }
+            body { background: white !important; }
+            #sidebar-container, .control-bar { display: none !important; }
+            .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; display: block !important; }
+            .report-paper { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar-container"></div>
+
+    <div class="main-content">
+        <!-- FILTER & ACTION BAR -->
+        <div class="control-bar">
+            <div class="filter-group">
+                <label style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">REPORT PERIOD:</label>
+                <select id="reportMonth">
+                    <!-- Bulan dijana oleh JS -->
+                </select>
+                <input type="number" id="reportYear" value="2026" style="width: 80px;">
+                
+                <button id="btnGenerate" class="btn-action btn-generate">Generate Report</button>
+            </div>
+            <div class="action-btns">
+                <button id="btnPrint" class="btn-action btn-print">🖨️ Print A4 / PDF</button>
+                <button id="btnExcel" class="btn-action btn-excel">📊 Export CSV</button>
+            </div>
+        </div>
+
+        <!-- A4 REPORT -->
+        <div class="report-paper" id="reportPaper">
+            <div class="report-header">
+                <div>
+                    <h1 class="company-title">PROJECT MAN-HOUR REPORT</h1>
+                    <div class="report-subtitle">MONTHLY SUMMARY | ACCURATE TIME • EFFICIENT PROJECTS • STRONGER RESULTS</div>
+                </div>
+                <div class="month-badge" id="badgeMonthYear">
+                    SEPTEMBER<br>2026
+                </div>
+            </div>
+
+            <div class="section-title">WEEKLY MAN-HOUR SUMMARY</div>
+            <div style="overflow-x: auto;">
+                <table class="report-table" id="exportTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%; text-align: left;">Project</th>
+                            <th id="thW1">Week 1<span class="date-range" id="dtW1">-</span></th>
+                            <th id="thW2">Week 2<span class="date-range" id="dtW2">-</span></th>
+                            <th id="thW3">Week 3<span class="date-range" id="dtW3">-</span></th>
+                            <th id="thW4">Week 4<span class="date-range" id="dtW4">-</span></th>
+                            <th id="thW5">Week 5<span class="date-range" id="dtW5">-</span></th>
+                            <th style="width: 15%; background: #0284c7;">Total Manhour</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodyProjects">
+                        <!-- Dinamik -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td style="text-align: left;">TOTAL</td>
+                            <td id="totW1">0.0</td>
+                            <td id="totW2">0.0</td>
+                            <td id="totW3">0.0</td>
+                            <td id="totW4">0.0</td>
+                            <td id="totW5">0.0</td>
+                            <td id="totGrand" class="grand-total-cell">0.0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="../js/reports.js"></script>
+</body>
+</html>
