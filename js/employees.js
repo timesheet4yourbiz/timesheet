@@ -129,6 +129,68 @@ async function fetchMembers() {
     }
 }
 
+import { supabase } from './supabase.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnImport = document.getElementById('btnImportExcel');
+    const fileInput = document.getElementById('excelFileInput');
+
+    if (btnImport && fileInput) {
+        // Apabila butang ditekan, buka tetingkap pilih fail
+        btnImport.addEventListener('click', () => fileInput.click());
+
+        // Apabila fail Excel dipilih
+        fileInput.addEventListener('change', handleExcelUpload);
+    }
+});
+
+async function handleExcelUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    
+    reader.onload = async (e) => {
+        try {
+            // 1. Baca fail Excel
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            // 2. Ambil data dari sheet pertama
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            // 3. Tukar data Excel kepada format JSON
+            const excelData = XLSX.utils.sheet_to_json(worksheet);
+            
+            if (excelData.length === 0) {
+                alert("Fail Excel kosong!");
+                return;
+            }
+
+            alert(`Berjaya membaca ${excelData.length} baris data. Sedang mendaftar pekerja...`);
+
+            // 4. Masukkan data ke dalam jadual 'employees' di Supabase
+            // (Pastikan nama kolum Excel sepadan dengan nama kolum jadual, cth: nama, email, jabatan)
+            const { error } = await supabase
+                .from('employees') // Ganti dengan nama jadual pekerja sebenar bos
+                .insert(excelData);
+
+            if (error) throw error;
+
+            alert("Semua pekerja berjaya diimport!");
+            window.location.reload(); // Muat semula halaman untuk papar senarai baru
+
+        } catch (error) {
+            console.error("Ralat Import:", error);
+            alert("Gagal mengimport data: " + error.message);
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+    event.target.value = ''; // Reset input
+}
+
 function renderMembersTable(data) {
     const tbody = document.getElementById('membersTableBody');
     tbody.innerHTML = '';
