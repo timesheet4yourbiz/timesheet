@@ -142,6 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             let thHtml = `
                 <th style="padding: 12px 20px; text-align: left; font-weight: 500; width: 25%;">Projects</th>
                 <th style="padding: 12px 10px; text-align: left; font-weight: 500; width: 15%;">Tag</th>
+                <th style="padding: 12px 10px; text-align: left; font-weight: 500; width: 18%;">Remark</th>
             `;
             days.forEach(d => {
                 const label = d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
@@ -307,6 +308,42 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <option value="admin">Admin</option>
                         </select>
                     </td>`;
+                <!-- TAMBAHAN KOTAK REMARK (FREE TYPE) -->
+                    <td style="padding: 12px 10px;">
+                        <input type="text" placeholder="Type remark..." style="width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; outline: none; background: #f8fafc; box-sizing: border-box; font-family: inherit;">
+                    </td>`;
+                
+
+for(let i=0; i<7; i++) {
+                htmlContent += `<td style="text-align: center;">
+                                    <input type="text" placeholder="0:00" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; background: white; outline: none; color: #475569;" disabled>
+                                </td>`;
+            }
+            htmlContent += `<td style="font-weight: 500; color: #718096; font-size: 0.9rem; text-align: center; border-left: 1px dotted #e2e8f0;">0:00</td>
+                            <td style="color: #a0aec0; cursor: pointer; font-size: 1.2rem; text-align: center; font-weight: 300;">✕</td>
+                        </tr>`;
+
+            tBody.innerHTML = htmlContent;
+
+            if (tFoot) {
+                let footHtml = `<tr style="background: #edf2f7; font-weight: 500; color: #718096; font-size: 0.9rem; border-top: 1px solid #e2e8f0;">
+                                    <!-- KITA TUKAR COLSPAN="3" AGAR TOTAL COVER KOTAK PROJECT, TAG & REMARK -->
+                                    <td colspan="3" style="padding: 15px 20px; text-align: right; font-weight: 600;">Total:</td>`;
+                for (let i = 0; i < 7; i++) {
+                    footHtml += `<td style="padding: 15px 10px; text-align: center;">${dayTotals[i] > 0 ? formatHMS(dayTotals[i]) : '0:00'}</td>`;
+                }
+                footHtml += `<td style="padding: 15px 10px; text-align: center; color: #4a5568;">${formatHMS(grandTotal)}</td><td></td></tr>`;
+                tFoot.innerHTML = footHtml;
+            }
+
+
+
+
+
+
+
+
+
                 
                 days.forEach((d, index) => {
                     const dateKey = d.toLocaleDateString('en-CA');
