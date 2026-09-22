@@ -88,7 +88,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const getTagOptionsHtml = () => {
             let options = '<option value="">- Select Tag -</option>';
             tagsDataList.forEach(t => {
-                // Membaca nama tag dari database (samada nama kolum tag_name, name, atau title)
                 const tagName = t.tag_name || t.name || t.title || t.tag || 'Unknown';
                 options += `<option value="${t.id}">${tagName}</option>`;
             });
@@ -428,36 +427,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const addNewRowBtn = document.getElementById('addNewRowBtn');
         if (addNewRowBtn) addNewRowBtn.addEventListener('click', togglePopup);
-       // ==========================================
-        // FUNGSI TOGGLE DROPDOWN COPY LAST WEEK
+       
         // ==========================================
-        const copyDropdownBtn = document.getElementById('copyLastWeekBtn');
-        const copyDropdownMenu = copyDropdownBtn ? copyDropdownBtn.nextElementSibling : null;
-
-        if (copyDropdownBtn && copyDropdownMenu) {
-            copyDropdownBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); 
-                const isHidden = copyDropdownMenu.style.display === 'none';
-                copyDropdownMenu.style.display = isHidden ? 'block' : 'none';
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!copyDropdownBtn.contains(e.target) && !copyDropdownMenu.contains(e.target)) {
-                    copyDropdownMenu.style.display = 'none';
-                }
-            });
-        }
-        
-        
-        
+        // FUNGSI COPY LAST WEEK (NATIVE SELECT DROPDOWN)
         // ==========================================
-        // FUNGSI COPY LAST WEEK (ENJIN SEBENAR)
-        // ==========================================
+        const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
+        
         const executeCopyLastWeek = async (includeTime) => {
-            const btn = document.getElementById('copyLastWeekBtn');
-            if (btn) {
-                btn.innerHTML = '⏳ Copying... <span>▼</span>';
-                btn.disabled = true;
+            if (copyLastWeekSelect) {
+                copyLastWeekSelect.options[0].text = '⏳ Copying...';
+                copyLastWeekSelect.disabled = true;
             }
             
             try {
@@ -483,7 +462,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (!lwData || lwData.length === 0) {
                     alert(`Tiada rekod masa atau projek pada minggu lepas (${lwStart.toLocaleDateString('en-GB')} - ${lwEnd.toLocaleDateString('en-GB')}) untuk disalin.`);
-                    if(btn) { btn.innerHTML = '📄 Copy last week <span>▼</span>'; btn.disabled = false; }
+                    if(copyLastWeekSelect) { 
+                        copyLastWeekSelect.options[0].text = '📄 Copy last week ▼'; 
+                        copyLastWeekSelect.disabled = false; 
+                        copyLastWeekSelect.selectedIndex = 0; // Reset dropdown ke paparan asal
+                    }
                     return;
                 }
 
@@ -527,20 +510,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert("Gagal menyalin: " + err.message);
             }
             
-            if(btn) {
-                btn.innerHTML = '📄 Copy last week <span>▼</span>';
-                btn.disabled = false;
+            if(copyLastWeekSelect) {
+                copyLastWeekSelect.options[0].text = '📄 Copy last week ▼';
+                copyLastWeekSelect.disabled = false;
+                copyLastWeekSelect.selectedIndex = 0; // Reset dropdown ke paparan asal
             }
         };
 
-        // Pautkan fungsi ke butang dalam dropdown HTML
-        window.copyActivitiesOnly = async function() {
-            await executeCopyLastWeek(false);
-        };
-
-        window.copyActivitiesAndTime = async function() {
-            await executeCopyLastWeek(true);
-        };
+        // Pasang "Telinga" pada Dropdown (Dengar perubahan pilihan pengguna)
+        if (copyLastWeekSelect) {
+            copyLastWeekSelect.addEventListener('change', async (e) => {
+                const val = e.target.value;
+                if (val === 'activities') {
+                    await executeCopyLastWeek(false);
+                } else if (val === 'all') {
+                    await executeCopyLastWeek(true);
+                }
+            });
+        }
 
         const saveTemplateBtn = document.getElementById('saveTemplateBtn');
         if (saveTemplateBtn) saveTemplateBtn.addEventListener('click', () => alert("Fungsi 'Save as template' akan datang dalam kemas kini modul seterusnya!"));
