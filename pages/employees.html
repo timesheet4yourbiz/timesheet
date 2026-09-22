@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team - WorkTime</title>
     <link rel="stylesheet" href="../css/style.css">
+    <!-- Tambahkan SheetJS di bahagian <head> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Tambahkan Butang Import dan Input Fail Tersembunyi di bahagian Action Bar -->
+<div class="action-bar">
+    <!-- Input jenis fail (disembunyikan, hanya dipanggil bila butang ditekan) -->
+    <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;">
+    
+    <button id="btnImportExcel" class="btn-primary" style="background-color: #10b981;">
+        📥 Import Excel
+    </button>
+    <button id="btnAddEmployee" class="btn-primary">+ Add Employee</button>
+</div>
     <style>
         body { margin: 0; background: #f4f7f6; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; color: #334155; }
         .main-content { position: absolute; top: 0; left: 250px; right: 0; padding: 24px 32px; min-height: 100vh; box-sizing: border-box; }
