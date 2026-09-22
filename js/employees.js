@@ -129,7 +129,7 @@ async function fetchMembers() {
     }
 }
 
-import { supabase } from './supabase.js';
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const btnImport = document.getElementById('btnImportExcel');
