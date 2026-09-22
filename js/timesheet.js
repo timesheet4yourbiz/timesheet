@@ -504,3 +504,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         alert("Ralat sistem dikesan: " + error.message + ". Sila maklumkan kepada admin.");
     }
 });
+
+
+// ==========================================
+// FUNGSI COPY LAST WEEK (TIMESHEET ENGINE)
+// ==========================================
+
+window.copyActivitiesOnly = async function() {
+    console.log("Enjin Copy Activities Only dihidupkan...");
+    // Nanti kita letak logik tarik data Supabase kat sini
+    alert("Fungsi 'Copy activities only' berjaya ditekan! Enjin sedang dibina...");
+};
+
+window.copyActivitiesAndTime = async function() {
+    console.log("Enjin Copy Activities & Time dihidupkan...");
+    // Nanti kita letak logik tarik data Supabase kat sini
+    alert("Fungsi 'Copy activities and time' berjaya ditekan! Enjin sedang dibina...");
+};
