@@ -47,17 +47,24 @@ async function populateFilters() {
         }
     } catch (e) { console.warn("Ralat memuatkan pilihan projek:", e); }
 
-    // 3. Isikan Pilihan Group (Departments) dari Supabase
+    // 3. Isikan Pilihan Group dari Supabase (Jadual Groups)
     try {
-        const { data: depts } = await supabase.from('departments').select('*');
+        let { data: groups, error } = await supabase.from('groups').select('*');
+        
+        // Fallback jika jadual dinamakan team_groups atau departments
+        if (error || !groups || groups.length === 0) {
+            const { data: fallbackG } = await supabase.from('departments').select('*');
+            groups = fallbackG || [];
+        }
+
         const groupSelect = document.getElementById('filterGroup');
-        if (depts && groupSelect) {
-            depts.forEach(d => {
-                const dName = d.department_name || d.name || 'Group ' + d.id;
-                groupSelect.innerHTML += `<option value="${d.id}">${dName}</option>`;
+        if (groups && groupSelect) {
+            groups.forEach(g => {
+                const gName = g.group_name || g.name || g.department_name || 'Group ' + g.id;
+                groupSelect.innerHTML += `<option value="${g.id}">${gName}</option>`;
             });
         }
-    } catch (e) { console.warn("Ralat memuatkan pilihan kumpulan:", e); }
+    } catch (e) { console.warn("Ralat memuatkan pilihan group:", e); }
 
     // 4. Isikan Pilihan User (Employees) dari Supabase
     try {
@@ -125,15 +132,25 @@ async function generateReport() {
         query = query.eq('employee_id', selectedUser);
     }
 
-    // Penapis 3: Group / Department
+    // Penapis 3: Group (Team Groups)
     if (selectedGroup !== 'ALL') {
-        // Cari ID pekerja yang berada dalam jabatan/group ini dulu
-        const { data: groupEmps } = await supabase.from('employees').select('id').eq('department_id', selectedGroup);
-        if (groupEmps && groupEmps.length > 0) {
-            const empIds = groupEmps.map(e => e.id);
+        let empIds = [];
+        
+        // Semak jadual junction ahli kumpulan (group_members / group_users)
+        const { data: gMembers } = await supabase.from('group_members').select('employee_id, user_id').eq('group_id', selectedGroup);
+        if (gMembers && gMembers.length > 0) {
+            empIds = gMembers.map(m => m.employee_id || m.user_id).filter(Boolean);
+        } else {
+            // Fallback semak kolum group_id atau department_id dalam jadual employees
+            const { data: groupEmps } = await supabase.from('employees').select('id').or(`group_id.eq.${selectedGroup},department_id.eq.${selectedGroup}`);
+            if (groupEmps && groupEmps.length > 0) {
+                empIds = groupEmps.map(e => e.id);
+            }
+        }
+
+        if (empIds.length > 0) {
             query = query.in('employee_id', empIds);
         } else {
-            // Jika tiada pekerja dalam group ini, luluskan query kosong
             query = query.eq('employee_id', '00000000-0000-0000-0000-000000000000');
         }
     }
