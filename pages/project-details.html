@@ -1,1 +1,85 @@
-z
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Tasks - WorkTime</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        
+        <main class="main-content">
+            <header class="topbar">
+                <h3>Projects</h3>
+                <div class="user-info"><span id="userEmail">Loading...</span></div>
+            </header>
+
+            <div class="content-area">
+                <!-- Header Projek -->
+                <div style="margin-bottom: 25px;">
+                    <a href="projects.html" style="color: #0ea5e9; font-size: 0.9rem; text-decoration: none; display: inline-block; margin-bottom: 10px;">Projects</a>
+                    <h2 id="pdName" style="margin: 0 0 5px 0; font-size: 1.8rem; color: var(--text-main); font-weight: 400;">Loading...</h2>
+                    <div id="pdClient" style="color: #64748b; font-size: 0.9rem;">-</div>
+                </div>
+
+                <!-- Tabs Menu -->
+                <div style="display: flex; gap: 2px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+                    <div style="padding: 12px 25px; border-top: 3px solid #0ea5e9; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); background: white; font-weight: 600; font-size: 0.85rem; color: #333; cursor: pointer;">TASKS</div>
+                    <div style="padding: 12px 25px; background: #f1f5f9; color: #64748b; font-size: 0.85rem; cursor: pointer;">ACCESS</div>
+                    <div style="padding: 12px 25px; background: #f1f5f9; color: #64748b; font-size: 0.85rem; cursor: pointer;">STATUS</div>
+                    <div style="padding: 12px 25px; background: #f1f5f9; color: #64748b; font-size: 0.85rem; cursor: pointer;">FORECAST</div>
+                    <div style="padding: 12px 25px; background: #f1f5f9; color: #64748b; font-size: 0.85rem; cursor: pointer;">NOTE</div>
+                    <div style="padding: 12px 25px; background: #f1f5f9; color: #64748b; font-size: 0.85rem; cursor: pointer;">SETTINGS</div>
+                </div>
+
+                <!-- Bar Tindakan: Search & Add Task -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 15px; background: white; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <div style="display: flex; gap: 15px; width: 40%;">
+                        <select style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; outline: none;">
+                            <option>Show active</option>
+                        </select>
+                        <div style="flex: 1; border: 1px solid #cbd5e1; border-radius: 4px; display: flex; align-items: center; padding: 0 10px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" placeholder="Search by name" style="border: none; outline: none; padding: 8px; width: 100%; font-size: 0.9rem;">
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; align-items: center;">
+            <button id="loadTemplateBtn" style="padding: 8px 15px; background: white; border: 1px solid #10b981; color: #10b981; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                📑 Load Template
+            </button>
+            <div style="display: flex; gap: 0;">
+                <input type="text" id="newTaskInput" placeholder="Add new Task" style="padding: 8px 15px; border: 1px solid #cbd5e1; border-right: none; outline: none; border-radius: 4px 0 0 4px; width: 250px;">
+                <button id="addTaskBtn" style="background: #38bdf8; color: white; border: none; padding: 8px 25px; font-weight: bold; cursor: pointer; border-radius: 0 4px 4px 0; font-size: 0.9rem;">ADD</button>
+            </div>
+        </div>
+                </div>
+
+                <!-- Jadual Task -->
+                <div class="card" style="padding: 0; background: white; border-radius: 4px; border: 1px solid var(--border-color); overflow: hidden;">
+                    <div style="background: #f8fafc; padding: 10px 20px; font-size: 0.85rem; color: #94a3b8; border-bottom: 1px solid var(--border-color);">Tasks</div>
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--border-color); color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">
+                                <th style="padding: 12px 20px; font-weight: 600;">Name</th>
+                                <th style="padding: 12px 20px; font-weight: 600;">Assignees</th>
+                                <th style="padding: 12px 20px; font-weight: 600; text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tasksTableBody">
+                            <tr><td colspan="3" style="text-align: center; padding: 20px; color: #888;">Loading tasks...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="../js/project-details.js"></script>
+</body>
+</html>
