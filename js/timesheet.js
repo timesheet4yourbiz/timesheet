@@ -138,10 +138,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             theadRow.style.fontSize = '0.85rem';
             theadRow.style.borderBottom = '1px solid #e2e8f0';
 
-            // KITA TAMBAH KOLUM TAG DI SINI
             let thHtml = `
                 <th style="padding: 12px 20px; text-align: left; font-weight: 500; width: 25%;">Projects</th>
-                <th style="padding: 12px 10px; text-align: left; font-weight: 500; width: 15%;">Tag</th>
+                <th style="padding: 12px 10px; text-align: left; font-weight: 500; width: 12%;">Tag</th>
                 <th style="padding: 12px 10px; text-align: left; font-weight: 500; width: 18%;">Remark</th>
             `;
             days.forEach(d => {
@@ -152,6 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             thHtml += `<th style="padding: 12px 15px; width: 40px;"></th>`;
             theadRow.innerHTML = thHtml;
         };
+
         const togglePopup = async (e) => {
             if(popup.style.display === 'block') { popup.style.display = 'none'; return; }
             
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tFoot = document.getElementById('timesheetFootRow');
             if (!tBody) return;
 
-            tBody.innerHTML = '<tr><td colspan="10" style="padding:20px; text-align:center; color:#888;">Memuatkan data...</td></tr>';
+            tBody.innerHTML = '<tr><td colspan="12" style="padding:20px; text-align:center; color:#888;">Memuatkan data...</td></tr>';
 
             const { start, end, days } = getWeekRange(currentDate);
             const startIso = start.toISOString().split('T')[0];
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .lte('start_time', endIso);
 
             if (error) {
-                tBody.innerHTML = `<tr><td colspan="10" style="padding:20px; text-align:center; color:red;">Ralat: ${error.message}</td></tr>`;
+                tBody.innerHTML = `<tr><td colspan="12" style="padding:20px; text-align:center; color:red;">Ralat: ${error.message}</td></tr>`;
                 return;
             }
 
@@ -299,7 +299,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span style="display:inline-block; width:6px; height:6px; background:#8b5cf6; border-radius:50%; margin-right:8px;"></span>
                         ${rowData.projectName.toUpperCase()} ${displayTask}
                     </td>
-                    <!-- TAMBAHAN DROPDOWN TAG UNTUK BARIS DATA -->
                     <td style="padding: 12px 10px;">
                         <select style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; outline: none; background: white;">
                             <option value="">- Select Tag -</option>
@@ -307,43 +306,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <option value="management">Management</option>
                             <option value="admin">Admin</option>
                         </select>
-                    </td>`;
-                <!-- TAMBAHAN KOTAK REMARK (FREE TYPE) -->
+                    </td>
                     <td style="padding: 12px 10px;">
                         <input type="text" placeholder="Type remark..." style="width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; outline: none; background: #f8fafc; box-sizing: border-box; font-family: inherit;">
                     </td>`;
-                
-
-for(let i=0; i<7; i++) {
-                htmlContent += `<td style="text-align: center;">
-                                    <input type="text" placeholder="0:00" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; background: white; outline: none; color: #475569;" disabled>
-                                </td>`;
-            }
-            htmlContent += `<td style="font-weight: 500; color: #718096; font-size: 0.9rem; text-align: center; border-left: 1px dotted #e2e8f0;">0:00</td>
-                            <td style="color: #a0aec0; cursor: pointer; font-size: 1.2rem; text-align: center; font-weight: 300;">✕</td>
-                        </tr>`;
-
-            tBody.innerHTML = htmlContent;
-
-            if (tFoot) {
-                let footHtml = `<tr style="background: #edf2f7; font-weight: 500; color: #718096; font-size: 0.9rem; border-top: 1px solid #e2e8f0;">
-                                    <!-- KITA TUKAR COLSPAN="3" AGAR TOTAL COVER KOTAK PROJECT, TAG & REMARK -->
-                                    <td colspan="3" style="padding: 15px 20px; text-align: right; font-weight: 600;">Total:</td>`;
-                for (let i = 0; i < 7; i++) {
-                    footHtml += `<td style="padding: 15px 10px; text-align: center;">${dayTotals[i] > 0 ? formatHMS(dayTotals[i]) : '0:00'}</td>`;
-                }
-                footHtml += `<td style="padding: 15px 10px; text-align: center; color: #4a5568;">${formatHMS(grandTotal)}</td><td></td></tr>`;
-                tFoot.innerHTML = footHtml;
-            }
-
-
-
-
-
-
-
-
-
                 
                 days.forEach((d, index) => {
                     const dateKey = d.toLocaleDateString('en-CA');
@@ -360,17 +326,20 @@ for(let i=0; i<7; i++) {
                                 <td class="del-row-btn" data-pid="${pidAttr}" data-tid="${tidAttr}" style="color: #a0aec0; cursor: pointer; font-size: 1.2rem; text-align: center; font-weight: 300;" title="Delete Row">✕</td>
                             </tr>`;
             }            
+            
             htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
                 <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem;">
                     <span id="openPickerBtn" style="color: #0ea5e9; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 1.2rem;">⊕</span> Select project
                     </span>
                 </td>
-                <!-- KOTAK TAG UNTUK BARIS BARU -->
                 <td style="padding: 12px 10px;">
                     <select style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; outline: none; background: white;" disabled>
                         <option>- Select Tag -</option>
                     </select>
+                </td>
+                <td style="padding: 12px 10px;">
+                    <input type="text" placeholder="Type remark..." style="width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #94a3b8; outline: none; background: #f1f5f9; box-sizing: border-box; font-family: inherit;" disabled>
                 </td>`;
                 
             for(let i=0; i<7; i++) {
@@ -386,8 +355,7 @@ for(let i=0; i<7; i++) {
 
             if (tFoot) {
                 let footHtml = `<tr style="background: #edf2f7; font-weight: 500; color: #718096; font-size: 0.9rem; border-top: 1px solid #e2e8f0;">
-                                    <!-- KITA TAMBAH COLSPAN="2" AGAR TOTAL COVER KOTAK PROJECT DAN TAG -->
-                                    <td colspan="2" style="padding: 15px 20px; text-align: right; font-weight: 600;">Total:</td>`;
+                                    <td colspan="3" style="padding: 15px 20px; text-align: right; font-weight: 600;">Total:</td>`;
                 for (let i = 0; i < 7; i++) {
                     footHtml += `<td style="padding: 15px 10px; text-align: center;">${dayTotals[i] > 0 ? formatHMS(dayTotals[i]) : '0:00'}</td>`;
                 }
@@ -548,7 +516,7 @@ for(let i=0; i<7; i++) {
             await loadTimesheetData();
         } else {
             const tb = document.getElementById('timesheetTableBody');
-            if (tb) tb.innerHTML = `<tr><td colspan="10" style="padding:20px; text-align:center; color:red;">Akaun e-mel anda tiada dalam sistem Team.</td></tr>`;
+            if (tb) tb.innerHTML = `<tr><td colspan="12" style="padding:20px; text-align:center; color:red;">Akaun e-mel anda tiada dalam sistem Team.</td></tr>`;
         }
 
     } catch (error) {
