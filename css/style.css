@@ -658,5 +658,15 @@ canvas {
     background: #f8fafc !important;
 }
 
+/* ========================================= */
+/* TIMESHEET: DROPDOWN COPY LAST WEEK        */
+/* ========================================= */
+.dropdown-container:hover .dropdown-menu {
+    display: block !important;
+}
 
+.dropdown-item:hover {
+    background-color: #f8fafc;
+    color: #0ea5e9;
+}
     </style>
