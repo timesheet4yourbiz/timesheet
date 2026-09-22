@@ -258,9 +258,11 @@ function renderMembersTable(data) {
                 <td>${group}</td>
                 <td>${rate}</td>
                 <td><span class="status-badge ${statusClass}">${member.status || 'Active'}</span></td>
-                <td style="text-align: center;">
-    <button class="action-btn" onclick="editMember('${member.id}')" title="Edit Member">✏️</button>
-    <button class="action-btn" onclick="deleteMember('${member.id}')" title="Delete Member">🗑️</button>
+                <td style="text-align: center; white-space: nowrap;">
+    <div style="display: flex; justify-content: center; align-items: center; gap: 8px;">
+        <button class="action-btn" onclick="editMember('${member.id}')" title="Edit Member" style="background:none; border:none; cursor:pointer; font-size:1rem; padding:2px 4px;">✏️</button>
+        <button class="action-btn" onclick="deleteMember('${member.id}')" title="Delete Member" style="background:none; border:none; cursor:pointer; font-size:1rem; padding:2px 4px;">🗑️</button>
+    </div>
 </td>
             </tr>
         `;
