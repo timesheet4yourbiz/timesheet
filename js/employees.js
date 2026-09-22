@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Team Module Init Error:", error);
     }
 });
+
 // --- TAB NAVIGATION LOGIC ---
 function setupNavigation() {
     document.querySelectorAll('.nav-item').forEach(item => {
@@ -129,17 +130,13 @@ async function fetchMembers() {
     }
 }
 
-
-
+// ==================== EXCEL IMPORT ====================
 document.addEventListener('DOMContentLoaded', () => {
     const btnImport = document.getElementById('btnImportExcel');
     const fileInput = document.getElementById('excelFileInput');
 
     if (btnImport && fileInput) {
-        // Apabila butang ditekan, buka tetingkap pilih fail
         btnImport.addEventListener('click', () => fileInput.click());
-
-        // Apabila fail Excel dipilih
         fileInput.addEventListener('change', handleExcelUpload);
     }
 });
@@ -152,15 +149,12 @@ async function handleExcelUpload(event) {
     
     reader.onload = async (e) => {
         try {
-            // 1. Baca fail Excel
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
             
-            // 2. Ambil data dari sheet pertama
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
             
-            // 3. Tukar data Excel kepada format JSON
             const excelData = XLSX.utils.sheet_to_json(worksheet);
             
             if (excelData.length === 0) {
@@ -170,9 +164,7 @@ async function handleExcelUpload(event) {
 
             alert(`Berjaya membaca ${excelData.length} baris data. Sedang mendaftar pekerja...`);
 
-            // 4. Daftarkan akun pekerja dan simpan data ke Supabase
             for (const row of excelData) {
-                // Fungsi pembantu untuk cari lajur tanpa hirau huruf besar/kecil
                 const getVal = (...keys) => {
                     const match = Object.keys(row).find(k => keys.includes(k.trim().toLowerCase()));
                     return match ? row[match] : null;
@@ -187,7 +179,6 @@ async function handleExcelUpload(event) {
 
                 if (!email) continue;
 
-                // A. Daftarkan e-mel dan password ke Supabase Auth
                 const { data: authData, error: authError } = await supabase.auth.signUp({
                     email: email,
                     password: tempPassword
@@ -198,7 +189,6 @@ async function handleExcelUpload(event) {
                     continue; 
                 }
 
-                // B. Simpan profil lengkap ke pangkalan data 'employees'
                 if (authData.user) {
                     await supabase.from('employees').insert({
                         id: authData.user.id,
@@ -225,6 +215,7 @@ async function handleExcelUpload(event) {
     event.target.value = ''; // Reset input
 }
 
+// ==================== RENDERING JADUAL PEKERJA ====================
 function renderMembersTable(data) {
     const tbody = document.getElementById('membersTableBody');
     if (!tbody) return;
@@ -237,18 +228,21 @@ function renderMembersTable(data) {
 
     tbody.innerHTML = '';
 
-    // 1. Potong data mengikut muka surat semasa (10 orang per halaman)
     const startIndex = (currentPage - 1) * rowsPerPage;
     const paginatedData = data.slice(startIndex, startIndex + rowsPerPage);
 
-    // 2. Paparkan 10 orang sahaja untuk muka surat ini
     paginatedData.forEach(member => {
         const displayName = member.name || 'Unknown Name';
         const init = displayName.substring(0, 2).toUpperCase();
         const empNo = member.employee_no ? ` | ID: ${member.employee_no}` : '';
         const statusClass = (member.status || '').toUpperCase() === 'ACTIVE' ? 'status-active' : 'status-inactive';
         const rate = member.billable_rate ? parseFloat(member.billable_rate).toFixed(2) : '0.00';
-        const group = member.group_name || '-';
+        
+        // Memaparkan nama kumpulan jika ada
+        let groupName = '-';
+        if (member.groups && member.groups.group_name) {
+            groupName = member.groups.group_name;
+        }
 
         tbody.innerHTML += `
             <tr>
@@ -263,12 +257,12 @@ function renderMembersTable(data) {
                     </div>
                 </td>
                 <td><span style="font-weight:500;">${member.system_role || 'Employee'}</span><br><span style="font-size:0.75rem; color:#64748b;">${member.position || 'No Position'}</span></td>
-                <td>${group}</td>
+                <td>${groupName}</td>
                 <td>${rate}</td>
                 <td><span class="status-badge ${statusClass}">${member.status || 'ACTIVE'}</span></td>
                 <td style="text-align: center; white-space: nowrap;">
                     <div style="display: flex; justify-content: center; align-items: center; gap: 8px;">
-                        <button class="action-btn" onclick="editMember('${member.id}')" title="Edit Member" style="background:none; border:none; cursor:pointer; font-size:1rem; padding:2px 4px;">✏️</button>
+                        <button class="action-btn" onclick="openEditModal('${member.id}')" title="Edit Member" style="background:none; border:none; cursor:pointer; font-size:1rem; padding:2px 4px;">✏️</button>
                         <button class="action-btn" onclick="deleteMember('${member.id}')" title="Delete Member" style="background:none; border:none; cursor:pointer; font-size:1rem; padding:2px 4px;">🗑️</button>
                     </div>
                 </td>
@@ -276,12 +270,12 @@ function renderMembersTable(data) {
         `;
     });
 
-    // 3. Kemas kini nombor pada Bar Pagination
     if (typeof updatePagination === 'function') {
         updatePagination(data.length);
     }
 }
 
+// ==================== MODAL ADD/EDIT MEMBER ====================
 function setupMemberModal() {
     const modal = document.getElementById('memberModal');
     const btnClose = document.getElementById('btnCloseModal');
@@ -303,6 +297,7 @@ function setupMemberModal() {
         modal.style.display = 'flex';
     });
 
+    // PENGURUSAN BORANG KESELURUHAN (INSERT / UPDATE)
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btnSave = document.getElementById('btnSaveMember');
@@ -310,6 +305,8 @@ function setupMemberModal() {
 
         const empId = document.getElementById('formMemberId').value;
         const emailInput = document.getElementById('formEmail').value;
+        
+        // PAYLOAD TERKINI (Sertakan group_id)
         const payload = {
             name: document.getElementById('formName').value,
             employee_no: document.getElementById('formEmpNo').value,
@@ -317,53 +314,64 @@ function setupMemberModal() {
             department: document.getElementById('formDept').value,
             position: document.getElementById('formPosition').value,
             system_role: document.getElementById('formRole').value,
-            group_id: document.getElementById('formGroup').value || null,
+            group_id: document.getElementById('formGroup').value || null, // <- PUNCA UTAMA DI SINI
             billable_rate: parseFloat(document.getElementById('formRate').value || 0),
-            status: document.getElementById('formStatus').value
+            status: document.getElementById('formStatus').value.toUpperCase()
         };
 
-        if (empId) {
-            // UPDATE: Rekod Sedia Ada
-            await supabase.from('employees').update(payload).eq('id', empId);
-            modal.style.display = 'none';
-            fetchMembers(); 
-        } else {
-            // INSERT: Jemput Ahli Baru & Arahkan ke Set Password
-            btnSave.textContent = "Sending Invite...";
-
-            // Cipta password rawak (kita rahsiakan dari semua orang)
-            const tempPassword = "Pwd" + Math.floor(Math.random() * 10000000) + "A!";
-            
-            const { data: authData, error: authError } = await supabase.auth.signUp({ 
-                email: emailInput, 
-                password: tempPassword,
-                options: {
-                    // Ini kunci utama! Arahkan ke page Set Password selepas klik link
-                    emailRedirectTo: 'https://timesheet4yourbiz.github.io/timesheet/pages/set-password.html'
-                }
-            });
-            
-            if (authError) {
-                alert("Failed: " + authError.message);
-            } else if (authData.user) {
-                payload.id = authData.user.id;
-                payload.email = emailInput;
-                await supabase.from('employees').upsert([payload]);
+        try {
+            if (empId) {
+                // UPDATE: Rekod Sedia Ada
+                const { error } = await supabase.from('employees').update(payload).eq('id', empId);
+                if(error) throw error;
                 
-                // Mesej baharu yang lebih profesional
-                alert(`Success! An invitation email has been sent to ${emailInput}.\n\nWhen they click the link in the email, they will be asked to create their own password.`);
+                alert("Data berjaya disimpan!");
                 modal.style.display = 'none';
-                fetchMembers(); 
+                window.location.reload(); 
+            } else {
+                // INSERT: Jemput Ahli Baru & Arahkan ke Set Password
+                btnSave.textContent = "Sending Invite...";
+                const tempPassword = "Pwd" + Math.floor(Math.random() * 10000000) + "A!";
+                
+                const { data: authData, error: authError } = await supabase.auth.signUp({ 
+                    email: emailInput, 
+                    password: tempPassword,
+                    options: {
+                        emailRedirectTo: 'https://timesheet4yourbiz.github.io/timesheet/pages/set-password.html'
+                    }
+                });
+                
+                if (authError) {
+                    throw authError;
+                } else if (authData.user) {
+                    payload.id = authData.user.id;
+                    payload.email = emailInput;
+                    
+                    const { error: upsertError } = await supabase.from('employees').upsert([payload]);
+                    if(upsertError) throw upsertError;
+                    
+                    alert(`Success! An invitation email has been sent to ${emailInput}.\n\nWhen they click the link in the email, they will be asked to create their own password.`);
+                    modal.style.display = 'none';
+                    window.location.reload(); 
+                }
             }
+        } catch (error) {
+            console.error('Ralat simpan:', error);
+            alert('Gagal menyimpan data: ' + error.message);
+        } finally {
+            btnSave.textContent = "Save Member";
+            btnSave.disabled = false;
         }
-        btnSave.textContent = "Save Member";
-        btnSave.disabled = false;
     });
 }
 
+// BUKA MODAL EDIT MEMBER
 window.openEditModal = function(id) {
     const member = membersData.find(m => m.id === id);
-    if (!member) return;
+    if (!member) {
+        alert("Data pekerja tidak dijumpai.");
+        return;
+    }
 
     document.getElementById('modalTitle').textContent = "Edit Member Profile";
     document.getElementById('formMemberId').value = member.id;
@@ -377,11 +385,25 @@ window.openEditModal = function(id) {
     document.getElementById('formRole').value = member.system_role || 'Employee';
     document.getElementById('formGroup').value = member.group_id || '';
     document.getElementById('formRate').value = member.billable_rate || '0.00';
-    document.getElementById('formStatus').value = member.status || 'Active';
+    document.getElementById('formStatus').value = (member.status || 'Active').charAt(0).toUpperCase() + (member.status || 'Active').slice(1).toLowerCase(); // Capitalize
 
     document.getElementById('memberModal').style.display = 'flex';
 };
 
+window.deleteMember = async function(id) {
+    if (!confirm('Adakah anda pasti mahu memadam pekerja ini?')) return;
+
+    try {
+        const { error } = await supabase.from('employees').delete().eq('id', id);
+        if (error) throw error;
+
+        alert('Pekerja berjaya dipadam!');
+        window.location.reload();
+    } catch (err) {
+        console.error('Ralat padam:', err);
+        alert('Gagal memadam pekerja: ' + err.message);
+    }
+};
 
 // ==========================================
 // GROUPS MODULE LOGIC
@@ -508,101 +530,6 @@ function populateManagerDropdown() {
         select.innerHTML += `<option value="${m.id}">${m.name} (${m.system_role})</option>`;
     });
 }
-
-// ==================== PASTE DI BAHAGIAN BAWAH FAIL ====================
-
-// Dedahkan fungsi edit ke window supaya butang onclick boleh buka Modal
-window.editMember = function(id) {
-    // Cari data pekerja dari senarai membersData
-    const member = membersData ? membersData.find(m => m.id === id) : null;
-    if (!member) {
-        alert("Data pekerja tidak dijumpai.");
-        return;
-    }
-
-    // Isi maklumat pekerja ke dalam borang modal
-    document.getElementById('modalTitle').innerText = 'Edit Member Profile';
-    document.getElementById('formMemberId').value = member.id;
-    document.getElementById('formEmail').value = member.email || '';
-    document.getElementById('formName').value = member.name || '';
-    document.getElementById('formEmpNo').value = member.employee_no || '';
-    document.getElementById('formPhone').value = member.phone || '';
-    document.getElementById('formDept').value = member.department || '';
-    document.getElementById('formPosition').value = member.position || '';
-    document.getElementById('formRole').value = member.system_role || 'Employee';
-    document.getElementById('formGroup').value = member.group_id || '';
-    document.getElementById('formRate').value = member.billable_rate || 0;
-    document.getElementById('formStatus').value = member.status || 'Active';
-
-    // Buka paparan modal
-    document.getElementById('memberModal').style.display = 'flex';
-};
-
-// Dedahkan fungsi padam ke window supaya butang onclick boleh padam rekod
-window.deleteMember = async function(id) {
-    if (!confirm('Adakah anda pasti mahu memadam pekerja ini?')) return;
-
-    try {
-        const { error } = await supabase.from('employees').delete().eq('id', id);
-        if (error) throw error;
-
-        alert('Pekerja berjaya dipadam!');
-        window.location.reload();
-    } catch (err) {
-        console.error('Ralat padam:', err);
-        alert('Gagal memadam pekerja: ' + err.message);
-    }
-};
-
-// ==================== Arahkan Borang Simpan Data ke Supabase ====================
-const memberForm = document.getElementById('memberForm');
-if (memberForm) {
-    memberForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Elak halaman refresh secara melulu
-
-        const id = document.getElementById('formMemberId').value;
-        const updatedData = {
-            name: document.getElementById('formName').value,
-            email: document.getElementById('formEmail').value,
-            department: document.getElementById('formDept').value,
-            position: document.getElementById('formPosition').value,
-            system_role: document.getElementById('formRole').value,
-            status: document.getElementById('formStatus').value.toUpperCase(), // Pastikan 'ACTIVE' berhuruf besar
-            billable_rate: parseFloat(document.getElementById('formRate').value) || 0
-        };
-
-        try {
-            let error;
-            if (id) {
-                // Kemas kini (UPDATE) pekerja sedia ada
-                const res = await supabase.from('employees').update(updatedData).eq('id', id);
-                error = res.error;
-            } else {
-                // Masukkan (INSERT) jika pekerja baharu
-                const res = await supabase.from('employees').insert([updatedData]);
-                error = res.error;
-            }
-
-            if (error) throw error;
-
-            alert('Data berjaya disimpan!');
-            document.getElementById('memberModal').style.display = 'none';
-            window.location.reload(); // Muat semula halaman untuk paparkan status ACTIVE hijau
-        } catch (err) {
-            console.error('Ralat simpan:', err);
-            alert('Gagal menyimpan data: ' + err.message);
-        }
-    });
-}
-
-// Tutup Modal bila tekan butang 'X'
-const btnCloseModal = document.getElementById('btnCloseModal');
-if (btnCloseModal) {
-    btnCloseModal.addEventListener('click', () => {
-        document.getElementById('memberModal').style.display = 'none';
-    });
-}
-
 
 // ==================== LOGIK PAGINATION ====================
 let currentPage = 1;
