@@ -149,7 +149,7 @@ function bindFilters() {
         });
     }
 }
-}
+
 
 async function loadProjectDropdown() {
     const { data: projs } = await supabase.from('projects').select('id, project_name').order('project_name');
