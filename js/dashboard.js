@@ -134,27 +134,21 @@ function updateDateRange(preset) {
 }
 
 function bindFilters() {
-    document.getElementById('dateFilter').addEventListener('change', (e) => {
-        filterState.preset = e.target.value;
-        updateDateRange(filterState.preset);
-        refreshDashboardData();
-    });
-    document.getElementById('filterProject').addEventListener('change', (e) => {
-        filterState.projectId = e.target.value;
-        refreshDashboardData();
-    });
-    
-    // Fungsi Search Team Member secara Real-time
-    const searchInput = document.getElementById('searchTeam');
-    if (searchInput) {
-        searchInput.addEventListener('keyup', (e) => {
-            const term = e.target.value.toLowerCase();
-            document.querySelectorAll('#teamActivitiesBody tr').forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(term) ? '' : 'none';
-            });
+    const filterProject = document.getElementById('filterProject');
+    const filterTeam = document.getElementById('filterTeam');
+
+    if (filterProject) {
+        filterProject.addEventListener('change', () => {
+            refreshDashboardData();
         });
     }
+
+    if (filterTeam) {
+        filterTeam.addEventListener('change', () => {
+            refreshDashboardData();
+        });
+    }
+}
 }
 
 async function loadProjectDropdown() {
