@@ -227,20 +227,28 @@ async function handleExcelUpload(event) {
 
 function renderMembersTable(data) {
     const tbody = document.getElementById('membersTableBody');
-    tbody.innerHTML = '';
+    if (!tbody) return;
 
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No team members found.</td></tr>';
+        if (typeof updatePagination === 'function') updatePagination(0);
         return;
     }
 
-    data.forEach(member => {
-        const init = getInitials(member.name || member.email);
-        const dispName = member.name || 'Unknown Name';
+    tbody.innerHTML = '';
+
+    // 1. Potong data mengikut muka surat semasa (10 orang per halaman)
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const paginatedData = data.slice(startIndex, startIndex + rowsPerPage);
+
+    // 2. Paparkan 10 orang sahaja untuk muka surat ini
+    paginatedData.forEach(member => {
+        const displayName = member.name || 'Unknown Name';
+        const init = displayName.substring(0, 2).toUpperCase();
         const empNo = member.employee_no ? ` | ID: ${member.employee_no}` : '';
-        const group = member.groups ? member.groups.group_name : '<span style="color:#94a3b8;">-</span>';
+        const statusClass = (member.status || '').toUpperCase() === 'ACTIVE' ? 'status-active' : 'status-inactive';
         const rate = member.billable_rate ? parseFloat(member.billable_rate).toFixed(2) : '0.00';
-        const statusClass = member.status === 'Active' ? 'status-active' : 'status-inactive';
+        const group = member.group_name || '-';
 
         tbody.innerHTML += `
             <tr>
@@ -249,7 +257,7 @@ function renderMembersTable(data) {
                     <div class="member-info">
                         <div class="avatar">${init}</div>
                         <div>
-                            <div class="m-name" style="text-transform: capitalize;">${dispName}</div>
+                            <div class="m-name" style="text-transform: capitalize;">${displayName}</div>
                             <div class="m-meta">${member.email}${empNo}</div>
                         </div>
                     </div>
@@ -257,16 +265,21 @@ function renderMembersTable(data) {
                 <td><span style="font-weight:500;">${member.system_role || 'Employee'}</span><br><span style="font-size:0.75rem; color:#64748b;">${member.position || 'No Position'}</span></td>
                 <td>${group}</td>
                 <td>${rate}</td>
-                <td><span class="status-badge ${statusClass}">${member.status || 'Active'}</span></td>
+                <td><span class="status-badge ${statusClass}">${member.status || 'ACTIVE'}</span></td>
                 <td style="text-align: center; white-space: nowrap;">
-    <div style="display: flex; justify-content: center; align-items: center; gap: 8px;">
-        <button class="action-btn" onclick="editMember('${member.id}')" title="Edit Member" style="background:none; border:none; cursor:pointer; font-size:1rem; padding:2px 4px;">✏️</button>
-        <button class="action-btn" onclick="deleteMember('${member.id}')" title="Delete Member" style="background:none; border:none; cursor:pointer; font-size:1rem; padding:2px 4px;">🗑️</button>
-    </div>
-</td>
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 8px;">
+                        <button class="action-btn" onclick="editMember('${member.id}')" title="Edit Member" style="background:none; border:none; cursor:pointer; font-size:1rem; padding:2px 4px;">✏️</button>
+                        <button class="action-btn" onclick="deleteMember('${member.id}')" title="Delete Member" style="background:none; border:none; cursor:pointer; font-size:1rem; padding:2px 4px;">🗑️</button>
+                    </div>
+                </td>
             </tr>
         `;
     });
+
+    // 3. Kemas kini nombor pada Bar Pagination
+    if (typeof updatePagination === 'function') {
+        updatePagination(data.length);
+    }
 }
 
 function setupMemberModal() {
