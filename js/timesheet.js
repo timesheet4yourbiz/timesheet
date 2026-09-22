@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let currentEmployeeId = null;
         let currentDate = new Date(); 
+        let tagsDataList = []; // Array untuk simpan data dari modul Tags
 
         // 1. BINA KOTAK POP-UP
         let popup = document.getElementById('projectPickerPopup');
@@ -81,6 +82,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 hrs = parseInt(inputVal) || 0;
             }
             return (hrs * 3600) + (mins * 60);
+        };
+
+        // Fungsi bina HTML Dropdown Tag dinamik
+        const getTagOptionsHtml = () => {
+            let options = '<option value="">- Select Tag -</option>';
+            tagsDataList.forEach(t => {
+                // Membaca nama tag dari database (samada nama kolum tag_name, name, atau title)
+                const tagName = t.tag_name || t.name || t.title || t.tag || 'Unknown';
+                options += `<option value="${t.id}">${tagName}</option>`;
+            });
+            return options;
         };
 
         // 3. FUNGSI DATABASE (SAVE)
@@ -301,10 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </td>
                     <td style="padding: 12px 10px;">
                         <select style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; outline: none; background: white;">
-                            <option value="">- Select Tag -</option>
-                            <option value="engineering">Engineering</option>
-                            <option value="management">Management</option>
-                            <option value="admin">Admin</option>
+                            ${getTagOptionsHtml()}
                         </select>
                     </td>
                     <td style="padding: 12px 10px;">
@@ -363,7 +372,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tFoot.innerHTML = footHtml;
             }
 
-            // BIND EVENTS UNTUK ELEMEN DALAM JADUAL SAHAJA (Dynamic)
+            // BIND EVENTS UNTUK ELEMEN DALAM JADUAL SAHAJA
             document.querySelectorAll('.time-input').forEach(input => {
                 input.addEventListener('change', async (e) => {
                     const el = e.target;
@@ -423,93 +432,109 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (addNewRowBtn) addNewRowBtn.addEventListener('click', togglePopup);
 
         // ==========================================
-        // FUNGSI COPY LAST WEEK (SALIN PROJEK + MASA)
+        // FUNGSI COPY LAST WEEK (ENJIN SEBENAR)
         // ==========================================
-        const copyLastWeekBtn = document.getElementById('copyLastWeekBtn');
-        if (copyLastWeekBtn) {
-            copyLastWeekBtn.addEventListener('click', async () => {
-                const btn = copyLastWeekBtn;
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '⏳ Copying...';
+        const executeCopyLastWeek = async (includeTime) => {
+            const btn = document.getElementById('copyLastWeekBtn');
+            if (btn) {
+                btn.innerHTML = '⏳ Copying... <span>▼</span>';
                 btn.disabled = true;
-                
-                try {
-                    const lwDate = new Date(currentDate);
-                    lwDate.setDate(lwDate.getDate() - 7);
-                    const { start: lwStart, end: lwEnd } = getWeekRange(lwDate);
-                    const { days: cwDays } = getWeekRange(currentDate);
+            }
+            
+            try {
+                const lwDate = new Date(currentDate);
+                lwDate.setDate(lwDate.getDate() - 7);
+                const { start: lwStart, end: lwEnd } = getWeekRange(lwDate);
+                const { days: cwDays } = getWeekRange(currentDate);
 
-                    const lwStartIso = lwStart.toISOString().split('T')[0];
-                    const lwEndFull = new Date(lwEnd);
-                    lwEndFull.setHours(23, 59, 59, 999);
-                    const lwEndIso = lwEndFull.toISOString();
+                const lwStartIso = lwStart.toISOString().split('T')[0];
+                const lwEndFull = new Date(lwEnd);
+                lwEndFull.setHours(23, 59, 59, 999);
+                const lwEndIso = lwEndFull.toISOString();
 
-                    // AMBIL SEMUA DATA MINGGU LEPAS
-                    const { data: lwData, error } = await supabase.from('time_entries')
-                        .select('*')
-                        .eq('employee_id', currentEmployeeId)
-                        .eq('status', 'STOPPED')
-                        .gte('start_time', lwStartIso)
-                        .lte('start_time', lwEndIso);
+                // AMBIL SEMUA DATA MINGGU LEPAS
+                const { data: lwData, error } = await supabase.from('time_entries')
+                    .select('*')
+                    .eq('employee_id', currentEmployeeId)
+                    .eq('status', 'STOPPED')
+                    .gte('start_time', lwStartIso)
+                    .lte('start_time', lwEndIso);
 
-                    if (error) throw error;
+                if (error) throw error;
 
-                    if (!lwData || lwData.length === 0) {
-                        alert(`Tiada rekod masa atau projek pada minggu lepas (${lwStart.toLocaleDateString('en-GB')} - ${lwEnd.toLocaleDateString('en-GB')}) untuk disalin.`);
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        return;
+                if (!lwData || lwData.length === 0) {
+                    alert(`Tiada rekod masa atau projek pada minggu lepas (${lwStart.toLocaleDateString('en-GB')} - ${lwEnd.toLocaleDateString('en-GB')}) untuk disalin.`);
+                    if(btn) { btn.innerHTML = '📄 Copy last week <span>▼</span>'; btn.disabled = false; }
+                    return;
+                }
+
+                // KUMPULKAN MASA MENGIKUT PROJEK, TASK, DAN HARI
+                const matrix = {};
+                lwData.forEach(entry => {
+                    const pId = entry.project_id || 'null';
+                    const tId = entry.task_id || 'null';
+                    const key = `${pId}_${tId}`;
+                    
+                    const entryDate = entry.work_date ? new Date(entry.work_date) : new Date(entry.start_time.split('T')[0]);
+                    let dayIndex = entryDate.getDay() - 1;
+                    if (dayIndex === -1) dayIndex = 6;
+
+                    if (!matrix[key]) {
+                        matrix[key] = { pid: entry.project_id, tid: entry.task_id, dailyData: [0,0,0,0,0,0,0] };
                     }
-
-                    // KUMPULKAN MASA MENGIKUT PROJEK, TASK, DAN HARI
-                    const matrix = {};
-                    lwData.forEach(entry => {
-                        const pId = entry.project_id || 'null';
-                        const tId = entry.task_id || 'null';
-                        const key = `${pId}_${tId}`;
-                        
-                        // Cari index hari (0 = Isnin, 6 = Ahad)
-                        const entryDate = entry.work_date ? new Date(entry.work_date) : new Date(entry.start_time.split('T')[0]);
-                        let dayIndex = entryDate.getDay() - 1;
-                        if (dayIndex === -1) dayIndex = 6;
-
-                        if (!matrix[key]) {
-                            matrix[key] = { pid: entry.project_id, tid: entry.task_id, dailyData: [0,0,0,0,0,0,0] };
-                        }
+                    if (includeTime) {
                         matrix[key].dailyData[dayIndex] += (entry.duration_seconds || 0);
-                    });
+                    }
+                });
 
-                    // MASUKKAN DATA KE MINGGU SEMASA
-                    for (const key in matrix) {
-                        const row = matrix[key];
-                        // 1. Wujudkan tapak projek dahulu pada hari Isnin (supaya baris projek keluar)
-                        await saveTimeEntry(cwDays[0].toLocaleDateString('en-CA'), row.pid, row.tid, 0, true);
-                        
-                        // 2. Masukkan masa bagi setiap hari
+                // MASUKKAN DATA KE MINGGU SEMASA
+                for (const key in matrix) {
+                    const row = matrix[key];
+                    await saveTimeEntry(cwDays[0].toLocaleDateString('en-CA'), row.pid === 'null' ? null : row.pid, row.tid === 'null' ? null : row.tid, 0, true);
+                    
+                    if (includeTime) {
                         for (let i = 0; i < 7; i++) {
                             const sec = row.dailyData[i];
                             if (sec > 0) {
                                 const targetDateStr = cwDays[i].toLocaleDateString('en-CA');
-                                await saveTimeEntry(targetDateStr, row.pid, row.tid, sec, false);
+                                await saveTimeEntry(targetDateStr, row.pid === 'null' ? null : row.pid, row.tid === 'null' ? null : row.tid, sec, false);
                             }
                         }
                     }
-
-                    await loadTimesheetData();
-                } catch (err) {
-                    alert("Gagal menyalin: " + err.message);
                 }
-                
-                btn.innerHTML = originalText;
+
+                await loadTimesheetData();
+            } catch (err) {
+                alert("Gagal menyalin: " + err.message);
+            }
+            
+            if(btn) {
+                btn.innerHTML = '📄 Copy last week <span>▼</span>';
                 btn.disabled = false;
-            });
-        }
+            }
+        };
+
+        // Pautkan fungsi ke butang dalam dropdown HTML
+        window.copyActivitiesOnly = async function() {
+            await executeCopyLastWeek(false);
+        };
+
+        window.copyActivitiesAndTime = async function() {
+            await executeCopyLastWeek(true);
+        };
 
         const saveTemplateBtn = document.getElementById('saveTemplateBtn');
         if (saveTemplateBtn) saveTemplateBtn.addEventListener('click', () => alert("Fungsi 'Save as template' akan datang dalam kemas kini modul seterusnya!"));
 
         // 6. INITIALIZATION (Mula muat data)
         const { data: empData } = await supabase.from('employees').select('id').eq('email', session.user.email).maybeSingle();
+        
+        // Tarik data Tags dari pangkalan data secara senyap semasa sistem dimuatkan
+        try {
+            const { data: tagsData } = await supabase.from('tags').select('*');
+            tagsDataList = tagsData || [];
+        } catch(e) { console.warn("Modul Tags belum sedia", e); }
+
         if (empData) {
             currentEmployeeId = empData.id;
             renderTimesheetHeader();
@@ -524,20 +549,3 @@ document.addEventListener('DOMContentLoaded', async () => {
         alert("Ralat sistem dikesan: " + error.message + ". Sila maklumkan kepada admin.");
     }
 });
-
-
-// ==========================================
-// FUNGSI COPY LAST WEEK (TIMESHEET ENGINE)
-// ==========================================
-
-window.copyActivitiesOnly = async function() {
-    console.log("Enjin Copy Activities Only dihidupkan...");
-    // Nanti kita letak logik tarik data Supabase kat sini
-    alert("Fungsi 'Copy activities only' berjaya ditekan! Enjin sedang dibina...");
-};
-
-window.copyActivitiesAndTime = async function() {
-    console.log("Enjin Copy Activities & Time dihidupkan...");
-    // Nanti kita letak logik tarik data Supabase kat sini
-    alert("Fungsi 'Copy activities and time' berjaya ditekan! Enjin sedang dibina...");
-};
