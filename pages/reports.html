@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="../css/style.css">
 
     <style>
-        /* CONTAINER KERTAS LAPORAN & CONTROL BAR */
         .report-wrapper {
             max-width: 960px;
             margin: 0 auto;
@@ -19,7 +18,7 @@
             gap: 20px;
         }
 
-        /* CONTROL BAR PREMUIUM UI (SEBARIS MENDATAR) */
+        /* CONTROL BAR PREMUIUM UI WITH MULTI-FILTERS */
         .report-control-bar {
             background: white; 
             padding: 14px 20px; 
@@ -31,17 +30,20 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
             box-sizing: border-box;
             width: 100%;
+            flex-wrap: wrap;
+            gap: 12px;
         }
         
         .report-filter-group { 
             display: flex; 
-            gap: 10px; 
+            gap: 8px; 
             align-items: center; 
+            flex-wrap: wrap;
         }
         
         .report-filter-group select, 
         .report-filter-group input { 
-            padding: 8px 12px; 
+            padding: 6px 10px; 
             border: 1px solid #cbd5e1; 
             border-radius: 6px; 
             font-family: inherit; 
@@ -49,24 +51,25 @@
             color: #334155;
             outline: none;
             background: #ffffff;
-            height: 38px;
+            height: 36px;
             box-sizing: border-box;
+            max-width: 160px;
         }
 
         .report-filter-group input[type="number"] {
-            width: 85px;
+            width: 75px;
             text-align: center;
         }
         
         .report-action-btns { 
             display: flex; 
-            gap: 10px; 
+            gap: 8px; 
             align-items: center; 
         }
 
         .btn-report-action { 
-            padding: 0 16px; 
-            height: 38px;
+            padding: 0 14px; 
+            height: 36px;
             border-radius: 6px; 
             font-weight: 600; 
             cursor: pointer; 
@@ -97,7 +100,6 @@
             overflow-x: auto;
         }
 
-        /* HEADER */
         .report-header { 
             display: flex; 
             justify-content: space-between; 
@@ -114,19 +116,16 @@
 
         .section-title { font-size: 0.9rem; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; border-left: 4px solid #0284c7; padding-left: 10px; }
 
-        /* TABLE */
         .report-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 0.85rem; min-width: 700px; }
         .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 12px; text-align: center; }
         .report-table th { background: #0f172a; color: white; font-weight: 700; line-height: 1.4; }
         .report-table th span.date-range { font-size: 0.7rem; font-weight: 500; color: #94a3b8; display: block; margin-top: 2px; }
         .report-table td.project-name { text-align: left; font-weight: 700; color: #1e293b; }
         
-        /* TOTAL ROW */
         .report-table tr.total-row { background: #e0f2fe; font-weight: 800; color: #0f172a; }
         .report-table tr.total-row td { border-top: 2px solid #0284c7; border-bottom: 2px solid #0284c7; }
         .report-table tr.total-row td.grand-total-cell { font-size: 1rem; color: #0369a1; }
 
-        /* A4 PRINT CSS */
         @media print {
             @page { size: A4 portrait; margin: 10mm; }
             body { background: white !important; }
@@ -140,7 +139,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar dimuatkan di sini -->
         <div id="sidebar-container"></div>
         
         <main class="main-content">
@@ -155,16 +153,30 @@
                     <!-- FILTER & ACTION BAR -->
                     <div class="report-control-bar">
                         <div class="report-filter-group">
-                            <span style="font-weight: 700; font-size: 0.8rem; color: #475569; text-transform: uppercase;">Period:</span>
-                            <select id="reportMonth">
-                                <!-- Bulan dijana oleh JS -->
-                            </select>
+                            <span style="font-weight: 700; font-size: 0.75rem; color: #64748b; text-transform: uppercase;">PERIOD:</span>
+                            <select id="reportMonth"></select>
                             <input type="number" id="reportYear" value="2026">
+
+                            <span style="font-weight: 700; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-left: 6px;">PROJECT:</span>
+                            <select id="filterProject">
+                                <option value="ALL">All Projects</option>
+                            </select>
+
+                            <span style="font-weight: 700; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-left: 6px;">GROUP:</span>
+                            <select id="filterGroup">
+                                <option value="ALL">All Groups</option>
+                            </select>
+
+                            <span style="font-weight: 700; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-left: 6px;">USER:</span>
+                            <select id="filterUser">
+                                <option value="ALL">All Users</option>
+                            </select>
+
                             <button id="btnGenerate" class="btn-report-action btn-generate">Generate</button>
                         </div>
                         
                         <div class="report-action-btns">
-                            <button id="btnPrint" class="btn-report-action btn-print">🖨️ Print A4 / PDF</button>
+                            <button id="btnPrint" class="btn-report-action btn-print">🖨️ Print A4</button>
                             <button id="btnExcel" class="btn-report-action btn-excel">📊 Export CSV</button>
                         </div>
                     </div>
