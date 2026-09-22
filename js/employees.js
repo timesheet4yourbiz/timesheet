@@ -170,16 +170,39 @@ async function handleExcelUpload(event) {
 
             alert(`Berjaya membaca ${excelData.length} baris data. Sedang mendaftar pekerja...`);
 
-            // 4. Masukkan data ke dalam jadual 'employees' di Supabase
-            // (Pastikan nama kolum Excel sepadan dengan nama kolum jadual, cth: nama, email, jabatan)
-            const { error } = await supabase
-                .from('employees') // Ganti dengan nama jadual pekerja sebenar bos
-                .insert(excelData);
+            // 4. Daftarkan akun pekerja dan simpan data ke Supabase
+            for (const row of excelData) {
+                const email = row.email;
+                const tempPassword = row.password || 'Cranetrack2026'; // Menggunakan password dari Excel atau default ini
 
-            if (error) throw error;
+                if (!email) continue;
 
-            alert("Semua pekerja berjaya diimport!");
-            window.location.reload(); // Muat semula halaman untuk papar senarai baru
+                // A. Daftarkan e-mail dan password ke Supabase Auth
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: email,
+                    password: tempPassword
+                });
+
+                if (authError) {
+                    console.error(`Gagal mendaftarkan ${email}:`, authError.message);
+                    continue; // Lanjut ke baris berikutnya jika ada ralat
+                }
+
+                // B. Simpan profil lengkap ke tabel 'employees'
+                if (authData.user) {
+                    await supabase.from('employees').insert({
+                        id: authData.user.id,
+                        name: row.name,
+                        email: row.email,
+                        department: row.department,
+                        position: row.position,
+                        system_role: row.role || 'user'
+                    });
+                }
+            }
+
+            alert("Semua pekerja berhasil diimport dan didaftarkan!");
+            window.location.reload();
 
         } catch (error) {
             console.error("Ralat Import:", error);
