@@ -2,7 +2,6 @@ import { supabase } from './supabase.js';
 import { loadSidebar } from './sidebar.js';
 
 let filterState = {
-    preset: 'this_week',
     startDate: '',
     endDate: '',
     projectId: 'all',
@@ -44,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userEmailEl = document.getElementById('userEmail');
         if (userEmailEl) userEmailEl.textContent = session.user.email;
 
-       // ==========================================
+        // ==========================================
         // ENJIN TARIKH MINGGUAN DASHBOARD
         // ==========================================
         let currentDashDate = new Date();
@@ -65,8 +64,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const updateDashDateDisplay = () => {
             const { start, end } = getDashWeekRange(currentDashDate);
-            const dateTextEl = document.getElementById('dashDateRangeText');
             
+            // Simpan tarikh berformat YYYY-MM-DD ke dalam filterState untuk query Supabase
+            filterState.startDate = start.toLocaleDateString('en-CA');
+            filterState.endDate = end.toLocaleDateString('en-CA');
+
+            const dateTextEl = document.getElementById('dashDateRangeText');
             if (dateTextEl) {
                 const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -76,22 +79,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const prevDashBtn = document.getElementById('prevDashBtn');
         if (prevDashBtn) {
-            prevDashBtn.addEventListener('click', () => {
+            prevDashBtn.addEventListener('click', async () => {
                 currentDashDate.setDate(currentDashDate.getDate() - 7);
                 updateDashDateDisplay();
-                refreshDashboardData(); // Tukar data bila tekan Previous
+                await refreshDashboardData();
             });
         }
 
         const nextDashBtn = document.getElementById('nextDashBtn');
         if (nextDashBtn) {
-            nextDashBtn.addEventListener('click', () => {
+            nextDashBtn.addEventListener('click', async () => {
                 currentDashDate.setDate(currentDashDate.getDate() + 7);
                 updateDashDateDisplay();
-                refreshDashboardData(); // Tukar data bila tekan Next
+                await refreshDashboardData();
             });
         }
 
+        // Jalankan pengiraan tarikh awal
         updateDashDateDisplay();
         bindFilters();
         
@@ -103,53 +107,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-function initDateRange() { updateDateRange(filterState.preset); }
-
-function updateDateRange(preset) {
-    const now = new Date();
-    let start = new Date(); let end = new Date();
-
-    if (preset === 'today') {
-        start = new Date(); end = new Date();
-    } else if (preset === 'this_week') {
-        const day = now.getDay();
-        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-        start = new Date(now.setDate(diff));
-        end = new Date(start); end.setDate(start.getDate() + 6);
-    } else if (preset === 'last_week') {
-        const day = now.getDay();
-        const diff = now.getDate() - day - 6 + (day === 0 ? -6 : 1);
-        start = new Date(now.setDate(diff));
-        end = new Date(start); end.setDate(start.getDate() + 6);
-    } else if (preset === 'this_month') {
-        start = new Date(now.getFullYear(), now.getMonth(), 1);
-        end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    } else if (preset === 'this_year') {
-        start = new Date(now.getFullYear(), 0, 1);
-        end = new Date(now.getFullYear(), 11, 31);
-    }
-
-    filterState.startDate = start.toLocaleDateString('en-CA');
-    filterState.endDate = end.toLocaleDateString('en-CA');
-}
-
 function bindFilters() {
     const filterProject = document.getElementById('filterProject');
     const filterTeam = document.getElementById('filterTeam');
 
     if (filterProject) {
-        filterProject.addEventListener('change', () => {
+        filterProject.addEventListener('change', (e) => {
+            filterState.projectId = e.target.value;
             refreshDashboardData();
         });
     }
 
     if (filterTeam) {
-        filterTeam.addEventListener('change', () => {
+        filterTeam.addEventListener('change', (e) => {
+            filterState.teamId = e.target.value;
             refreshDashboardData();
         });
     }
 }
-
 
 async function loadProjectDropdown() {
     const { data: projs } = await supabase.from('projects').select('id, project_name').order('project_name');
@@ -171,10 +146,12 @@ function getDatesArray(startStr, endStr) {
 }
 
 async function refreshDashboardData() {
+    if (!filterState.startDate || !filterState.endDate) return;
+
     const startIso = new Date(`${filterState.startDate}T00:00:00`).toISOString();
     const endIso = new Date(`${filterState.endDate}T23:59:59.999`).toISOString();
 
-    // 1. Sedut data Time Entries (Guna alias yang dah disahkan berfungsi)
+    // 1. Sedut data Time Entries
     let query = supabase.from('time_entries')
         .select(`duration_seconds, start_time, work_date, status, description, employee_id, project_id, project:projects!fk_time_entries_project(project_name)`)
         .gte('start_time', startIso).lte('start_time', endIso)
@@ -188,8 +165,8 @@ async function refreshDashboardData() {
         return;
     }
     
-    // 2. Sedut data Pekerja (Kebal Ralat: ambil id & email sahaja untuk elak error jika lajur 'name' tiada)
-    const { data: employeesData, error: empError } = await supabase.from('employees').select('id, email, name');
+    // 2. Sedut data Pekerja
+    const { data: employeesData } = await supabase.from('employees').select('id, email, name');
     const employees = employeesData || [];
 
     processKPI(entries);
@@ -327,7 +304,6 @@ function processDonutAndRanking(entries) {
 function processTeamActivities(entries, employees) {
     const teamMap = {};
     
-    // 1. Daftar semua pekerja dari jadual employees
     employees.forEach(emp => {
         teamMap[emp.id] = { 
             name: emp.name || emp.email.split('@')[0], 
@@ -339,11 +315,9 @@ function processTeamActivities(entries, employees) {
         };
     });
 
-    // 2. Kumpul data dari Time Entries
     (entries || []).forEach(e => {
         if (!e.employee_id) return;
         
-        // Jika pekerja tiada dalam jadual employees, daftar secara on-the-fly
         if (!teamMap[e.employee_id]) {
             teamMap[e.employee_id] = {
                 name: 'ID: ' + String(e.employee_id).substring(0,6),
@@ -370,7 +344,6 @@ function processTeamActivities(entries, employees) {
     if (!tbody) return;
     tbody.innerHTML = '';
     
-    // Susun dari Total Jam paling banyak ke paling sikit
     const sortedTeam = Object.values(teamMap).sort((a,b) => b.totalSec - a.totalSec);
 
     if (sortedTeam.length === 0) {
@@ -382,7 +355,6 @@ function processTeamActivities(entries, employees) {
         const init = getInitials(member.name);
         const formatTime = formatHMS(member.totalSec);
         
-        // --- Lajur: Latest Activity ---
         let activityHtml = `<div class="act-proj">(Tiada Rekod)</div>`;
         if (member.isTracking && member.latest) {
             const p = member.latest.project ? member.latest.project.project_name : '(Without Project)';
@@ -393,10 +365,8 @@ function processTeamActivities(entries, employees) {
             activityHtml = `<div class="act-title">${desc}</div><div class="act-proj">${p}</div>`;
         }
 
-        // --- Lajur: Total Tracked (Multi-color Progress Bar / Fungsi Admin Chase) ---
         let trackedHtml = '';
         if (member.totalSec === 0 && !member.isTracking) {
-            // Pekerja culas (0 jam)
             trackedHtml = `
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span class="zero-hours">0:00</span>
@@ -404,7 +374,6 @@ function processTeamActivities(entries, employees) {
                 </div>
             `;
         } else {
-            // Bina segment warna progress bar mengikut pecahan projek
             let barSegments = '';
             for (const [pName, pSec] of Object.entries(member.projects)) {
                 if (pSec > 0) {
