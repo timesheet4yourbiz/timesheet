@@ -207,6 +207,7 @@ async function handleExcelUpload(event) {
                         department: department,
                         position: position,
                         system_role: role
+                        status: 'ACTIVE'
                     });
                 }
             }
