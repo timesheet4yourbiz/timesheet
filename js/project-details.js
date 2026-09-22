@@ -120,3 +120,75 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 });
+
+
+// ==========================================
+// FUNGSI LOAD TEMPLATE TASKS
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const loadTemplateBtn = document.getElementById('loadTemplateBtn');
+    
+    if (loadTemplateBtn) {
+        loadTemplateBtn.addEventListener('click', async () => {
+            
+            // 1. Dapatkan ID Projek dari URL (Contoh: ?id=123)
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('id'); 
+            
+            if (!projectId) {
+                alert("Ralat: ID Projek tidak dijumpai.");
+                return;
+            }
+
+            // 2. Tanya pengesahan dari pengguna
+            if (!confirm("Adakah anda pasti untuk memuatkan senarai Task standard (Template) ke dalam projek ini?")) return;
+
+            // 3. Senarai Task Standard Favelle Favco
+            const templateTasks = [
+                "SE - P (PRIMARY)",
+                "SE - S (SECONDARY)",
+                "ME - P (PRIMARY)",
+                "ME - S (SECONDARY)",
+                "EE - P (PRIMARY)",
+                "EE - S (SECONDARY)",
+                "DOCUMENTATION"
+            ];
+
+            // Tukar butang jadi mod loading
+            const originalText = loadTemplateBtn.innerHTML;
+            loadTemplateBtn.innerHTML = "⏳ Memuatkan...";
+            loadTemplateBtn.disabled = true;
+
+            try {
+                // Sediakan data untuk dihantar ke Supabase
+                const tasksToInsert = templateTasks.map(taskName => ({
+                    project_id: projectId,
+                    task_name: taskName
+                }));
+
+                // Hantar semua task sekaligus ke dalam table 'tasks'
+                const { error } = await supabase
+                    .from('tasks')
+                    .insert(tasksToInsert);
+
+                if (error) throw error;
+
+                alert("Template berjaya dimuatkan!");
+                
+                // Refresh halaman supaya task baru muncul di skrin
+                window.location.reload(); 
+                
+                // NOTA: Jika bos ada fungsi khas untuk refresh jadual (contoh: loadTasks()), 
+                // bos boleh buang window.location.reload() dan panggil fungsi tersebut.
+
+            } catch (error) {
+                console.error("Ralat Template:", error);
+                alert("Gagal memuatkan template: " + error.message);
+            } finally {
+                // Kembalikan butang ke asal
+                loadTemplateBtn.innerHTML = originalText;
+                loadTemplateBtn.disabled = false;
+            }
+        });
+    }
+});
