@@ -206,7 +206,7 @@ async function handleExcelUpload(event) {
                         email: email,
                         department: department,
                         position: position,
-                        system_role: role
+                        system_role: role,
                         status: 'ACTIVE'
                     });
                 }
