@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "EE - P (PRIMARY)",
                 "EE - S (SECONDARY)",
                 "DOCUMENTATION"
+                "DISCUSSION / MEETING"
             ];
 
             // Tukar butang jadi mod loading
