@@ -138,7 +138,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             theadRow.style.fontSize = '0.85rem';
             theadRow.style.borderBottom = '1px solid #e2e8f0';
 
-            let thHtml = `<th style="padding: 12px 20px; text-align: left; font-weight: 500; width: 35%;">Projects</th>`;
+            // KITA TAMBAH KOLUM TAG DI SINI
+            let thHtml = `
+                <th style="padding: 12px 20px; text-align: left; font-weight: 500; width: 25%;">Projects</th>
+                <th style="padding: 12px 10px; text-align: left; font-weight: 500; width: 15%;">Tag</th>
+            `;
             days.forEach(d => {
                 const label = d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
                 thHtml += `<th style="padding: 12px 10px; font-weight: 500; text-align: center;">${label}</th>`;
@@ -147,7 +151,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             thHtml += `<th style="padding: 12px 15px; width: 40px;"></th>`;
             theadRow.innerHTML = thHtml;
         };
-
         const togglePopup = async (e) => {
             if(popup.style.display === 'block') { popup.style.display = 'none'; return; }
             
@@ -294,32 +297,43 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem; color: #4a5568;">
                         <span style="display:inline-block; width:6px; height:6px; background:#8b5cf6; border-radius:50%; margin-right:8px;"></span>
                         ${rowData.projectName.toUpperCase()} ${displayTask}
+                    </td>
+                    <!-- TAMBAHAN DROPDOWN TAG UNTUK BARIS DATA -->
+                    <td style="padding: 12px 10px;">
+                        <select style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; outline: none; background: white;">
+                            <option value="">- Select Tag -</option>
+                            <option value="engineering">Engineering</option>
+                            <option value="management">Management</option>
+                            <option value="admin">Admin</option>
+                        </select>
                     </td>`;
                 
                 days.forEach((d, index) => {
                     const dateKey = d.toLocaleDateString('en-CA');
                     const seconds = rowData.dailyData[dateKey];
                     rowTotal += seconds;
-                    dayTotals[index] += seconds;
-                    
-                    const valStr = seconds > 0 ? formatHMS(seconds) : '';
-                    
+                    dayTotals[index] += seconds;                    
+                    const valStr = seconds > 0 ? formatHMS(seconds) : '';                    
                     htmlContent += `<td style="text-align: center;">
                                         <input type="text" class="time-input" data-date="${dateKey}" data-pid="${pidAttr}" data-tid="${tidAttr}" value="${valStr}" placeholder="0:00" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; font-size: 0.85rem; color: #475569; outline: none; background: white;">
                                     </td>`;
                 });
-
                 grandTotal += rowTotal;
                 htmlContent += `<td style="font-weight: 500; color: #718096; font-size: 0.9rem; text-align: center; border-left: 1px dotted #e2e8f0;">${formatHMS(rowTotal)}</td>
                                 <td class="del-row-btn" data-pid="${pidAttr}" data-tid="${tidAttr}" style="color: #a0aec0; cursor: pointer; font-size: 1.2rem; text-align: center; font-weight: 300;" title="Delete Row">✕</td>
                             </tr>`;
-            }
-            
+            }            
             htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
                 <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem;">
                     <span id="openPickerBtn" style="color: #0ea5e9; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 1.2rem;">⊕</span> Select project
                     </span>
+                </td>
+                <!-- KOTAK TAG UNTUK BARIS BARU -->
+                <td style="padding: 12px 10px;">
+                    <select style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; outline: none; background: white;" disabled>
+                        <option>- Select Tag -</option>
+                    </select>
                 </td>`;
                 
             for(let i=0; i<7; i++) {
@@ -335,7 +349,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (tFoot) {
                 let footHtml = `<tr style="background: #edf2f7; font-weight: 500; color: #718096; font-size: 0.9rem; border-top: 1px solid #e2e8f0;">
-                                    <td style="padding: 15px 20px; text-align: left;">Total:</td>`;
+                                    <!-- KITA TAMBAH COLSPAN="2" AGAR TOTAL COVER KOTAK PROJECT DAN TAG -->
+                                    <td colspan="2" style="padding: 15px 20px; text-align: right; font-weight: 600;">Total:</td>`;
                 for (let i = 0; i < 7; i++) {
                     footHtml += `<td style="padding: 15px 10px; text-align: center;">${dayTotals[i] > 0 ? formatHMS(dayTotals[i]) : '0:00'}</td>`;
                 }
