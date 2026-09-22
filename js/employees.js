@@ -589,3 +589,50 @@ if (btnCloseModal) {
         document.getElementById('memberModal').style.display = 'none';
     });
 }
+
+
+// ==================== LOGIK PAGINATION ====================
+let currentPage = 1;
+const rowsPerPage = 20;
+
+window.updatePagination = function(totalItems) {
+    const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
+    const endItem = Math.min(currentPage * rowsPerPage, totalItems);
+
+    const infoElem = document.getElementById('paginationInfo');
+    const pageElem = document.getElementById('pageNumbers');
+    const btnPrev = document.getElementById('btnPrevPage');
+    const btnNext = document.getElementById('btnNextPage');
+
+    if (infoElem) infoElem.innerText = `Showing ${startItem}-${endItem} of ${totalItems} members`;
+    if (pageElem) pageElem.innerText = `Page ${currentPage} of ${totalPages}`;
+
+    if (btnPrev) {
+        btnPrev.disabled = currentPage === 1;
+        btnPrev.style.opacity = currentPage === 1 ? '0.5' : '1';
+        btnPrev.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
+    }
+
+    if (btnNext) {
+        btnNext.disabled = currentPage >= totalPages;
+        btnNext.style.opacity = currentPage >= totalPages ? '0.5' : '1';
+        btnNext.style.cursor = currentPage >= totalPages ? 'not-allowed' : 'pointer';
+    }
+};
+
+// Acara Butang Previous & Next
+document.getElementById('btnPrevPage')?.addEventListener('click', () => {
+    if (currentPage > 1) {
+        currentPage--;
+        if (typeof renderMembersTable === 'function') renderMembersTable(membersData);
+    }
+});
+
+document.getElementById('btnNextPage')?.addEventListener('click', () => {
+    const totalPages = Math.ceil((membersData?.length || 0) / rowsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        if (typeof renderMembersTable === 'function') renderMembersTable(membersData);
+    }
+});
