@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function populateFilters() {
-    // 1. Isikan Bulan & Tahun
     const monthSelect = document.getElementById('reportMonth');
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const currentMonth = new Date().getMonth();
@@ -36,7 +35,6 @@ async function populateFilters() {
     });
     document.getElementById('reportYear').value = new Date().getFullYear();
 
-    // 2. Isikan Pilihan Project dari Supabase
     try {
         const { data: projs } = await supabase.from('projects').select('id, project_name').order('project_name');
         const projSelect = document.getElementById('filterProject');
@@ -45,28 +43,19 @@ async function populateFilters() {
                 projSelect.innerHTML += `<option value="${p.id}">${p.project_name}</option>`;
             });
         }
-    } catch (e) { console.warn("Ralat memuatkan pilihan projek:", e); }
+    } catch (e) { console.warn("Ralat pilihan projek:", e); }
 
-    // 3. Isikan Pilihan Group dari Supabase (Jadual Groups)
     try {
         let { data: groups, error } = await supabase.from('groups').select('*');
-        
-        // Fallback jika jadual dinamakan team_groups atau departments
-        if (error || !groups || groups.length === 0) {
-            const { data: fallbackG } = await supabase.from('departments').select('*');
-            groups = fallbackG || [];
-        }
-
         const groupSelect = document.getElementById('filterGroup');
         if (groups && groupSelect) {
             groups.forEach(g => {
-                const gName = g.group_name || g.name || g.department_name || 'Group ' + g.id;
+                const gName = g.group_name || g.name || 'Group ' + g.id;
                 groupSelect.innerHTML += `<option value="${g.id}">${gName}</option>`;
             });
         }
-    } catch (e) { console.warn("Ralat memuatkan pilihan group:", e); }
+    } catch (e) { console.warn("Ralat pilihan group:", e); }
 
-    // 4. Isikan Pilihan User (Employees) dari Supabase
     try {
         const { data: emps } = await supabase.from('employees').select('id, name, email').order('name');
         const userSelect = document.getElementById('filterUser');
@@ -76,7 +65,7 @@ async function populateFilters() {
                 userSelect.innerHTML += `<option value="${e.id}">${displayName}</option>`;
             });
         }
-    } catch (e) { console.warn("Ralat memuatkan pilihan pengguna:", e); }
+    } catch (e) { console.warn("Ralat pilihan pengguna:", e); }
 }
 
 function getWeekDates(year, month) {
@@ -99,18 +88,15 @@ async function generateReport() {
     const selectedGroup = document.getElementById('filterGroup').value;
     const selectedUser = document.getElementById('filterUser').value;
     
-    // Kemaskini Lencana Bulan
     const monthName = new Date(year, month - 1).toLocaleString('en-US', { month: 'long' }).toUpperCase();
     document.getElementById('badgeMonthYear').innerHTML = `${monthName}<br>${year}`;
 
-    // Kemaskini Julat Tarikh Minggu
     const weeks = getWeekDates(year, month);
     weeks.forEach((w, i) => {
         const el = document.getElementById(`dtW${i+1}`);
         if(el) el.textContent = w.text || '-';
     });
 
-    // QUERY SUPABASE - time_entries
     const lastDay = new Date(year, month, 0).getDate();
     const startDateIso = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0)).toISOString();
     const endDateIso = new Date(Date.UTC(year, month - 1, lastDay, 23, 59, 59)).toISOString();
@@ -132,25 +118,15 @@ async function generateReport() {
         query = query.eq('employee_id', selectedUser);
     }
 
-    // Penapis 3: Group (Team Groups)
+    // Penapis 3: Group (Filter berdasarkan lajur group_id yang wujud dalam jadual employees)
     if (selectedGroup !== 'ALL') {
-        let empIds = [];
+        const { data: groupEmps, error: geErr } = await supabase.from('employees').select('id').eq('group_id', selectedGroup);
         
-        // Semak jadual junction ahli kumpulan (group_members / group_users)
-        const { data: gMembers } = await supabase.from('group_members').select('employee_id, user_id').eq('group_id', selectedGroup);
-        if (gMembers && gMembers.length > 0) {
-            empIds = gMembers.map(m => m.employee_id || m.user_id).filter(Boolean);
-        } else {
-            // Fallback semak kolum group_id atau department_id dalam jadual employees
-            const { data: groupEmps } = await supabase.from('employees').select('id').or(`group_id.eq.${selectedGroup},department_id.eq.${selectedGroup}`);
-            if (groupEmps && groupEmps.length > 0) {
-                empIds = groupEmps.map(e => e.id);
-            }
-        }
-
-        if (empIds.length > 0) {
+        if (!geErr && groupEmps && groupEmps.length > 0) {
+            const empIds = groupEmps.map(e => e.id);
             query = query.in('employee_id', empIds);
         } else {
+            // Jika ralat atau tiada pekerja dalam group ini, paparkan kosong
             query = query.eq('employee_id', '00000000-0000-0000-0000-000000000000');
         }
     }
@@ -162,7 +138,6 @@ async function generateReport() {
         return;
     }
 
-    // GROUP BY PROJECT & WEEK
     let projectGroups = {};
     
     if (entries && entries.length > 0) {
@@ -184,7 +159,6 @@ async function generateReport() {
         });
     }
 
-    // HASILKAN BINAAN JADUAL
     const tbody = document.getElementById('tableBodyProjects');
     tbody.innerHTML = '';
     let sumWeekly = [0, 0, 0, 0, 0];
@@ -212,13 +186,9 @@ async function generateReport() {
         });
     }
 
-    // BARIS JUMLAH KESELURUHAN (TOTAL)
     for(let i = 0; i < 5; i++) {
-        document.getElementById(`totW1`).textContent = sumWeekly[0].toFixed(1);
-        document.getElementById(`totW2`).textContent = sumWeekly[1].toFixed(1);
-        document.getElementById(`totW3`).textContent = sumWeekly[2].toFixed(1);
-        document.getElementById(`totW4`).textContent = sumWeekly[3].toFixed(1);
-        document.getElementById(`totW5`).textContent = sumWeekly[4].toFixed(1);
+        const el = document.getElementById(`totW${i+1}`);
+        if(el) el.textContent = sumWeekly[i].toFixed(1);
     }
     document.getElementById('totGrand').textContent = grandTotal.toFixed(1);
 }
