@@ -44,7 +44,55 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userEmailEl = document.getElementById('userEmail');
         if (userEmailEl) userEmailEl.textContent = session.user.email;
 
-        initDateRange();
+       // ==========================================
+        // ENJIN TARIKH MINGGUAN DASHBOARD
+        // ==========================================
+        let currentDashDate = new Date();
+
+        const getDashWeekRange = (dateObj) => {
+            const curr = new Date(dateObj);
+            const day = curr.getDay();
+            const diff = curr.getDate() - day + (day === 0 ? -6 : 1); 
+            const start = new Date(curr.setDate(diff));
+            start.setHours(0,0,0,0);
+            
+            const end = new Date(start);
+            end.setDate(start.getDate() + 6); 
+            end.setHours(23,59,59,999);
+            
+            return { start, end };
+        };
+
+        const updateDashDateDisplay = () => {
+            const { start, end } = getDashWeekRange(currentDashDate);
+            const dateTextEl = document.getElementById('dashDateRangeText');
+            
+            if (dateTextEl) {
+                const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                dateTextEl.textContent = `${startStr} - ${endStr}`;
+            }
+        };
+
+        const prevDashBtn = document.getElementById('prevDashBtn');
+        if (prevDashBtn) {
+            prevDashBtn.addEventListener('click', () => {
+                currentDashDate.setDate(currentDashDate.getDate() - 7);
+                updateDashDateDisplay();
+                refreshDashboardData(); // Tukar data bila tekan Previous
+            });
+        }
+
+        const nextDashBtn = document.getElementById('nextDashBtn');
+        if (nextDashBtn) {
+            nextDashBtn.addEventListener('click', () => {
+                currentDashDate.setDate(currentDashDate.getDate() + 7);
+                updateDashDateDisplay();
+                refreshDashboardData(); // Tukar data bila tekan Next
+            });
+        }
+
+        updateDashDateDisplay();
         bindFilters();
         
         await loadProjectDropdown();
