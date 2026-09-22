@@ -63,36 +63,28 @@
                         </table>
                     </div>
                 </div>
-<!-- Butang Tindakan Bawah -->
+                
+                <!-- Butang Tindakan Bawah -->
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                     <button id="addNewRowBtn" style="padding: 8px 15px; background: white; border: 1px solid #0ea5e9; color: #0ea5e9; border-radius: 4px; cursor: pointer;">
-            ⊕ Add new row
-        </button>
-        
-        <!-- Struktur Dropdown Copy Last Week -->
-        <div class="dropdown-container" style="position: relative; display: inline-block;">
-            <button id="copyLastWeekBtn" class="dropdown-toggle" style="padding: 8px 15px; background: white; border: 1px solid #cbd5e1; color: #475569; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                📄 Copy last week <span>▼</span>
-            </button>
-            
-            <!-- Menu Pilihan (Dropdown) -->
-            <div class="dropdown-menu" style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e2e8f0; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; z-index: 100; margin-top: 4px; overflow: hidden;">
-                <button class="dropdown-item" onclick="copyActivitiesOnly()" style="display: block; width: 100%; text-align: left; padding: 10px 15px; border: none; background: none; color: #334155; font-size: 0.85rem; cursor: pointer; border-bottom: 1px solid #f1f5f9;">
-                    Copy activities only
-                </button>
-                <button class="dropdown-item" onclick="copyActivitiesAndTime()" style="display: block; width: 100%; text-align: left; padding: 10px 15px; border: none; background: none; color: #334155; font-size: 0.85rem; cursor: pointer;">
-                    Copy activities and time
-                </button>
-            </div>
-        </div>
+                        ⊕ Add new row
+                    </button>
+                    
+                    <!-- NATIVE SELECT DROPDOWN COPY LAST WEEK -->
+                    <select id="copyLastWeekSelect" style="padding: 8px 15px; background: white; border: 1px solid #cbd5e1; color: #475569; border-radius: 4px; cursor: pointer; outline: none; font-size: 0.85rem; font-family: inherit;">
+                        <option value="" disabled selected>📄 Copy last week ▼</option>
+                        <option value="activities">Copy activities only</option>
+                        <option value="all">Copy activities and time</option>
+                    </select>
 
-        <button id="saveTemplateBtn" style="padding: 8px 15px; background: white; border: 1px solid #cbd5e1; color: #475569; border-radius: 4px; cursor: pointer;">
-            💾 Save as template
-        </button>
+                    <button id="saveTemplateBtn" style="padding: 8px 15px; background: white; border: 1px solid #cbd5e1; color: #475569; border-radius: 4px; cursor: pointer;">
+                        💾 Save as template
+                    </button>
 
+                </div>
             </div>
         </main>
     </div>
     <script type="module" src="../js/timesheet.js"></script>
 </body>
-</html>            
+</html>
