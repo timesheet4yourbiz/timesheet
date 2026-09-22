@@ -172,31 +172,41 @@ async function handleExcelUpload(event) {
 
             // 4. Daftarkan akun pekerja dan simpan data ke Supabase
             for (const row of excelData) {
-                const email = row.email;
-                const tempPassword = row.password || 'Cranetrack2026'; // Menggunakan password dari Excel atau default ini
+                // Fungsi pembantu untuk cari lajur tanpa hirau huruf besar/kecil
+                const getVal = (...keys) => {
+                    const match = Object.keys(row).find(k => keys.includes(k.trim().toLowerCase()));
+                    return match ? row[match] : null;
+                };
+
+                const email = getVal('email', 'e-mail', 'emel');
+                const name = getVal('name', 'nama', 'full name', 'nama penuh') || 'Unknown Name';
+                const department = getVal('department', 'jabatan', 'dept');
+                const position = getVal('position', 'jawatan', 'post');
+                const role = getVal('role', 'system_role', 'peranan') || 'user';
+                const tempPassword = getVal('password', 'kata laluan') || 'Cranetrack2026';
 
                 if (!email) continue;
 
-                // A. Daftarkan e-mail dan password ke Supabase Auth
+                // A. Daftarkan e-mel dan password ke Supabase Auth
                 const { data: authData, error: authError } = await supabase.auth.signUp({
                     email: email,
                     password: tempPassword
                 });
 
                 if (authError) {
-                    console.error(`Gagal mendaftarkan ${email}:`, authError.message);
-                    continue; // Lanjut ke baris berikutnya jika ada ralat
+                    console.error(`Gagal mendaftar ${email}:`, authError.message);
+                    continue; 
                 }
 
-                // B. Simpan profil lengkap ke tabel 'employees'
+                // B. Simpan profil lengkap ke pangkalan data 'employees'
                 if (authData.user) {
                     await supabase.from('employees').insert({
                         id: authData.user.id,
-                        name: row.name,
-                        email: row.email,
-                        department: row.department,
-                        position: row.position,
-                        system_role: row.role || 'user'
+                        name: name,
+                        email: email,
+                        department: department,
+                        position: position,
+                        system_role: role
                     });
                 }
             }
