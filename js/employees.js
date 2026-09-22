@@ -493,3 +493,48 @@ function populateManagerDropdown() {
         select.innerHTML += `<option value="${m.id}">${m.name} (${m.system_role})</option>`;
     });
 }
+
+// ==================== PASTE DI BAHAGIAN BAWAH FAIL ====================
+
+// Dedahkan fungsi edit ke window supaya butang onclick boleh buka Modal
+window.editMember = function(id) {
+    // Cari data pekerja dari senarai membersData
+    const member = membersData ? membersData.find(m => m.id === id) : null;
+    if (!member) {
+        alert("Data pekerja tidak dijumpai.");
+        return;
+    }
+
+    // Isi maklumat pekerja ke dalam borang modal
+    document.getElementById('modalTitle').innerText = 'Edit Member Profile';
+    document.getElementById('formMemberId').value = member.id;
+    document.getElementById('formEmail').value = member.email || '';
+    document.getElementById('formName').value = member.name || '';
+    document.getElementById('formEmpNo').value = member.employee_no || '';
+    document.getElementById('formPhone').value = member.phone || '';
+    document.getElementById('formDept').value = member.department || '';
+    document.getElementById('formPosition').value = member.position || '';
+    document.getElementById('formRole').value = member.system_role || 'Employee';
+    document.getElementById('formGroup').value = member.group_id || '';
+    document.getElementById('formRate').value = member.billable_rate || 0;
+    document.getElementById('formStatus').value = member.status || 'Active';
+
+    // Buka paparan modal
+    document.getElementById('memberModal').style.display = 'flex';
+};
+
+// Dedahkan fungsi padam ke window supaya butang onclick boleh padam rekod
+window.deleteMember = async function(id) {
+    if (!confirm('Adakah anda pasti mahu memadam pekerja ini?')) return;
+
+    try {
+        const { error } = await supabase.from('employees').delete().eq('id', id);
+        if (error) throw error;
+
+        alert('Pekerja berjaya dipadam!');
+        window.location.reload();
+    } catch (err) {
+        console.error('Ralat padam:', err);
+        alert('Gagal memadam pekerja: ' + err.message);
+    }
+};
