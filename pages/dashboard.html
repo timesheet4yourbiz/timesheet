@@ -62,23 +62,33 @@
 </head>
 <body>
     <div id="sidebar-container"></div>
-    
-    <div class="main-content">
-        <!-- TOP HEADER -->
-        <div class="top-header">
-            <h1 class="page-title">Dashboard</h1>
-            <div class="header-controls">
-                <select id="filterProject" class="control-select"><option value="all">All Projects</option></select>
-                <select id="filterTeam" class="control-select"><option value="all">All Teams</option></select>
-<select id="dateFilter" class="control-select" style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; background: white; cursor: pointer; font-size: 0.85rem;">
-    <option value="today">Today</option>
-    <option value="this_week" selected>This week</option>
-    <option value="last_week">Last week</option>
-    <option value="this_month">This month</option>
-    <option value="this_year">This year</option>
-</select>
+        
+        <div class="main-content">
+            <!-- TOP HEADER -->
+            <div class="top-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1 class="page-title" style="margin: 0; font-size: 1.5rem; color: #0f172a;">Dashboard</h1>
+                
+                <div class="header-controls" style="display: flex; gap: 10px; align-items: center;">
+                    <!-- Dropdown Project -->
+                    <select id="filterProject" style="padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; outline: none; background: white;">
+                        <option value="ALL">All Projects</option>
+                    </select>
+                    
+                    <!-- Dropdown Team -->
+                    <select id="filterTeam" style="padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; outline: none; background: white;">
+                        <option value="ALL">All Teams</option>
+                    </select>
+                    
+                    <!-- Kotak Tarikh & Butang Next/Prev -->
+                    <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 4px; background: white; overflow: hidden; align-items: center;">
+                        <div style="padding: 8px 15px; border-right: 1px solid #cbd5e1; color: #475569; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+                            📅 <span id="dashDateRangeText">Memuatkan...</span>
+                        </div>
+                        <button id="prevDashBtn" style="padding: 8px 12px; background: white; border: none; border-right: 1px solid #cbd5e1; cursor: pointer; color: #64748b;">&lt;</button>
+                        <button id="nextDashBtn" style="padding: 8px 12px; background: white; border: none; cursor: pointer; color: #64748b;">&gt;</button>
+                    </div>
+                </div>
             </div>
-        </div>
 
         <!-- SUMMARY KPI -->
         <div class="kpi-section">
