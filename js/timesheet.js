@@ -418,7 +418,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loadTimesheetData();
             });
         }
-
         const nextWeekBtn = document.getElementById('nextWeekBtn');
         if (nextWeekBtn) {
             nextWeekBtn.addEventListener('click', () => {
@@ -427,10 +426,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loadTimesheetData();
             });
         }
-
         const addNewRowBtn = document.getElementById('addNewRowBtn');
         if (addNewRowBtn) addNewRowBtn.addEventListener('click', togglePopup);
+       // ==========================================
+        // FUNGSI TOGGLE DROPDOWN COPY LAST WEEK
+        // ==========================================
+        const copyDropdownBtn = document.getElementById('copyLastWeekBtn');
+        const copyDropdownMenu = copyDropdownBtn ? copyDropdownBtn.nextElementSibling : null;
 
+        if (copyDropdownBtn && copyDropdownMenu) {
+            copyDropdownBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                const isHidden = copyDropdownMenu.style.display === 'none';
+                copyDropdownMenu.style.display = isHidden ? 'block' : 'none';
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!copyDropdownBtn.contains(e.target) && !copyDropdownMenu.contains(e.target)) {
+                    copyDropdownMenu.style.display = 'none';
+                }
+            });
+        }
+        
+        
+        
         // ==========================================
         // FUNGSI COPY LAST WEEK (ENJIN SEBENAR)
         // ==========================================
