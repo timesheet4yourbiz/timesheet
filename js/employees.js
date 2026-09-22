@@ -259,10 +259,9 @@ function renderMembersTable(data) {
                 <td>${rate}</td>
                 <td><span class="status-badge ${statusClass}">${member.status || 'Active'}</span></td>
                 <td style="text-align: center;">
-                    ${window.currentUserRole === 'Admin' 
-                        ? `<button class="action-btn" onclick="openEditModal('${member.id}')">✎</button>` 
-                        : `<span style="font-size:0.8rem; color:#cbd5e1;">🔒</span>`}
-                </td>
+    <button class="action-btn" onclick="editMember('${member.id}')" title="Edit Member">✏️</button>
+    <button class="action-btn" onclick="deleteMember('${member.id}')" title="Delete Member">🗑️</button>
+</td>
             </tr>
         `;
     });
