@@ -10,23 +10,8 @@
     <link rel="stylesheet" href="../css/style.css">
 
     <style>
-        body { 
-            margin: 0; 
-            background: #f1f5f9; 
-            font-family: 'Inter', sans-serif; 
-            color: #0f172a; 
-        }
-        
-        /* LAYOUT UTAMA: Ikut standard dashboard (Top Alignment) */
-        .main-content { 
-            margin-left: 250px; 
-            padding: 24px; 
-            box-sizing: border-box; 
-            display: block; /* Pastikan bermula dari atas rapat, bukan flex centering */
-        }
-        
-        /* CONTAINER KERTAS & CONTROL BAR SEJAJAR */
-        .report-container {
+        /* CONTAINER KERTAS LAPORAN & CONTROL BAR */
+        .report-wrapper {
             max-width: 960px;
             margin: 0 auto;
             display: flex;
@@ -34,29 +19,28 @@
             gap: 20px;
         }
 
-        /* CONTROL BAR PREMUIUM UI (SEBARIS) */
-        .control-bar {
+        /* CONTROL BAR PREMUIUM UI (SEBARIS MENDATAR) */
+        .report-control-bar {
             background: white; 
-            padding: 14px 24px; 
+            padding: 14px 20px; 
             border-radius: 8px; 
             border: 1px solid #cbd5e1;
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.03); 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
             box-sizing: border-box;
-            gap: 16px;
             width: 100%;
         }
         
-        .filter-group { 
+        .report-filter-group { 
             display: flex; 
             gap: 10px; 
             align-items: center; 
-            flex-direction: row; 
         }
         
-        .filter-group select, .filter-group input { 
+        .report-filter-group select, 
+        .report-filter-group input { 
             padding: 8px 12px; 
             border: 1px solid #cbd5e1; 
             border-radius: 6px; 
@@ -69,18 +53,18 @@
             box-sizing: border-box;
         }
 
-        .filter-group input[type="number"] {
+        .report-filter-group input[type="number"] {
             width: 85px;
             text-align: center;
         }
         
-        .action-btns { 
+        .report-action-btns { 
             display: flex; 
             gap: 10px; 
             align-items: center; 
         }
 
-        .btn-action { 
+        .btn-report-action { 
             padding: 0 16px; 
             height: 38px;
             border-radius: 6px; 
@@ -137,7 +121,7 @@
         .report-table th span.date-range { font-size: 0.7rem; font-weight: 500; color: #94a3b8; display: block; margin-top: 2px; }
         .report-table td.project-name { text-align: left; font-weight: 700; color: #1e293b; }
         
-        /* TOTAL ROW (BLUE EMPHASIS) */
+        /* TOTAL ROW */
         .report-table tr.total-row { background: #e0f2fe; font-weight: 800; color: #0f172a; }
         .report-table tr.total-row td { border-top: 2px solid #0284c7; border-bottom: 2px solid #0284c7; }
         .report-table tr.total-row td.grand-total-cell { font-size: 1rem; color: #0369a1; }
@@ -146,80 +130,92 @@
         @media print {
             @page { size: A4 portrait; margin: 10mm; }
             body { background: white !important; }
-            #sidebar-container, .control-bar { display: none !important; }
+            #sidebar-container, .topbar, .report-control-bar { display: none !important; }
             .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+            .content-area { padding: 0 !important; }
+            .report-wrapper { max-width: 100% !important; width: 100% !important; }
             .report-paper { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
         }
     </style>
 </head>
 <body>
-    <div id="sidebar-container"></div>
+    <div class="app-container">
+        <!-- Sidebar dimuatkan di sini -->
+        <div id="sidebar-container"></div>
+        
+        <main class="main-content">
+            <header class="topbar">
+                <h3>Reports</h3>
+                <div class="user-info"><span id="userEmail">Loading...</span></div>
+            </header>
 
-    <div class="main-content">
-        <div class="report-container">
-            
-            <!-- FILTER & ACTION BAR -->
-            <div class="control-bar">
-                <div class="filter-group">
-                    <span style="font-weight: 700; font-size: 0.8rem; color: #475569; text-transform: uppercase;">Period:</span>
-                    <select id="reportMonth">
-                        <!-- Bulan dijana oleh JS -->
-                    </select>
-                    <input type="number" id="reportYear" value="2026">
-                    <button id="btnGenerate" class="btn-action btn-generate">Generate</button>
-                </div>
-                
-                <div class="action-btns">
-                    <button id="btnPrint" class="btn-action btn-print">🖨️ Print A4 / PDF</button>
-                    <button id="btnExcel" class="btn-action btn-excel">📊 Export CSV</button>
+            <div class="content-area">
+                <div class="report-wrapper">
+                    
+                    <!-- FILTER & ACTION BAR -->
+                    <div class="report-control-bar">
+                        <div class="report-filter-group">
+                            <span style="font-weight: 700; font-size: 0.8rem; color: #475569; text-transform: uppercase;">Period:</span>
+                            <select id="reportMonth">
+                                <!-- Bulan dijana oleh JS -->
+                            </select>
+                            <input type="number" id="reportYear" value="2026">
+                            <button id="btnGenerate" class="btn-report-action btn-generate">Generate</button>
+                        </div>
+                        
+                        <div class="report-action-btns">
+                            <button id="btnPrint" class="btn-report-action btn-print">🖨️ Print A4 / PDF</button>
+                            <button id="btnExcel" class="btn-report-action btn-excel">📊 Export CSV</button>
+                        </div>
+                    </div>
+
+                    <!-- A4 REPORT PAPER -->
+                    <div class="report-paper" id="reportPaper">
+                        <div class="report-header">
+                            <div>
+                                <h1 class="company-title">PROJECT MAN-HOUR REPORT</h1>
+                                <div class="report-subtitle">MONTHLY SUMMARY | ACCURATE TIME • EFFICIENT PROJECTS • STRONGER RESULTS</div>
+                            </div>
+                            <div class="month-badge" id="badgeMonthYear">
+                                SEPTEMBER<br>2026
+                            </div>
+                        </div>
+
+                        <div class="section-title">WEEKLY MAN-HOUR SUMMARY</div>
+                        <div style="overflow-x: auto;">
+                            <table class="report-table" id="exportTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 25%; text-align: left;">Project</th>
+                                        <th id="thW1">Week 1<span class="date-range" id="dtW1">-</span></th>
+                                        <th id="thW2">Week 2<span class="date-range" id="dtW2">-</span></th>
+                                        <th id="thW3">Week 3<span class="date-range" id="dtW3">-</span></th>
+                                        <th id="thW4">Week 4<span class="date-range" id="dtW4">-</span></th>
+                                        <th id="thW5">Week 5<span class="date-range" id="dtW5">-</span></th>
+                                        <th style="width: 15%; background: #0284c7;">Total Manhour</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBodyProjects">
+                                    <!-- Dinamik -->
+                                </tbody>
+                                <tfoot>
+                                    <tr class="total-row">
+                                        <td style="text-align: left;">TOTAL</td>
+                                        <td id="totW1">0.0</td>
+                                        <td id="totW2">0.0</td>
+                                        <td id="totW3">0.0</td>
+                                        <td id="totW4">0.0</td>
+                                        <td id="totW5">0.0</td>
+                                        <td id="totGrand" class="grand-total-cell">0.0</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-
-            <!-- A4 REPORT PAPER -->
-            <div class="report-paper" id="reportPaper">
-                <div class="report-header">
-                    <div>
-                        <h1 class="company-title">PROJECT MAN-HOUR REPORT</h1>
-                        <div class="report-subtitle">MONTHLY SUMMARY | ACCURATE TIME • EFFICIENT PROJECTS • STRONGER RESULTS</div>
-                    </div>
-                    <div class="month-badge" id="badgeMonthYear">
-                        SEPTEMBER<br>2026
-                    </div>
-                </div>
-
-                <div class="section-title">WEEKLY MAN-HOUR SUMMARY</div>
-                <div style="overflow-x: auto;">
-                    <table class="report-table" id="exportTable">
-                        <thead>
-                            <tr>
-                                <th style="width: 25%; text-align: left;">Project</th>
-                                <th id="thW1">Week 1<span class="date-range" id="dtW1">-</span></th>
-                                <th id="thW2">Week 2<span class="date-range" id="dtW2">-</span></th>
-                                <th id="thW3">Week 3<span class="date-range" id="dtW3">-</span></th>
-                                <th id="thW4">Week 4<span class="date-range" id="dtW4">-</span></th>
-                                <th id="thW5">Week 5<span class="date-range" id="dtW5">-</span></th>
-                                <th style="width: 15%; background: #0284c7;">Total Manhour</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBodyProjects">
-                            <!-- Dinamik -->
-                        </tbody>
-                        <tfoot>
-                            <tr class="total-row">
-                                <td style="text-align: left;">TOTAL</td>
-                                <td id="totW1">0.0</td>
-                                <td id="totW2">0.0</td>
-                                <td id="totW3">0.0</td>
-                                <td id="totW4">0.0</td>
-                                <td id="totW5">0.0</td>
-                                <td id="totGrand" class="grand-total-cell">0.0</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-
-        </div>
+        </main>
     </div>
     <script type="module" src="../js/reports.js"></script>
 </body>
