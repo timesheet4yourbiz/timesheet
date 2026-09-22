@@ -538,3 +538,52 @@ window.deleteMember = async function(id) {
         alert('Gagal memadam pekerja: ' + err.message);
     }
 };
+
+// ==================== Arahkan Borang Simpan Data ke Supabase ====================
+const memberForm = document.getElementById('memberForm');
+if (memberForm) {
+    memberForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); // Elak halaman refresh secara melulu
+
+        const id = document.getElementById('formMemberId').value;
+        const updatedData = {
+            name: document.getElementById('formName').value,
+            email: document.getElementById('formEmail').value,
+            department: document.getElementById('formDept').value,
+            position: document.getElementById('formPosition').value,
+            system_role: document.getElementById('formRole').value,
+            status: document.getElementById('formStatus').value.toUpperCase(), // Pastikan 'ACTIVE' berhuruf besar
+            billable_rate: parseFloat(document.getElementById('formRate').value) || 0
+        };
+
+        try {
+            let error;
+            if (id) {
+                // Kemas kini (UPDATE) pekerja sedia ada
+                const res = await supabase.from('employees').update(updatedData).eq('id', id);
+                error = res.error;
+            } else {
+                // Masukkan (INSERT) jika pekerja baharu
+                const res = await supabase.from('employees').insert([updatedData]);
+                error = res.error;
+            }
+
+            if (error) throw error;
+
+            alert('Data berjaya disimpan!');
+            document.getElementById('memberModal').style.display = 'none';
+            window.location.reload(); // Muat semula halaman untuk paparkan status ACTIVE hijau
+        } catch (err) {
+            console.error('Ralat simpan:', err);
+            alert('Gagal menyimpan data: ' + err.message);
+        }
+    });
+}
+
+// Tutup Modal bila tekan butang 'X'
+const btnCloseModal = document.getElementById('btnCloseModal');
+if (btnCloseModal) {
+    btnCloseModal.addEventListener('click', () => {
+        document.getElementById('memberModal').style.display = 'none';
+    });
+}
