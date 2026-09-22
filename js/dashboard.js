@@ -86,7 +86,7 @@ function updateDateRange(preset) {
 }
 
 function bindFilters() {
-    document.getElementById('filterDateRange').addEventListener('change', (e) => {
+    document.getElementById('dateFilter').addEventListener('change', (e) => {
         filterState.preset = e.target.value;
         updateDateRange(filterState.preset);
         refreshDashboardData();
