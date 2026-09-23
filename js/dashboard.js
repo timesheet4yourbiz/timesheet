@@ -420,21 +420,36 @@ function bindPaginationControls() {
     }
 }
 
-// ==========================================
-// RENDER JADUAL AKTIVITI 8 LAJUR
-// ==========================================
+// Fungsi Penentuan Badge Status (Klon Imej)
+function getStatusAndBadge(member) {
+    if (member.isTracking) return '<span class="badge-status badge-inprogress">In progress</span>';
+    if (!member.latest) return '<span class="badge-status badge-noactivity">No activity</span>';
+
+    const now = new Date();
+    const past = new Date(member.latest.start_time);
+    
+    const today = new Date(); today.setHours(0,0,0,0);
+    const pastDay = new Date(past); pastDay.setHours(0,0,0,0);
+    const diffDays = Math.floor((today - pastDay) / (1000 * 60 * 60 * 24));
+    const diffHrs = Math.floor((now - past) / 3600000);
+
+    if (diffDays === 0) return '<span class="badge-status badge-inaday">In a day</span>';
+    if (diffDays > 0 && diffDays < 30) {
+        let txt = diffHrs < 24 ? `${diffHrs} hours ago` : `${diffDays} days ago`;
+        return `<span class="badge-status badge-hoursago">${txt}</span>`;
+    }
+    return '<span class="badge-status badge-noactivity">No activity</span>';
+}
+
+// RENDER JADUAL KLON 100%
 function renderTeamActivities() {
     const tbody = document.getElementById('teamActivitiesBody');
     if (!tbody) return;
     tbody.innerHTML = '';
 
     const totalRecs = teamDataList.length;
-    document.getElementById('totalRecords').textContent = totalRecs;
-
     if (totalRecs === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding: 20px;">Tiada pekerja dijumpai.</td></tr>';
-        document.getElementById('totalPages').textContent = '1';
-        document.getElementById('currentPageInput').value = 1;
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding: 20px;">Tiada data.</td></tr>';
         return;
     }
 
@@ -448,55 +463,76 @@ function renderTeamActivities() {
         pagedData = teamDataList.slice(startIndex, startIndex + recordsPerPage);
     }
 
-    document.getElementById('totalPages').textContent = maxPage;
-    document.getElementById('currentPageInput').value = currentPage;
-    document.getElementById('btnFirst').disabled = currentPage === 1;
-    document.getElementById('btnPrev').disabled = currentPage === 1;
-    document.getElementById('btnNext').disabled = currentPage === maxPage;
-    document.getElementById('btnLast').disabled = currentPage === maxPage;
+    // Update Pagination Display
+    const pageDisplay = document.getElementById('currentPageDisplay');
+    if (pageDisplay) pageDisplay.textContent = currentPage;
 
     pagedData.forEach((member, index) => {
         const init = getInitials(member.name);
         const actualIndex = (recordsPerPage !== 'all' ? (currentPage - 1) * recordsPerPage : 0) + index + 1;
         
-        let proj = '-';
-        let task = '-';
-        let statusBadge = `<span class="status-badge status-norecord">No Record</span>`;
+        let taskName = 'No recent activity';
+        let projName = '-';
+        let projColor = 'transparent';
         
-        const timeAgo = getTimeAgoObj(member.latest ? member.latest.start_time : null);
-        let timeHtml = `<span class="${timeAgo.colorClass}">${timeAgo.text}</span>`;
-
         if (member.latest) {
-            proj = member.latest.project ? member.latest.project.project_name : '-';
-            task = member.latest.description || '-';
+            taskName = member.latest.description || 'Untitled Task';
+            projName = member.latest.project ? member.latest.project.project_name : 'No Project';
+            projColor = getProjectColor(projName);
         }
 
+        const badgeHtml = getStatusAndBadge(member);
+
+        // Current Timer Logik
+        let currentTimerHtml = '-';
         if (member.isTracking) {
-            statusBadge = `<span class="status-badge status-active">Active</span>`;
-            timeHtml = `<span class="time-red">Just now</span>`;
-        } else if (member.todaySec > 0) {
-            if (timeAgo.text.includes('min ago')) {
-                statusBadge = `<span class="status-badge status-idle">Idle</span>`;
-            } else {
-                statusBadge = `<span class="status-badge status-tracked">Tracked</span>`;
+             currentTimerHtml = `${formatHMS(member.todaySec)} <span class="timer-active-dot"></span>`;
+        } else if (member.latest && member.todaySec > 0) {
+             currentTimerHtml = formatHMS(member.todaySec);
+        } else if (member.latest && badgeHtml.includes('hoursago')) {
+             currentTimerHtml = formatHMS(member.latest.duration_seconds || 0);
+        }
+
+        // Breakdown Bar Logik
+        let barSegments = '';
+        for (const [pName, pSec] of Object.entries(member.projects)) {
+            if (pSec > 0 && member.totalSec > 0) {
+                const perc = (pSec / member.totalSec) * 100;
+                barSegments += `<div class="prog-bar-segment" style="width: ${perc}%; background-color: ${getProjectColor(pName)};"></div>`;
             }
         }
+        let breakdownHtml = member.totalSec > 0 
+            ? `<div class="prog-bar-bg" style="width: 100%; height: 16px; background: #f1f5f9; border-radius: 2px; overflow: hidden; display: flex;">${barSegments}</div>`
+            : `<div class="prog-bar-bg" style="width: 100%; height: 16px; background: #f1f5f9; border-radius: 2px;"></div>`;
 
+        // Render Baris (Row) HTML
         tbody.innerHTML += `
             <tr>
-                <td style="text-align: center; color: #475569; font-weight: 500;">${actualIndex}</td>
+                <td style="text-align: center; color: #0f172a; font-weight: 600;">${actualIndex}</td>
                 <td>
-                    <div class="member-info">
-                        <div class="avatar">${init}</div>
-                        <div class="m-name" style="text-transform: uppercase;">${member.name}</div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="avatar" style="border-radius: 8px; width: 36px; height: 36px; background: ${getProjectColor(member.name)}; color: white; font-weight: 600;">${init}</div>
+                        <div>
+                            <div style="font-weight: 600; color: #0f172a; font-size: 0.85rem; text-transform: capitalize;">${member.name}</div>
+                            <div style="color: #64748b; font-size: 0.75rem;">${member.email || '-'}</div>
+                        </div>
                     </div>
                 </td>
-                <td>${timeHtml}</td>
-                <td style="color: #334155;">${proj}</td>
-                <td style="color: #334155;">${task}</td>
-                <td style="font-weight: 600; color: #334155;">${formatHMS(member.todaySec)}</td>
-                <td style="font-weight: 600; color: #334155;">${formatHMS(member.totalSec)}</td>
-                <td>${statusBadge}</td>
+                <td>
+                    <div style="font-weight: 600; color: #0f172a; font-size: 0.85rem; margin-bottom: 4px;">${taskName}</div>
+                    <div style="color: #64748b; font-size: 0.75rem; display: flex; align-items: center;">
+                        ${member.latest ? `<span class="proj-dot" style="background: ${projColor};"></span> ${projName}` : '-'}
+                    </div>
+                </td>
+                <td>${badgeHtml}</td>
+                <td style="text-align: center; font-weight: 500; color: #0f172a;">${currentTimerHtml}</td>
+                <td style="font-weight: 500; color: #0f172a;">${formatHMS(member.totalSec)}</td>
+                <td>${breakdownHtml}</td>
+                <td style="text-align: center;">
+                    <button style="background: none; border: none; cursor: pointer; color: #64748b;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                    </button>
+                </td>
             </tr>
         `;
     });
