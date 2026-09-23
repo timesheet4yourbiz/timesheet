@@ -140,12 +140,20 @@ async function handleExcelUpload(event) {
 function setupNavigation() {
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', (e) => {
+            // 1. Buang 'active' class dari semua tab
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             e.target.classList.add('active');
-            document.getElementById('membersView').style.display = 'none';
-            document.getElementById('groupsView').style.display = 'none';
-            document.getElementById('remindersView').style.display = 'none';
             
+            // 2. Sembunyikan view DENGAN SELAMAT (hanya jika kotak tersebut wujud di HTML)
+            const mv = document.getElementById('membersView');
+            const gv = document.getElementById('groupsView');
+            const rv = document.getElementById('remindersView');
+            
+            if (mv) mv.style.display = 'none';
+            if (gv) gv.style.display = 'none';
+            if (rv) rv.style.display = 'none';
+            
+            // 3. Paparkan view yang betul
             const tabId = e.target.getAttribute('data-tab') + 'View';
             const tabView = document.getElementById(tabId);
             if (tabView) tabView.style.display = 'block';
