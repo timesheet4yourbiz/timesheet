@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team - WorkTime</title>
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <!-- Library SheetJS untuk Import Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <div id="sidebar-container"></div>
+    
+    <!-- KANDUNGAN UTAMA -->
+    <div class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">Team</h1>
+            <span id="userEmail" style="color:#64748b; font-size:0.85rem;"></span>
+        </div>
+
+        <div class="team-nav">
+            <a class="nav-item active" data-tab="members">Members</a>
+            <a class="nav-item" data-tab="groups">Groups</a>
+            <a class="nav-item" data-tab="reminders">Reminders</a>
+        </div>
+
+        <div id="moduleContent">
+            
+            <!-- ================= VIEW: MEMBERS ================= -->
+            <div id="membersView">
+                <div class="glacier-card">
+                    
+                    <div class="glacier-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        
+                        <!-- Kumpulan Carian & Filter -->
+                        <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="searchMember" placeholder="Search by name or email..." style="padding: 10px 16px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; width: 250px;">
+                            <select id="filterRole" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; background: white; color: #475569; font-size: 0.9rem;">
+                                <option value="all">All Roles</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Supervisor">Supervisor</option>
+                                <option value="Employee">Employee</option>
+                            </select>
+                            <select id="filterStatus" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; background: white; color: #475569; font-size: 0.9rem;">
+                                <option value="all">All Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+
+                        <!-- Kumpulan Butang Tindakan -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;">
+                            <button id="btnImportExcel" title="Upload Excel" style="background-color: #059669; color: white; border: none; padding: 10px 12px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <path d="M8 13h2"/>
+                                    <path d="M8 17h8"/>
+                                    <path d="M14 13h2"/>
+                                </svg>
+                            </button>
+                            <button class="btn-primary" id="btnAddMember" style="padding: 10px 16px;">+ ADD NEW MEMBER</button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="team-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Group</th>
+                                    <th>Rate (RM)</th>
+                                    <th>Status</th>
+                                    <th style="width: 50px; text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="membersTableBody">
+                                <tr><td colspan="7" class="loading-overlay">Loading team members...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Bar Pagination -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid #e2e8f0; margin-top: 10px; font-size: 0.85rem; color: #64748b;">
+                        <div id="paginationInfo">Showing 1-10 of 0 members</div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button id="btnPrevPage" style="padding: 6px 14px; background: #e2e8f0; color: #475569; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;" disabled>Previous</button>
+                            <span id="pageNumbers" style="font-weight: 600; color: #0f172a; padding: 0 8px;">Page 1</span>
+                            <button id="btnNextPage" style="padding: 6px 14px; background: #0ea5e9; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Next</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ================= VIEW: GROUPS ================= -->
+            <div id="groupsView" style="display: none;">
+                <div class="glacier-card">
+                    <div class="glacier-header">
+                        <input type="text" id="searchGroup" placeholder="Search groups..." style="padding: 10px 16px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; width: 100%; max-width: 300px; font-size: 0.9rem;">
+                        <button id="btnAddGroup" class="btn-primary" style="white-space: nowrap; padding: 10px 16px;">+ ADD NEW GROUP</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="team-table">
+                            <thead>
+                                <tr>
+                                    <th>GROUP NAME</th>
+                                    <th>MANAGER</th>
+                                    <th>MEMBERS COUNT</th>
+                                    <th>STATUS</th>
+                                    <th style="text-align: center;">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="groupsTableBody">
+                                <!-- Data Javascript masuk sini -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>    
+
+            <!-- ================= VIEW: REMINDERS ================= -->
+            <div id="remindersView" style="display: none;">
+                <div class="glacier-card" style="padding: 40px; text-align: center; color: #64748b;">
+                    <h3>REMINDERS Module Coming Soon</h3>
+                    <p>This section is scheduled for the next development phase.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL: ADD/EDIT MEMBER -->
+    <div class="modal-overlay" id="memberModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Member Profile</h2>
+                <button class="close-btn" id="btnCloseModal">&times;</button>
+            </div>
+            <form id="memberForm">
+                <input type="hidden" id="formMemberId">
+                <div class="form-group">
+                    <label class="form-label">Email (Required for Login)</label>
+                    <input type="email" id="formEmail" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="formName" class="form-input" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Employee ID</label>
+                        <input type="text" id="formEmpNo" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="text" id="formPhone" class="form-input">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <input type="text" id="formDept" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Position</label>
+                        <input type="text" id="formPosition" class="form-input">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">System Role</label>
+                        <select id="formRole" class="form-select">
+                            <option value="Employee">Employee</option>
+                            <option value="Supervisor">Supervisor</option>
+                            <option value="Manager">Manager</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Group</label>
+                        <select id="formGroup" class="form-select">
+                            <option value="">- No Group -</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Billable Rate (RM/hr)</label>
+                        <input type="number" step="0.01" id="formRate" class="form-input" value="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select id="formStatus" class="form-select">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-save" id="btnSaveMember">Save Member</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD/EDIT GROUP -->
+    <div class="modal-overlay" id="groupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="groupModalTitle">Group Details</h2>
+                <button class="close-btn" id="btnCloseGroupModal">&times;</button>
+            </div>
+            <form id="groupForm">
+                <input type="hidden" id="formGroupId">
+                <div class="form-group">
+                    <label class="form-label">Group Name</label>
+                    <input type="text" id="formGroupName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="formGroupDesc" class="form-textarea" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Group Manager</label>
+                    <select id="formGroupManager" class="form-select">
+                        <option value="">- Select Manager -</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="formGroupStatus" class="form-select">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-save" id="btnSaveGroup">Save Group</button>
+            </form>
+        </div>
+    </div>
+    
+    <script type="module" src="../js/employees.js"></script>
+</body>
+</html>
