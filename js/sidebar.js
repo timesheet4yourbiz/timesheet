@@ -81,9 +81,9 @@ export async function loadSidebar() {
             <!-- SENARAI MENU LENGKAP -->
             <nav class="sidebar-nav" style="padding: 8px 0; flex: 1; overflow-y: auto;">
                 <div class="sidebar-category">ANALYZE</div>
-                <a href="dashboard.html" class="sidebar-link ${currentPath.includes('dashboard.html') ? 'active' : ''}">DASHBOARD</a>
                 <a href="tracker.html" class="sidebar-link ${currentPath.includes('time-tracker.html') ? 'active' : ''}">TIME TRACKER</a>
-                <a href="timesheet.html" class="sidebar-link ${currentPath.includes('timesheet.html') ? 'active' : ''}">TIMESHEET</a>
+                <a href="timesheet.html" class="sidebar-link ${currentPath.includes('timesheet.html') ? 'active' : ''}">TIMESHEET</a>           
+                <a href="dashboard.html" class="sidebar-link ${currentPath.includes('dashboard.html') ? 'active' : ''}">DASHBOARD</a>   
                 <a href="reports.html" class="sidebar-link ${currentPath.includes('reports.html') ? 'active' : ''}">REPORTS</a>
                 
                 <div class="sidebar-category">MANAGE</div>
