@@ -129,20 +129,33 @@
                     <!-- Footer Actions -->
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid #e2e8f0; flex-wrap: wrap; gap: 16px; background: white;">
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">Quick Actions:</span>
-                            <button style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                Copy last week
-                            </button>
-                            <button style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                                Save as template
-                            </button>
-                            <button style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #fff5f5; border: 1px solid #fecaca; border-radius: 4px; color: #ef4444; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                Clear all
-                            </button>
-                        </div>
+    <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">Quick Actions:</span>
+    
+    <!-- Custom Dropdown Copy Last Week -->
+    <div style="position: relative; display: inline-block;" id="copyLastWeekContainer">
+        <button id="copyLastWeekBtn" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; font-size: 0.85rem; font-weight: 500; cursor: pointer;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy last week
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        
+        <!-- Menu Pop-up Bawah -->
+        <div id="copyLastWeekMenu" style="display: none; position: absolute; bottom: 110%; left: 0; margin-bottom: 8px; background: white; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); width: 220px; z-index: 50; overflow: hidden;">
+            <div class="copy-dropdown-item" id="btnCopyActivitiesOnly">Copy activities only</div>
+            <div class="copy-dropdown-item" id="btnCopyActivitiesAndTime">Copy activities and time</div>
+        </div>
+    </div>
+
+    <button style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; font-size: 0.85rem; font-weight: 500; cursor: pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Save as template
+    </button>
+    
+    <button style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #fff5f5; border: 1px solid #fecaca; border-radius: 4px; color: #ef4444; font-size: 0.85rem; font-weight: 500; cursor: pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Clear all
+    </button>
+</div>
                         
                         <div style="display: flex; align-items: center; gap: 16px;">
                             <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #475569; font-weight: 600; cursor: pointer;">
