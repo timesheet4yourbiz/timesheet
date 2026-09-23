@@ -90,6 +90,7 @@
         </div>
 
         <div id="moduleContent">
+            
             <!-- ================= VIEW: MEMBERS ================= -->
             <div id="membersView">
                 <div class="toolbar">
@@ -110,10 +111,7 @@
                     </div>
 
                     <div style="display: flex; align-items: center;">
-                        <!-- Input fail tersembunyi -->
                         <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;">
-
-                        <!-- Butang Ikon Excel -->
                         <button id="btnImportExcel" title="Upload Excel" style="background-color: #059669; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px; transition: background-color 0.2s;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
@@ -123,7 +121,6 @@
                                 <path d="M14 13h2"/>
                             </svg>
                         </button>
-
                         <button class="btn-primary" id="btnAddMember">+ ADD NEW MEMBER</button>
                     </div>
                 </div>
@@ -147,9 +144,7 @@
                             </tbody>
                         </table>
                     </div>
-</div> 
-                </div> 
-
+                    
                     <!-- ================= BAR PAGINATION ================= -->
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-top: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.85rem; color: #64748b;">
                         <div id="paginationInfo">Showing 1-10 of 0 members</div>
@@ -159,43 +154,37 @@
                             <button id="btnNextPage" style="padding: 6px 14px; background: #0ea5e9; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Next</button>
                         </div>
                     </div>
-
                 </div> <!-- Penutup table-card -->
-
-                    
-                </div>
-            </div>
+            </div> <!-- Penutup membersView -->
 
             <!-- ================= VIEW: GROUPS ================= -->
-<div id="groupsView" style="display: none;">
-    <!-- Kotak Glacier Mula -->
-    <div class="glacier-card">
-        
-        <div class="glacier-header">
-            <input type="text" id="searchGroup" placeholder="Search groups...">
-            <button id="btnAddGroup" class="btn-primary" style="white-space: nowrap;">+ ADD NEW GROUP</button>
-        </div>
+            <div id="groupsView" style="display: none;">
+                <!-- Kotak Glacier Mula -->
+                <div class="glacier-card">
+                    <div class="glacier-header">
+                        <input type="text" id="searchGroup" placeholder="Search groups...">
+                        <button id="btnAddGroup" class="btn-primary" style="white-space: nowrap;">+ ADD NEW GROUP</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="team-table">
+                            <thead>
+                                <tr>
+                                    <th>GROUP NAME</th>
+                                    <th>MANAGER</th>
+                                    <th>MEMBERS COUNT</th>
+                                    <th>STATUS</th>
+                                    <th style="text-align: center;">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="groupsTableBody">
+                                <!-- Data Javascript masuk sini -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Kotak Glacier Tamat -->
+            </div>    
 
-        <div class="table-container">
-            <table class="team-table">
-                <thead>
-                    <tr>
-                        <th>GROUP NAME</th>
-                        <th>MANAGER</th>
-                        <th>MEMBERS COUNT</th>
-                        <th>STATUS</th>
-                        <th style="text-align: center;">ACTIONS</th>
-                    </tr>
-                </thead>
-                <tbody id="groupsTableBody">
-                    <!-- Data Javascript masuk sini -->
-                </tbody>
-            </table>
-        </div>
-        
-    </div>
-    <!-- Kotak Glacier Tamat -->
-</div>    
             <!-- ================= VIEW: REMINDERS ================= -->
             <div id="remindersView" style="display: none;">
                 <div class="table-card" style="padding: 40px; text-align: center; color: #64748b;">
@@ -204,9 +193,7 @@
                 </div>
             </div>
 
-        </div>
-    </div>
-
+        </div> <!-- Penutup moduleContent -->
     <!-- MODAL: ADD/EDIT MEMBER -->
     <div class="modal-overlay" id="memberModal">
         <div class="modal-content">
