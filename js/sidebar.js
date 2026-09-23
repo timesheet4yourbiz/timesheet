@@ -95,7 +95,10 @@ export async function loadSidebar() {
                 <div class="sidebar-category">OTHERS</div>
                 <a href="attendance.html" class="sidebar-link ${currentPath.includes('attendance.html') ? 'active' : ''}">ATTENDANCE</a>
                 <a href="approvals.html" class="sidebar-link ${currentPath.includes('approvals.html') ? 'active' : ''}">APPROVALS</a>
-                <a href="departments.html" class="sidebar-link ${currentPath.includes('departments.html') ? 'active' : ''}">DEPARTMENTS</a>
+                <a href="departments.html" class="sidebar-link ${currentPath.includes('departments.html') ? 'active' : ''}" style="display: none;">DEPARTMENTS</a>
+             
+                
+                
                 <a href="profile.html" class="sidebar-link ${currentPath.includes('profile.html') ? 'active' : ''}">MY PROFILE</a>
                 <a href="settings.html" class="sidebar-link ${currentPath.includes('settings.html') ? 'active' : ''}">SETTINGS</a>
             </nav>
