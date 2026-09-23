@@ -5,7 +5,7 @@ let membersData = [];
 let groupsData = [];
 window.currentUserRole = 'Employee'; 
 
-// PERISAI MEMORI: Simpan ID secara terus dalam memori JavaScript (Tidak bergantung pada HTML)
+// PERISAI MEMORI
 let activeMemberId = null;
 let activeGroupId = null;
 
@@ -145,12 +145,16 @@ function setupNavigation() {
             document.getElementById('membersView').style.display = 'none';
             document.getElementById('groupsView').style.display = 'none';
             document.getElementById('remindersView').style.display = 'none';
-            document.getElementById(e.target.getAttribute('data-tab') + 'View').style.display = 'block';
+            
+            const tabId = e.target.getAttribute('data-tab') + 'View';
+            const tabView = document.getElementById(tabId);
+            if (tabView) tabView.style.display = 'block';
         });
     });
 }
 
 function bindFilters() {
+    // Filter Members
     const searchInput = document.getElementById('searchMember');
     const roleSelect = document.getElementById('filterRole');
     const statusSelect = document.getElementById('filterStatus');
@@ -166,12 +170,23 @@ function bindFilters() {
             const matchStatus = status === 'all' || m.status === status;
             return matchName && matchRole && matchStatus;
         });
+        currentPage = 1; 
         renderMembersTable(filtered);
     };
 
     if (searchInput) searchInput.addEventListener('keyup', filterMembers);
     if (roleSelect) roleSelect.addEventListener('change', filterMembers);
     if (statusSelect) statusSelect.addEventListener('change', filterMembers);
+
+    // Filter Groups
+    const searchGroup = document.getElementById('searchGroup') || document.querySelector('input[placeholder*="Search group"]');
+    if (searchGroup) {
+        searchGroup.addEventListener('keyup', () => {
+            const term = searchGroup.value.toLowerCase();
+            const filtered = groupsData.filter(g => (g.group_name || '').toLowerCase().includes(term));
+            renderGroupsTable(filtered);
+        });
+    }
 }
 
 async function fetchMembers() {
@@ -257,30 +272,31 @@ function setupMemberModal() {
     const btnAdd = document.getElementById('btnAddMember');
     const form = document.getElementById('memberForm');
 
-    if(btnClose) btnClose.addEventListener('click', () => modal.style.display = 'none');
+    if (btnClose) btnClose.addEventListener('click', () => { if(modal) modal.style.display = 'none'; });
     
-    if(btnAdd) {
+    if (btnAdd) {
         btnAdd.addEventListener('click', () => {
-            activeMemberId = null; // Reset ID (Tambah Baru)
-            document.getElementById('modalTitle').textContent = "Add New Member";
+            activeMemberId = null; 
+            const title = document.getElementById('modalTitle');
+            if (title) title.textContent = "Add New Member";
             const emailInput = document.getElementById('formEmail');
-            if(emailInput) {
+            if (emailInput) {
                 emailInput.value = '';
                 emailInput.disabled = false; 
             }
-            if(form) form.reset(); 
-            if(modal) modal.style.display = 'flex';
+            if (form) form.reset(); 
+            if (modal) modal.style.display = 'flex';
         });
     }
 
-    if(form) {
+    if (form) {
         const newForm = form.cloneNode(true);
         form.parentNode.replaceChild(newForm, form);
         
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btnSave = document.getElementById('btnSaveMember');
-            if(btnSave) btnSave.disabled = true;
+            if (btnSave) btnSave.disabled = true;
 
             const getVal = (id) => {
                 const el = document.getElementById(id);
@@ -288,7 +304,6 @@ function setupMemberModal() {
             };
 
             const emailInput = getVal('formEmail');
-            
             const payload = {
                 name: getVal('formName') || 'Unknown',
                 employee_no: getVal('formEmpNo'),
@@ -303,13 +318,11 @@ function setupMemberModal() {
 
             try {
                 if (activeMemberId) {
-                    // UPDATE: Kemaskini rekod sedia ada (Pasti Berjaya!)
                     const { error } = await supabase.from('employees').update(payload).eq('id', activeMemberId);
-                    if(error) throw error;
+                    if (error) throw error;
                     alert("Data profil berjaya dikemaskini!");
                 } else {
-                    // INSERT: Tambah pekerja baru
-                    if(btnSave) btnSave.textContent = "Sending Invite...";
+                    if (btnSave) btnSave.textContent = "Sending Invite...";
                     const tempPassword = "Pwd" + Math.floor(Math.random() * 1000000) + "A!";
                     
                     const { data: authData, error: authError } = await supabase.auth.signUp({ 
@@ -327,7 +340,7 @@ function setupMemberModal() {
                     }
                     alert("Pekerja baru berjaya ditambah!");
                 }
-                modal.style.display = 'none';
+                if(modal) modal.style.display = 'none';
                 window.location.reload(); 
             } catch (error) {
                 console.error('Ralat simpan:', error);
@@ -342,12 +355,11 @@ function setupMemberModal() {
     }
 }
 
-// Fungsi Edit (Aktif bila bos tekan butang Pensel)
 window.openEditModal = function(id) {
     const member = membersData.find(m => m.id === id);
     if (!member) return;
 
-    activeMemberId = id; // Kunci ID pekerja dalam memori
+    activeMemberId = id; 
 
     const setVal = (id, val) => {
         const el = document.getElementById(id);
@@ -388,7 +400,7 @@ window.deleteMember = async function(id) {
 };
 
 // ==========================================
-// GROUPS MODULE LOGIC
+// GROUPS MODULE LOGIC (DENGAN PERISAI)
 // ==========================================
 async function fetchGroups() {
     const { data, error } = await supabase.from('groups').select(`id, group_name, description, manager_id, status`).order('group_name');
@@ -435,16 +447,19 @@ function setupGroupModal() {
     const modal = document.getElementById('groupModal');
     const form = document.getElementById('groupForm');
 
-    document.getElementById('btnCloseGroupModal')?.addEventListener('click', () => modal.style.display = 'none');
+    document.getElementById('btnCloseGroupModal')?.addEventListener('click', () => {
+        if(modal) modal.style.display = 'none';
+    });
     
     document.getElementById('btnAddGroup')?.addEventListener('click', () => {
-        activeGroupId = null; // Reset ID 
-        document.getElementById('groupModalTitle').textContent = "Create New Group";
+        activeGroupId = null; // Reset ID Group
+        const title = document.getElementById('groupModalTitle');
+        if(title) title.textContent = "Create New Group";
         if(form) form.reset();
-        modal.style.display = 'flex';
+        if(modal) modal.style.display = 'flex';
     });
 
-    if(form) {
+    if (form) {
         const newForm = form.cloneNode(true);
         form.parentNode.replaceChild(newForm, form);
         
@@ -453,22 +468,34 @@ function setupGroupModal() {
             const btnSave = document.getElementById('btnSaveGroup');
             if(btnSave) btnSave.disabled = true;
 
-            const payload = {
-                group_name: document.getElementById('formGroupName').value,
-                description: document.getElementById('formGroupDesc').value,
-                manager_id: document.getElementById('formGroupManager').value || null,
-                status: document.getElementById('formGroupStatus').value
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value : null;
             };
 
-            if (activeGroupId) {
-                await supabase.from('groups').update(payload).eq('id', activeGroupId);
-            } else {
-                await supabase.from('groups').insert([payload]);
+            const payload = {
+                group_name: getVal('formGroupName') || 'Unnamed Group',
+                description: getVal('formGroupDesc') || '',
+                manager_id: getVal('formGroupManager') || null,
+                status: getVal('formGroupStatus') || 'Active'
+            };
+
+            try {
+                if (activeGroupId) {
+                    await supabase.from('groups').update(payload).eq('id', activeGroupId);
+                    alert("Kumpulan dikemaskini!");
+                } else {
+                    await supabase.from('groups').insert([payload]);
+                    alert("Kumpulan baru dicipta!");
+                }
+                if(modal) modal.style.display = 'none';
+                fetchGroups(); 
+            } catch (error) {
+                console.error("Ralat kumpulan:", error);
+                alert("Gagal menyimpann data kumpulan: " + error.message);
+            } finally {
+                if(btnSave) btnSave.disabled = false;
             }
-            
-            modal.style.display = 'none';
-            if(btnSave) btnSave.disabled = false;
-            fetchGroups(); 
         });
     }
 }
@@ -477,15 +504,23 @@ window.openEditGroupModal = function(id) {
     const group = groupsData.find(g => g.id === id);
     if (!group) return;
 
-    activeGroupId = id; // Kunci ID Group dalam memori
+    activeGroupId = id; 
 
-    document.getElementById('groupModalTitle').textContent = "Edit Group";
-    document.getElementById('formGroupName').value = group.group_name || '';
-    document.getElementById('formGroupDesc').value = group.description || '';
-    document.getElementById('formGroupManager').value = group.manager_id || '';
-    document.getElementById('formGroupStatus').value = group.status || 'Active';
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if(el) el.value = val || '';
+    };
 
-    document.getElementById('groupModal').style.display = 'flex';
+    const title = document.getElementById('groupModalTitle');
+    if (title) title.textContent = "Edit Group";
+    
+    setVal('formGroupName', group.group_name);
+    setVal('formGroupDesc', group.description);
+    setVal('formGroupManager', group.manager_id);
+    setVal('formGroupStatus', group.status);
+
+    const modal = document.getElementById('groupModal');
+    if(modal) modal.style.display = 'flex';
 };
 
 function populateGroupDropdowns() {
@@ -506,3 +541,47 @@ function populateManagerDropdown() {
         select.innerHTML += `<option value="${m.id}">${m.name} (${m.system_role})</option>`;
     });
 }
+
+// ==================== LOGIK PAGINATION (DIKEMBALIKAN) ====================
+window.updatePagination = function(totalItems) {
+    const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
+    const endItem = Math.min(currentPage * rowsPerPage, totalItems);
+
+    const infoElem = document.getElementById('paginationInfo');
+    const pageElem = document.getElementById('pageNumbers');
+    const btnPrev = document.getElementById('btnPrevPage');
+    const btnNext = document.getElementById('btnNextPage');
+
+    if (infoElem) infoElem.innerText = `Showing ${startItem}-${endItem} of ${totalItems} members`;
+    if (pageElem) pageElem.innerText = `Page ${currentPage} of ${totalPages}`;
+
+    if (btnPrev) {
+        btnPrev.disabled = currentPage === 1;
+        btnPrev.style.opacity = currentPage === 1 ? '0.5' : '1';
+        btnPrev.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
+    }
+
+    if (btnNext) {
+        btnNext.disabled = currentPage >= totalPages;
+        btnNext.style.opacity = currentPage >= totalPages ? '0.5' : '1';
+        btnNext.style.cursor = currentPage >= totalPages ? 'not-allowed' : 'pointer';
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('btnPrevPage')?.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderMembersTable(membersData);
+        }
+    });
+
+    document.getElementById('btnNextPage')?.addEventListener('click', () => {
+        const totalPages = Math.ceil((membersData?.length || 0) / rowsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderMembersTable(membersData);
+        }
+    });
+});
