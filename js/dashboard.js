@@ -16,7 +16,7 @@ let chartDonut = null;
 // ==========================================
 let teamDataList = []; // Simpan data asal pekerja
 let currentPage = 1;
-let recordsPerPage = 50; 
+let recordsPerPage = 20; 
 let currentSort = { column: 'member', isAsc: true };
 
 // ==========================================
