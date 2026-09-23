@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timesheet - WorkTime</title>
+    <!-- Rujukan Tunggal ke style.css -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar dimuatkan di sini -->
+        <div id="sidebar-container"></div>
+        
+        <main class="main-content">
+            <div class="top-header">
+                <h1 class="page-title">Timesheet</h1>
+                <span id="userEmail" style="color:#64748b; font-size:0.85rem;">Loading...</span>
+            </div>
+
+            <div class="content-area">
+                
+                <!-- Kawalan Atas: Filter Minggu -->
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 24px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select style="padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 8px; color: #475569; outline: none; background: white;">
+                            <option>Teammates</option>
+                        </select>
+                        
+                        <button style="padding: 8px 12px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; color: #64748b; cursor: pointer;">
+                            ☰
+                        </button>
+                        
+                        <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 8px; background: white; overflow: hidden;">
+                            <div id="weekDateRange" style="padding: 8px 15px; border-right: 1px solid #cbd5e1; color: #475569; display: flex; align-items: center; gap: 8px; font-size: 0.85rem;">
+                                📅 Memuatkan...
+                            </div>
+                            <button id="prevWeekBtn" style="padding: 8px 12px; background: white; border: none; border-right: 1px solid #cbd5e1; cursor: pointer; color: #64748b;">&lt;</button>
+                            <button id="nextWeekBtn" style="padding: 8px 12px; background: white; border: none; cursor: pointer; color: #64748b;">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Jadual Timesheet Mingguan (GLACIER CARD) -->
+                <div class="glacier-card" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
+                    <div style="overflow-x: auto;">
+                        <table class="team-table" style="text-align: center;">
+                            <thead>
+                                <tr id="timesheetHeadRow">
+                                    <!-- JS akan isikan hari Isnin-Ahad di sini -->
+                                </tr>
+                            </thead>
+                            <tbody id="timesheetTableBody">
+                                <!-- JS akan isikan senarai Projek & Masa di sini -->
+                            </tbody>
+                            <tfoot id="timesheetFootRow">
+                                <!-- JS akan isikan jumlah besar mingguan di sini -->
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Butang Tindakan Bawah -->
+                <div style="display: flex; gap: 12px;">
+                    <button id="addNewRowBtn" style="display: none; padding: 10px 16px; background: white; border: 1px solid #0ea5e9; color: #0ea5e9; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                        ⊕ Add new row
+                    </button>
+                    
+                    <select id="copyLastWeekSelect" style="padding: 10px 16px; background: white; border: 1px solid #cbd5e1; color: #475569; border-radius: 8px; cursor: pointer; outline: none; font-size: 0.85rem; font-weight: 500;">
+                        <option value="" disabled selected>📄 Copy last week ▼</option>
+                        <option value="activities">Copy activities only</option>
+                        <option value="all">Copy activities and time</option>
+                    </select>
+
+                    <button id="saveTemplateBtn" style="padding: 10px 16px; background: white; border: 1px solid #cbd5e1; color: #475569; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                        💾 Save as template
+                    </button>
+                </div>
+
+            </div>
+        </main>
+    </div>
+    <script type="module" src="../js/timesheet.js"></script>
+</body>
+</html>
