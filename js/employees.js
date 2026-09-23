@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             setupGroupModal();
         }
         
+        // Panggil enjin Excel
+        setupExcelImport();
+
         await fetchMembers(); 
         await fetchGroups();
 
@@ -45,6 +48,93 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// ==================== EXCEL IMPORT LOGIC ====================
+function setupExcelImport() {
+    const btnImport = document.getElementById('btnImportExcel');
+    const fileInput = document.getElementById('excelFileInput');
+
+    if (btnImport && fileInput) {
+        btnImport.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleExcelUpload);
+    }
+}
+
+async function handleExcelUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    
+    reader.onload = async (e) => {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            const excelData = XLSX.utils.sheet_to_json(worksheet);
+            
+            if (excelData.length === 0) {
+                alert("Fail Excel kosong!");
+                return;
+            }
+
+            alert(`Berjaya membaca ${excelData.length} baris data. Sedang mendaftar pekerja...`);
+
+            for (const row of excelData) {
+                const getVal = (...keys) => {
+                    const match = Object.keys(row).find(k => keys.includes(k.trim().toLowerCase()));
+                    return match ? row[match] : null;
+                };
+
+                const email = getVal('email', 'e-mail', 'emel');
+                const name = getVal('name', 'nama', 'full name', 'nama penuh') || 'Unknown Name';
+                const department = getVal('department', 'jabatan', 'dept');
+                const position = getVal('position', 'jawatan', 'post');
+                const role = getVal('role', 'system_role', 'peranan') || 'Employee';
+                const tempPassword = getVal('password', 'kata laluan') || 'Cranetrack2026';
+
+                if (!email) continue;
+
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: email,
+                    password: tempPassword,
+                    options: { data: { full_name: name } }
+                });
+
+                if (authError) {
+                    console.error(`Gagal mendaftar ${email}:`, authError.message);
+                    continue; 
+                }
+
+                if (authData.user) {
+                    await supabase.from('employees').insert({
+                        id: authData.user.id,
+                        name: name,
+                        email: email,
+                        department: department,
+                        position: position,
+                        system_role: role,
+                        status: 'ACTIVE'
+                    });
+                }
+            }
+
+            alert("Semua pekerja berhasil diimport dan didaftarkan!");
+            window.location.reload();
+
+        } catch (error) {
+            console.error("Ralat Import:", error);
+            alert("Gagal mengimport data: " + error.message);
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+    event.target.value = ''; // Reset input
+}
+
+// ==================== NAVIGATION & FILTERS ====================
 function setupNavigation() {
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', (e) => {
@@ -179,7 +269,6 @@ function setupMemberModal() {
     }
 
     if(form) {
-        // Bina form baharu untuk lupuskan cache lama
         const newForm = form.cloneNode(true);
         form.parentNode.replaceChild(newForm, form);
         
@@ -188,7 +277,6 @@ function setupMemberModal() {
             const btnSave = document.getElementById('btnSaveMember');
             if(btnSave) btnSave.disabled = true;
 
-            // FUNGSI SELAMAT: Tarik data elak ralat jika HTML kotak hilang
             const getVal = (id) => {
                 const el = document.getElementById(id);
                 return el ? el.value : null;
@@ -197,7 +285,6 @@ function setupMemberModal() {
             const empId = getVal('formMemberId');
             const emailInput = getVal('formEmail');
             
-            // PAYLOAD KALIS PELURU
             const payload = {
                 name: getVal('formName') || 'Unknown',
                 employee_no: getVal('formEmpNo'),
@@ -212,18 +299,17 @@ function setupMemberModal() {
 
             try {
                 if (empId) {
-                    // UPDATE
                     const { error } = await supabase.from('employees').update(payload).eq('id', empId);
                     if(error) throw error;
                     alert("Data berjaya disimpan!");
                 } else {
-                    // INSERT
                     if(btnSave) btnSave.textContent = "Sending Invite...";
                     const tempPassword = "Pwd" + Math.floor(Math.random() * 1000000) + "A!";
                     
                     const { data: authData, error: authError } = await supabase.auth.signUp({ 
                         email: emailInput, 
-                        password: tempPassword 
+                        password: tempPassword,
+                        options: { data: { full_name: payload.name } }
                     });
                     
                     if (authError) throw authError;
