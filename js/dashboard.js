@@ -14,7 +14,7 @@ let chartDonut = null;
 // ==========================================
 // STATE UNTUK PAGINATION & SORTING
 // ==========================================
-let teamDataList = []; // Simpan data asal pekerja
+let teamDataList = []; 
 let currentPage = 1;
 let recordsPerPage = 20; 
 let currentSort = { column: 'member', isAsc: true };
@@ -44,8 +44,29 @@ function formatHMS(seconds) {
     return `${hrs}:${String(mins).padStart(2, '0')}`;
 }
 
+// Fungsi Kiraan Masa (Berapa minit/jam yang lepas)
+function getTimeAgoObj(dateString) {
+    if (!dateString) return { text: 'Yesterday', colorClass: 'time-grey' };
+    
+    const now = new Date();
+    const past = new Date(dateString);
+    const diffMins = Math.floor((now - past) / 60000);
+    
+    const today = new Date(); today.setHours(0,0,0,0);
+    const pastDay = new Date(past); pastDay.setHours(0,0,0,0);
+    const diffDays = Math.floor((today - pastDay) / (1000 * 60 * 60 * 24));
+
+    if (diffDays >= 1) return { text: 'Yesterday', colorClass: 'time-grey' };
+    
+    if (diffMins < 1) return { text: 'Just now', colorClass: 'time-red' };
+    if (diffMins < 60) return { text: `${diffMins} min ago`, colorClass: 'time-red' };
+    
+    const diffHrs = Math.floor(diffMins / 60);
+    return { text: `${diffHrs} hour${diffHrs > 1 ? 's' : ''} ago`, colorClass: 'time-orange' };
+}
+
 // ==========================================
-// INIT
+// INIT DASHBOARD
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -56,7 +77,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userEmailEl = document.getElementById('userEmail');
         if (userEmailEl) userEmailEl.textContent = session.user.email;
 
-        // Tarikh Dashboard
         let currentDashDate = new Date();
 
         const getDashWeekRange = (dateObj) => {
@@ -69,7 +89,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const end = new Date(start);
             end.setDate(start.getDate() + 6); 
             end.setHours(23,59,59,999);
-            
             return { start, end };
         };
 
@@ -87,22 +106,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         const prevDashBtn = document.getElementById('prevDashBtn');
-        if (prevDashBtn) {
-            prevDashBtn.addEventListener('click', async () => {
-                currentDashDate.setDate(currentDashDate.getDate() - 7);
-                updateDashDateDisplay();
-                await refreshDashboardData();
-            });
-        }
+        if (prevDashBtn) prevDashBtn.addEventListener('click', async () => {
+            currentDashDate.setDate(currentDashDate.getDate() - 7);
+            updateDashDateDisplay();
+            await refreshDashboardData();
+        });
 
         const nextDashBtn = document.getElementById('nextDashBtn');
-        if (nextDashBtn) {
-            nextDashBtn.addEventListener('click', async () => {
-                currentDashDate.setDate(currentDashDate.getDate() + 7);
-                updateDashDateDisplay();
-                await refreshDashboardData();
-            });
-        }
+        if (nextDashBtn) nextDashBtn.addEventListener('click', async () => {
+            currentDashDate.setDate(currentDashDate.getDate() + 7);
+            updateDashDateDisplay();
+            await refreshDashboardData();
+        });
 
         updateDashDateDisplay();
         bindFilters();
@@ -124,18 +139,12 @@ function bindFilters() {
     const filterProject = document.getElementById('filterProject');
     const filterTeam = document.getElementById('filterTeam');
 
-    if (filterProject) {
-        filterProject.addEventListener('change', (e) => {
-            filterState.projectId = e.target.value;
-            refreshDashboardData();
-        });
-    }
-    if (filterTeam) {
-        filterTeam.addEventListener('change', (e) => {
-            filterState.teamId = e.target.value;
-            refreshDashboardData();
-        });
-    }
+    if (filterProject) filterProject.addEventListener('change', (e) => {
+        filterState.projectId = e.target.value; refreshDashboardData();
+    });
+    if (filterTeam) filterTeam.addEventListener('change', (e) => {
+        filterState.teamId = e.target.value; refreshDashboardData();
+    });
 }
 
 async function loadProjectDropdown() {
@@ -174,10 +183,7 @@ async function refreshDashboardData() {
     if (filterState.projectId !== 'all') query = query.eq('project_id', filterState.projectId);
 
     const { data: entries, error } = await query;
-    if (error) {
-        console.error("Query Error:", error);
-        return;
-    }
+    if (error) { console.error("Query Error:", error); return; }
     
     const { data: employeesData } = await supabase.from('employees').select('id, email, name');
     const employees = employeesData || [];
@@ -186,10 +192,9 @@ async function refreshDashboardData() {
     processBarChart(entries);
     processDonutAndRanking(entries);
     
-    // Proses dan simpan ke memori pagination
+    // Proses Data Jadual 8 Lajur
     teamDataList = processTeamActivitiesData(entries, employees);
     
-    // Render Jadual
     currentPage = 1;
     applySortingAndRender();
 }
@@ -214,7 +219,6 @@ function processKPI(entries) {
 
     document.getElementById('kpiTotalTime').textContent = formatHMS(totalSec);
     document.getElementById('kpiTopProject').textContent = topP;
-    
     const donutTotal = document.getElementById('donutTotal');
     if (donutTotal) donutTotal.textContent = formatHMS(totalSec);
 }
@@ -248,15 +252,10 @@ function processBarChart(entries) {
     if (chartBar) chartBar.destroy();
     
     chartBar = new Chart(ctx, {
-        type: 'bar',
-        data: { labels, datasets },
+        type: 'bar', data: { labels, datasets },
         options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { stacked: true, grid: { display: false } },
-                y: { stacked: true, beginAtZero: true, border: { display: false } }
-            }
+            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+            scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, border: { display: false } } }
         }
     });
 }
@@ -274,7 +273,6 @@ function processDonutAndRanking(entries) {
     });
 
     const sortedProjs = Object.entries(projMap).sort((a,b) => b[1] - a[1]);
-    
     const rankCont = document.getElementById('projectRankingList');
     if (rankCont) {
         rankCont.innerHTML = '';
@@ -305,26 +303,25 @@ function processDonutAndRanking(entries) {
         type: 'doughnut',
         data: {
             labels: sortedProjs.map(i => i[0]),
-            datasets: [{
-                data: sortedProjs.map(i => (i[1] / 3600).toFixed(2)),
-                backgroundColor: sortedProjs.map(i => getProjectColor(i[0])),
-                borderWidth: 0, hoverOffset: 4
-            }]
+            datasets: [{ data: sortedProjs.map(i => (i[1] / 3600).toFixed(2)), backgroundColor: sortedProjs.map(i => getProjectColor(i[0])), borderWidth: 0, hoverOffset: 4 }]
         },
         options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } }
     });
 }
 
 // ==========================================
-// ENGINE: SUSUN DATA TEAM
+// ENGINE: SUSUN DATA TEAM (8 LAJUR)
 // ==========================================
 function processTeamActivitiesData(entries, employees) {
     const teamMap = {};
+    const todayStr = new Date().toLocaleDateString('en-CA');
+
     employees.forEach(emp => {
         teamMap[emp.id] = { 
             name: emp.name || emp.email.split('@')[0], 
             email: emp.email, 
             totalSec: 0, 
+            todaySec: 0, 
             latest: null,
             isTracking: false,
             projects: {} 
@@ -334,16 +331,20 @@ function processTeamActivitiesData(entries, employees) {
     (entries || []).forEach(e => {
         if (!e.employee_id) return;
         if (!teamMap[e.employee_id]) {
-            teamMap[e.employee_id] = { name: 'ID: ' + String(e.employee_id).substring(0,6), email: 'Tiada Emel', totalSec: 0, latest: null, isTracking: false, projects: {} };
+            teamMap[e.employee_id] = { name: 'ID: ' + String(e.employee_id).substring(0,6), email: '', totalSec: 0, todaySec: 0, latest: null, isTracking: false, projects: {} };
         }
         
+        const dStr = e.work_date || e.start_time.split('T')[0];
+        const sec = e.duration_seconds || 0;
+
         if (e.status === 'IN_PROGRESS' || e.status === 'RUNNING') {
             teamMap[e.employee_id].isTracking = true;
             if (!teamMap[e.employee_id].latest) teamMap[e.employee_id].latest = e;
         } else {
-            const sec = e.duration_seconds || 0;
             const pName = e.project ? e.project.project_name : 'No Project';
             teamMap[e.employee_id].totalSec += sec;
+            if (dStr === todayStr) teamMap[e.employee_id].todaySec += sec;
+            
             teamMap[e.employee_id].projects[pName] = (teamMap[e.employee_id].projects[pName] || 0) + sec;
             if (!teamMap[e.employee_id].latest) teamMap[e.employee_id].latest = e;
         }
@@ -353,27 +354,20 @@ function processTeamActivitiesData(entries, employees) {
 }
 
 // ==========================================
-// ENGINE: SORTING (SUSUNAN)
+// ENGINE: SORTING & PAGINATION
 // ==========================================
 function bindSortingControls() {
     document.querySelectorAll('.sortable-header').forEach(header => {
         header.addEventListener('click', () => {
             const column = header.getAttribute('data-sort');
-            
-            // Toggle arah susunan
             if (currentSort.column === column) {
                 currentSort.isAsc = !currentSort.isAsc;
             } else {
                 currentSort.column = column;
                 currentSort.isAsc = true;
             }
-
-            // Kemas kini icon pada UI HTML
-            document.querySelectorAll('.sortable-header').forEach(h => {
-                h.classList.remove('asc', 'desc');
-            });
+            document.querySelectorAll('.sortable-header').forEach(h => h.classList.remove('asc', 'desc'));
             header.classList.add(currentSort.isAsc ? 'asc' : 'desc');
-
             applySortingAndRender();
         });
     });
@@ -382,37 +376,25 @@ function bindSortingControls() {
 function applySortingAndRender() {
     teamDataList.sort((a, b) => {
         let valA, valB;
-        
-        if (currentSort.column === 'member') {
-            valA = a.name.toLowerCase();
-            valB = b.name.toLowerCase();
-        } else if (currentSort.column === 'tracked') {
-            valA = a.totalSec;
-            valB = b.totalSec;
-        } else if (currentSort.column === 'activity') {
-            // Sort by latest activity timestamp (jika wujud)
+        if (currentSort.column === 'member') { valA = a.name.toLowerCase(); valB = b.name.toLowerCase(); } 
+        else if (currentSort.column === 'tracked') { valA = a.totalSec; valB = b.totalSec; } 
+        else if (currentSort.column === 'activity') {
             valA = a.latest ? new Date(a.latest.start_time).getTime() : 0;
             valB = b.latest ? new Date(b.latest.start_time).getTime() : 0;
         }
-
         if (valA < valB) return currentSort.isAsc ? -1 : 1;
         if (valA > valB) return currentSort.isAsc ? 1 : -1;
         return 0;
     });
-
     renderTeamActivities();
 }
 
-// ==========================================
-// ENGINE: PAGINATION (MUKA SURAT)
-// ==========================================
 function bindPaginationControls() {
     const recordSelect = document.getElementById('recordsPerPage');
     if (recordSelect) {
         recordSelect.addEventListener('change', (e) => {
             recordsPerPage = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
-            currentPage = 1; 
-            renderTeamActivities();
+            currentPage = 1; renderTeamActivities();
         });
     }
 
@@ -423,10 +405,7 @@ function bindPaginationControls() {
         if (currentPage < maxPage) { currentPage++; renderTeamActivities(); } 
     });
     document.getElementById('btnLast')?.addEventListener('click', () => { 
-        if(recordsPerPage !== 'all') {
-            currentPage = Math.ceil(teamDataList.length / recordsPerPage);
-            renderTeamActivities();
-        }
+        if(recordsPerPage !== 'all') { currentPage = Math.ceil(teamDataList.length / recordsPerPage); renderTeamActivities(); }
     });
 
     const pageInput = document.getElementById('currentPageInput');
@@ -436,19 +415,14 @@ function bindPaginationControls() {
             const maxPage = recordsPerPage === 'all' ? 1 : Math.ceil(teamDataList.length / recordsPerPage);
             if (val < 1) val = 1;
             if (val > maxPage) val = maxPage;
-            currentPage = val;
-            renderTeamActivities();
+            currentPage = val; renderTeamActivities();
         });
     }
 }
 
 // ==========================================
-// RENDER JADUAL AKTIVITI
+// RENDER JADUAL AKTIVITI 8 LAJUR
 // ==========================================
-window.peringatanAm = function(email) {
-    alert(`Fungsi amaran emel akan dihantar ke ${email} pada fasa integrasi emel.`);
-}
-
 function renderTeamActivities() {
     const tbody = document.getElementById('teamActivitiesBody');
     if (!tbody) return;
@@ -458,7 +432,7 @@ function renderTeamActivities() {
     document.getElementById('totalRecords').textContent = totalRecs;
 
     if (totalRecs === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#94a3b8; padding: 20px;">Tiada pekerja dijumpai.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding: 20px;">Tiada pekerja dijumpai.</td></tr>';
         document.getElementById('totalPages').textContent = '1';
         document.getElementById('currentPageInput').value = 1;
         return;
@@ -470,73 +444,59 @@ function renderTeamActivities() {
     if (recordsPerPage !== 'all') {
         maxPage = Math.ceil(totalRecs / recordsPerPage);
         if (currentPage > maxPage) currentPage = maxPage;
-        
         const startIndex = (currentPage - 1) * recordsPerPage;
-        const endIndex = startIndex + recordsPerPage;
-        pagedData = teamDataList.slice(startIndex, endIndex);
+        pagedData = teamDataList.slice(startIndex, startIndex + recordsPerPage);
     }
 
-    // Update Label Pagination UI
     document.getElementById('totalPages').textContent = maxPage;
     document.getElementById('currentPageInput').value = currentPage;
-
-    // Disabled/Enabled Buttons
     document.getElementById('btnFirst').disabled = currentPage === 1;
     document.getElementById('btnPrev').disabled = currentPage === 1;
     document.getElementById('btnNext').disabled = currentPage === maxPage;
     document.getElementById('btnLast').disabled = currentPage === maxPage;
 
-    // Bina Jadual HTML
-    pagedData.forEach(member => {
+    pagedData.forEach((member, index) => {
         const init = getInitials(member.name);
-        const formatTime = formatHMS(member.totalSec);
+        const actualIndex = (recordsPerPage !== 'all' ? (currentPage - 1) * recordsPerPage : 0) + index + 1;
         
-        let activityHtml = `<div class="act-proj">(Tiada Rekod)</div>`;
-        if (member.isTracking && member.latest) {
-            const p = member.latest.project ? member.latest.project.project_name : '(Without Project)';
-            activityHtml = `<div class="act-title" style="color:#10b981;">▶ Sedang Berjalan (In Progress)</div><div class="act-proj">${p}</div>`;
-        } else if (member.latest) {
-            const p = member.latest.project ? member.latest.project.project_name : '(Without Project)';
-            const desc = member.latest.description || '(no description)';
-            activityHtml = `<div class="act-title">${desc}</div><div class="act-proj">${p}</div>`;
+        let proj = '-';
+        let task = '-';
+        let statusBadge = `<span class="status-badge status-norecord">No Record</span>`;
+        
+        const timeAgo = getTimeAgoObj(member.latest ? member.latest.start_time : null);
+        let timeHtml = `<span class="${timeAgo.colorClass}">${timeAgo.text}</span>`;
+
+        if (member.latest) {
+            proj = member.latest.project ? member.latest.project.project_name : '-';
+            task = member.latest.description || '-';
         }
 
-        let trackedHtml = '';
-        if (member.totalSec === 0 && !member.isTracking) {
-            trackedHtml = `
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span class="zero-hours">0:00</span>
-                    <button class="btn-chase" onclick="peringatanAm('${member.email}')">Peringatan</button>
-                </div>
-            `;
-        } else {
-            let barSegments = '';
-            for (const [pName, pSec] of Object.entries(member.projects)) {
-                if (pSec > 0) {
-                    const perc = (pSec / member.totalSec) * 100;
-                    const clr = getProjectColor(pName);
-                    barSegments += `<div class="prog-bar-segment" style="width: ${perc}%; background-color: ${clr};" title="${pName}: ${formatHMS(pSec)}"></div>`;
-                }
+        if (member.isTracking) {
+            statusBadge = `<span class="status-badge status-active">Active</span>`;
+            timeHtml = `<span class="time-red">Just now</span>`;
+        } else if (member.todaySec > 0) {
+            if (timeAgo.text.includes('min ago')) {
+                statusBadge = `<span class="status-badge status-idle">Idle</span>`;
+            } else {
+                statusBadge = `<span class="status-badge status-tracked">Tracked</span>`;
             }
-            trackedHtml = `
-                <div style="font-weight:600; color:#334155;">${formatTime}</div>
-                <div class="prog-bar-bg">${barSegments}</div>
-            `;
         }
 
         tbody.innerHTML += `
             <tr>
+                <td style="text-align: center; color: #475569; font-weight: 500;">${actualIndex}</td>
                 <td>
                     <div class="member-info">
                         <div class="avatar">${init}</div>
-                        <div>
-                            <div class="m-name" style="text-transform: capitalize;">${member.name}</div>
-                            <div class="m-email">${member.email}</div>
-                        </div>
+                        <div class="m-name" style="text-transform: uppercase;">${member.name}</div>
                     </div>
                 </td>
-                <td>${activityHtml}</td>
-                <td>${trackedHtml}</td>
+                <td>${timeHtml}</td>
+                <td style="color: #334155;">${proj}</td>
+                <td style="color: #334155;">${task}</td>
+                <td style="font-weight: 600; color: #334155;">${formatHMS(member.todaySec)}</td>
+                <td style="font-weight: 600; color: #334155;">${formatHMS(member.totalSec)}</td>
+                <td>${statusBadge}</td>
             </tr>
         `;
     });
