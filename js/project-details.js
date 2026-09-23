@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "ME - S (SECONDARY)",
                 "EE - P (PRIMARY)",
                 "EE - S (SECONDARY)",
-                "DOCUMENTATION"
+                "DOCUMENTATION",
                 "DISCUSSION / MEETING"
             ];
 
