@@ -404,3 +404,16 @@ body.sidebar-collapsed .eye-closed { display: block; }
     width: 16px; height: 16px; background: white; border-radius: 50%; transition: transform 0.2s;
 }
 .toggle-switch.active::after { transform: translateX(16px);}
+
+/* Custom Dropdown Copy Last Week */
+.copy-dropdown-item {
+    padding: 8px 12px; 
+    font-size: 0.8rem; 
+    font-weight: 500; 
+    color: #475569; 
+    cursor: pointer; 
+    border-bottom: 1px solid #f1f5f9; 
+    transition: all 0.2s;
+}
+.copy-dropdown-item:last-child { border-bottom: none; }
+.copy-dropdown-item:hover { background-color: #f8fafc; color: #3b82f6; }
