@@ -669,4 +669,44 @@ canvas {
     background-color: #f8fafc;
     color: #0ea5e9;
 }
-    </style>
+  
+
+
+/* ========================================= */
+/* KOTAK GLACIER ANTARTIKA (EMPLOYEES & GROUPS) */
+/* ========================================= */
+.glacier-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 12px 35px rgba(14, 42, 71, 0.06);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    margin-top: 20px;
+    width: 100%;
+}
+
+.glacier-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 15px;
+}
+
+#searchGroup, #searchMember {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    width: 100%;
+    max-width: 300px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+#searchGroup:focus, #searchMember:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+  </style>
