@@ -3,72 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Approvals - WorkTime System</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
-    
+    <title>Approvals - WorkTime</title>
+    <!-- Pastikan fail CSS dipanggil dengan betul -->
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/dashboard.css">
-    
 </head>
 <body>
 
-    <div class="app-container">
-        <div id="sidebar-container"></div>
-        <main class="main-content">
-            <header class="topbar">
-                <h3>Approvals</h3>
-                <div class="user-info"><span id="userEmail">Loading...</span></div>
-            </header>
+    <!-- SIDEBAR -->
+    <div id="sidebar-container"></div>
+    
+    <!-- KANDUNGAN UTAMA -->
+    <div class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">Approvals</h1>
+            <span id="userEmail" style="color:#64748b; font-size:0.85rem;">Loading...</span>
+        </div>
 
-            <div class="content-area">
-                
-                <!-- Action for Employee -->
-                <div class="card">
-                    <h2>Submit Timesheet for Approval</h2>
-                    <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem;">
-                        <input type="date" id="weekSelect" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
-                        <button id="submitWeekBtn" class="btn-sm btn-submit">Submit Week</button>
-                    </div>
-                    <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">Select any date in the week you want to submit.</small>
-                </div>
-
-                <!-- Approval List -->
-                <div class="card">
-                    <h2>Timesheet Submissions</h2>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Employee</th>
-                                    <th>Week Start</th>
-                                    <th>Status</th>
-                                    <th>Submitted At</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="approvalList">
-                                <tr><td colspan="5">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+        <!-- KOTAK SUBMIT TIMESHEET (GLACIER CARD) -->
+        <div class="glacier-card" style="margin-top: 0; margin-bottom: 24px;">
+            <h2 style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-top: 0; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
+                Submit Timesheet for Approval
+            </h2>
+            <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem; flex-wrap: wrap;">
+                <input type="date" id="weekSelect" style="padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; font-family: inherit;">
+                <button id="submitWeekBtn" class="btn-primary" style="padding: 10px 20px; font-weight: 600; border-radius: 8px;">Submit Week</button>
             </div>
-        </main>
+            <small style="color: #64748b; display: block; margin-top: 12px; font-size: 0.8rem;">Select any date in the week you want to submit.</small>
+        </div>
+
+        <!-- KOTAK APPROVAL LIST (GLACIER CARD) -->
+        <div class="glacier-card" style="margin-top: 0;">
+            <h2 style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-top: 0; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
+                Timesheet Submissions
+            </h2>
+            <div class="table-container">
+                <table class="team-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Week Start</th>
+                            <th>Status</th>
+                            <th>Submitted At</th>
+                            <th style="text-align: center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approvalList">
+                        <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 20px;">Loading submissions...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Reject Modal -->
-    <div id="rejectModal" class="modal">
-        <div class="modal-content">
-            <h3>Reject Timesheet</h3>
-            <label>Reason (Required):</label>
-            <textarea id="rejectReason" rows="3" placeholder="Explain why this is rejected..."></textarea>
-            <div style="display: flex; gap: 1rem;">
-                <button id="confirmRejectBtn" class="btn-sm btn-reject" style="flex: 1;">Confirm Reject</button>
-                <button id="cancelRejectBtn" class="btn-sm" style="flex: 1; background: var(--text-muted);">Cancel</button>
+    <!-- MODAL REJECT (Dibaiki dengan UI Premium) -->
+    <div id="rejectModal" class="modal-overlay">
+        <div class="modal-content" style="height: auto; max-height: 90vh; border-radius: 12px; padding: 24px; width: 400px; margin: auto; display: flex; flex-direction: column; justify-content: center;">
+            <div class="modal-header">
+                <h3 style="margin: 0; color: #ef4444; font-size: 1.2rem;">Reject Timesheet</h3>
+            </div>
+            <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 8px;">Reason (Required):</label>
+            <textarea id="rejectReason" rows="4" placeholder="Explain why this is rejected..." style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.9rem; margin-bottom: 20px; resize: vertical; box-sizing: border-box; outline: none;"></textarea>
+            <div style="display: flex; gap: 10px;">
+                <button id="confirmRejectBtn" style="flex: 1; background-color: #ef4444; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">Confirm Reject</button>
+                <button id="cancelRejectBtn" style="flex: 1; background-color: #e2e8f0; color: #475569; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;" onmouseover="this.style.backgroundColor='#cbd5e1'" onmouseout="this.style.backgroundColor='#e2e8f0'">Cancel</button>
             </div>
         </div>
     </div>
