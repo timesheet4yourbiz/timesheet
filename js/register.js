@@ -3,26 +3,31 @@ import { supabase } from './supabase.js';
 document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('registerForm');
     
-    // Tarik elemen input. Anggap bos guna id="regName" untuk input Nama Penuh
-    const regName = document.getElementById('regName') || document.querySelector('input[type="text"]');
-    const regEmail = document.getElementById('regEmail');
-    const regPassword = document.getElementById('regPassword');
-    
-    const regBtn = document.getElementById('regBtn');
-    const regMessage = document.getElementById('regMessage');
-
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Kunci butang elak spam
-            regBtn.disabled = true;
-            regBtn.textContent = 'Registering...';
+            // Perisai Pintar: Cari elemen dengan ID atau fallback ke input jenis teks pertama
+            const regName = document.getElementById('regName') || registerForm.querySelector('input[type="text"]');
+            const regEmail = document.getElementById('regEmail') || registerForm.querySelector('input[type="email"]');
+            const regPassword = document.getElementById('regPassword') || registerForm.querySelector('input[type="password"]');
+            const regBtn = document.getElementById('regBtn') || registerForm.querySelector('button[type="submit"]');
+            const regMessage = document.getElementById('regMessage');
 
-            // Dapatkan nilai dari borang
-            const fullName = regName ? regName.value.trim() : 'Unknown Name';
+            // Hentikan pendaftaran jika input nama tiada atau kosong
+            if (!regName || !regName.value.trim()) {
+                alert("Sila masukkan Nama Penuh anda. (Pastikan input HTML mempunyai id='regName')");
+                return;
+            }
+
+            const fullName = regName.value.trim();
             const email = regEmail.value.trim();
             const password = regPassword.value;
+
+            if (regBtn) {
+                regBtn.disabled = true;
+                regBtn.textContent = 'Registering...';
+            }
 
             // 1. Daftarkan akaun ke Supabase Auth
             const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -35,16 +40,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (authError) {
                 alert('Pendaftaran Gagal: ' + authError.message);
-                regBtn.disabled = false;
-                regBtn.textContent = 'Register Account';
-                return; // Berhenti di sini jika gagal
+                if (regBtn) {
+                    regBtn.disabled = false;
+                    regBtn.textContent = 'Register Account';
+                }
+                return; 
             } 
             
-            // 2. Simpan profil lengkap (Nama & Emel) ke dalam jadual 'employees'
+            // 2. Wajib: Masukkan data nama terus ke table employees
             if (authData && authData.user) {
                 const payload = {
                     id: authData.user.id,
-                    name: fullName,      // <-- PENTING: Data nama dimasukkan di sini
+                    name: fullName,      // <-- Nama sebenar disalurkan terus ke sini!
                     email: email,
                     system_role: 'Employee',
                     status: 'PENDING',
@@ -52,18 +59,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 const { error: dbError } = await supabase.from('employees').upsert([payload]);
-                
-                if (dbError) {
-                    console.error('Ralat simpan ke profil pekerja:', dbError);
-                }
+                if (dbError) console.error("Ralat pangkalan data:", dbError);
             }
 
-            // 3. Tendang keluar (Sign Out) serta-merta untuk elak auto-login
+            // 3. Log Keluar & Tunjuk Mesej
             await supabase.auth.signOut(); 
-
             registerForm.style.display = 'none';
-            regMessage.style.display = 'block';
-            regMessage.innerHTML = `Pendaftaran berjaya!<br><br>Akaun anda kini berstatus <b>PENDING</b>. Sila tunggu pengesahan dan kelulusan daripada Admin/HR sebelum anda boleh log masuk ke dalam sistem.`;
+            if (regMessage) {
+                regMessage.style.display = 'block';
+                regMessage.innerHTML = `Pendaftaran berjaya!<br><br>Akaun anda kini berstatus <b>PENDING</b>. Sila tunggu pengesahan daripada Admin sebelum anda log masuk.`;
+            }
         });
     }
 });
