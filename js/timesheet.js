@@ -16,9 +16,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let currentEmployeeId = null;
         let currentDate = new Date(); 
-        let tagsDataList = []; // Array untuk simpan data dari modul Tags
+        let tagsDataList = []; 
 
-        // 1. BINA KOTAK POP-UP
+        // 1. BINA KOTAK POP-UP (PROJECT PICKER)
         let popup = document.getElementById('projectPickerPopup');
         if (!popup) {
             popup = document.createElement('div');
@@ -84,7 +84,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return (hrs * 3600) + (mins * 60);
         };
 
-        // Fungsi bina HTML Dropdown Tag dinamik
         const getTagOptionsHtml = () => {
             let options = '<option value="">- Select Tag -</option>';
             tagsDataList.forEach(t => {
@@ -135,32 +134,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         };
 
-        // 4. FUNGSI RENDER (UI)
+        // 4. FUNGSI RENDER (UI BARU)
         const renderTimesheetHeader = () => {
             const { start, end, days } = getWeekRange(currentDate);
+            
+            const dateStr = `${start.toLocaleDateString('en-US', {month:'short', day:'numeric'})} - ${end.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})}`;
+            
             const dateRangeEl = document.getElementById('weekDateRange');
-            if (dateRangeEl) dateRangeEl.textContent = `${start.toLocaleDateString('en-US', {month:'short', day:'numeric'})} - ${end.toLocaleDateString('en-US', {month:'short', day:'numeric'})}`;
+            const dateRangeTopEl = document.getElementById('weekDateRangeTop');
+            if (dateRangeEl) dateRangeEl.textContent = dateStr;
+            if (dateRangeTopEl) dateRangeTopEl.textContent = dateStr;
 
-            const theadRow = document.getElementById('timesheetHeadRow');
-            if (!theadRow) return;
-
-            theadRow.style.background = '#edf2f7';
-            theadRow.style.color = '#718096';
-            theadRow.style.fontSize = '0.85rem';
-            theadRow.style.borderBottom = '1px solid #e2e8f0';
-
-            let thHtml = `
-                <th style="padding: 12px 20px; text-align: left; font-weight: 500; width: 25%;">Projects</th>
-                <th style="padding: 12px 10px; text-align: left; font-weight: 500; width: 12%;">Tag</th>
-                <th style="padding: 12px 10px; text-align: left; font-weight: 500; width: 18%;">Remark</th>
-            `;
-            days.forEach(d => {
-                const label = d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
-                thHtml += `<th style="padding: 12px 10px; font-weight: 500; text-align: center;">${label}</th>`;
+            const daysArray = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            days.forEach((d, i) => {
+                const thSpan = document.getElementById(`th${daysArray[i]}`);
+                if (thSpan) thSpan.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
             });
-            thHtml += `<th style="padding: 12px 10px; font-weight: 500; text-align: center;">Total:</th>`;
-            thHtml += `<th style="padding: 12px 15px; width: 40px;"></th>`;
-            theadRow.innerHTML = thHtml;
         };
 
         const togglePopup = async (e) => {
@@ -251,7 +240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tFoot = document.getElementById('timesheetFootRow');
             if (!tBody) return;
 
-            tBody.innerHTML = '<tr><td colspan="12" style="padding:20px; text-align:center; color:#888;">Memuatkan data...</td></tr>';
+            tBody.innerHTML = '<tr><td colspan="13" style="padding:20px; text-align:center; color:#888;">Memuatkan data...</td></tr>';
 
             const { start, end, days } = getWeekRange(currentDate);
             const startIso = start.toISOString().split('T')[0];
@@ -269,11 +258,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .lte('start_time', endIso);
 
             if (error) {
-                tBody.innerHTML = `<tr><td colspan="12" style="padding:20px; text-align:center; color:red;">Ralat: ${error.message}</td></tr>`;
+                tBody.innerHTML = `<tr><td colspan="13" style="padding:20px; text-align:center; color:red;">Ralat: ${error.message}</td></tr>`;
                 return;
             }
 
             const matrix = {};
+            let globalRowCount = 1;
             
             data.forEach(entry => {
                 const pId = entry.project_id || 'no_project';
@@ -300,23 +290,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             for (const [key, rowData] of Object.entries(matrix)) {
                 let rowTotal = 0;
-                const displayTask = rowData.taskName && rowData.taskName !== 'No Task' ? `<span style="color:#a0aec0; margin-left: 5px;">- ${rowData.taskName}</span>` : '';
+                const displayTask = rowData.taskName && rowData.taskName !== 'No Task' ? `<br><span style="color:#64748b; font-size: 0.75rem;">${rowData.taskName}</span>` : '';
                 
                 const pidAttr = rowData.projectId || '';
                 const tidAttr = rowData.taskId || '';
 
                 htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
-                    <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem; color: #4a5568;">
-                        <span style="display:inline-block; width:6px; height:6px; background:#8b5cf6; border-radius:50%; margin-right:8px;"></span>
+                    <td style="text-align: center; font-weight: 500; color: #64748b;">${globalRowCount++}</td>
+                    <td style="font-size: 0.85rem; color: #1e293b; font-weight: 600;">
+                        <span style="display:inline-block; width:8px; height:8px; background:#3b82f6; border-radius:50%; margin-right:8px;"></span>
                         ${rowData.projectName.toUpperCase()} ${displayTask}
                     </td>
-                    <td style="padding: 12px 10px;">
-                        <select style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; outline: none; background: white;">
+                    <td>
+                        <select class="ts-select">
                             ${getTagOptionsHtml()}
                         </select>
                     </td>
-                    <td style="padding: 12px 10px;">
-                        <input type="text" placeholder="Type remark..." style="width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; outline: none; background: #f8fafc; box-sizing: border-box; font-family: inherit;">
+                    <td>
+                        <input type="text" class="ts-input-remark" placeholder="Type remark...">
                     </td>`;
                 
                 days.forEach((d, index) => {
@@ -324,62 +315,76 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const seconds = rowData.dailyData[dateKey];
                     rowTotal += seconds;
                     dayTotals[index] += seconds;                    
-                    const valStr = seconds > 0 ? formatHMS(seconds) : '';                    
+                    
+                    const valStr = seconds > 0 ? formatHMS(seconds) : '0:00';
+                    const zeroClass = seconds > 0 ? '' : 'zero';
+
                     htmlContent += `<td style="text-align: center;">
-                                        <input type="text" class="time-input" data-date="${dateKey}" data-pid="${pidAttr}" data-tid="${tidAttr}" value="${valStr}" placeholder="0:00" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; font-size: 0.85rem; color: #475569; outline: none; background: white;">
+                                        <input type="text" class="ts-input-time time-input ${zeroClass}" data-date="${dateKey}" data-pid="${pidAttr}" data-tid="${tidAttr}" value="${valStr}" placeholder="0:00">
                                     </td>`;
                 });
                 grandTotal += rowTotal;
-                htmlContent += `<td style="font-weight: 500; color: #718096; font-size: 0.9rem; text-align: center; border-left: 1px dotted #e2e8f0;">${formatHMS(rowTotal)}</td>
-                                <td class="del-row-btn" data-pid="${pidAttr}" data-tid="${tidAttr}" style="color: #a0aec0; cursor: pointer; font-size: 1.2rem; text-align: center; font-weight: 300;" title="Delete Row">✕</td>
+                htmlContent += `<td style="font-weight: 700; color: #1e293b; font-size: 0.9rem; text-align: center;">${formatHMS(rowTotal)}</td>
+                                <td style="text-align: center;">
+                                    <button class="action-btn del-row-btn" data-pid="${pidAttr}" data-tid="${tidAttr}" title="Delete Row">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    </button>
+                                </td>
                             </tr>`;
             }            
             
+            // Baris Kosong Tambahan (Select Project)
             htmlContent += `<tr style="border-bottom: 1px solid #e2e8f0; background: white;">
-                <td style="padding: 12px 20px; text-align: left; font-size: 0.9rem;">
-                    <span id="openPickerBtn" style="color: #0ea5e9; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 1.2rem;">⊕</span> Select project
+                <td style="text-align: center; font-weight: 500; color: #64748b;">${globalRowCount}</td>
+                <td style="font-size: 0.85rem;">
+                    <span id="openPickerBtn" style="color: #3b82f6; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                        Select project
                     </span>
                 </td>
-                <td style="padding: 12px 10px;">
-                    <select style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; outline: none; background: white;" disabled>
-                        <option>- Select Tag -</option>
-                    </select>
-                </td>
-                <td style="padding: 12px 10px;">
-                    <input type="text" placeholder="Type remark..." style="width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #94a3b8; outline: none; background: #f1f5f9; box-sizing: border-box; font-family: inherit;" disabled>
-                </td>`;
+                <td><select class="ts-select" disabled><option>- Select Tag -</option></select></td>
+                <td><input type="text" class="ts-input-remark" placeholder="Type remark..." disabled></td>`;
                 
             for(let i=0; i<7; i++) {
-                htmlContent += `<td style="text-align: center;">
-                                    <input type="text" placeholder="0:00" style="width: 50px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: center; background: white; outline: none; color: #475569;" disabled>
-                                </td>`;
+                htmlContent += `<td style="text-align: center;"><input type="text" class="ts-input-time zero" value="0:00" disabled></td>`;
             }
-            htmlContent += `<td style="font-weight: 500; color: #718096; font-size: 0.9rem; text-align: center; border-left: 1px dotted #e2e8f0;">0:00</td>
-                            <td style="color: #a0aec0; cursor: pointer; font-size: 1.2rem; text-align: center; font-weight: 300;">✕</td>
+            htmlContent += `<td style="font-weight: 700; color: #1e293b; font-size: 0.9rem; text-align: center;">0:00</td>
+                            <td style="text-align: center;">
+                                <button class="action-btn" title="Delete Row"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button>
+                            </td>
                         </tr>`;
 
             tBody.innerHTML = htmlContent;
 
+            // Update Footer Total HTML
             if (tFoot) {
-                let footHtml = `<tr style="background: #edf2f7; font-weight: 500; color: #718096; font-size: 0.9rem; border-top: 1px solid #e2e8f0;">
-                                    <td colspan="3" style="padding: 15px 20px; text-align: right; font-weight: 600;">Total:</td>`;
-                for (let i = 0; i < 7; i++) {
-                    footHtml += `<td style="padding: 15px 10px; text-align: center;">${dayTotals[i] > 0 ? formatHMS(dayTotals[i]) : '0:00'}</td>`;
-                }
-                footHtml += `<td style="padding: 15px 10px; text-align: center; color: #4a5568;">${formatHMS(grandTotal)}</td><td></td></tr>`;
-                tFoot.innerHTML = footHtml;
+                const daysArray = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                daysArray.forEach((day, index) => {
+                    const tf = document.getElementById(`tf${day}`);
+                    if (tf) tf.textContent = dayTotals[index] > 0 ? formatHMS(dayTotals[index]) : '0:00';
+                });
+                const tfTotal = document.getElementById('tfTotal');
+                if (tfTotal) tfTotal.textContent = formatHMS(grandTotal);
             }
 
             // BIND EVENTS UNTUK ELEMEN DALAM JADUAL SAHAJA
             document.querySelectorAll('.time-input').forEach(input => {
+                // Kosmetik: Buang 0:00 bila klik
+                input.addEventListener('focus', function() {
+                    if (this.value === '0:00') this.value = '';
+                });
+
                 input.addEventListener('change', async (e) => {
                     const el = e.target;
                     const dateStr = el.getAttribute('data-date');
                     const pid = el.getAttribute('data-pid') || null;
                     const tid = el.getAttribute('data-tid') || null;
-                    const rawVal = el.value.trim();
-
+                    
+                    let rawVal = el.value.trim();
+                    if (rawVal === '') rawVal = '0:00';
+                    else if (!rawVal.includes(':')) rawVal = rawVal + ':00';
+                    el.value = rawVal;
+                    
                     el.style.opacity = '0.5'; 
                     const totalSeconds = parseTimeInput(rawVal);
                     await saveTimeEntry(dateStr, pid, tid, totalSeconds, false);
@@ -390,8 +395,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('.del-row-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     if(!confirm("Padam keseluruhan baris masa untuk projek ini pada minggu ini?")) return;
-                    const pid = e.target.getAttribute('data-pid') || null;
-                    const tid = e.target.getAttribute('data-tid') || null;
+                    const pid = e.currentTarget.getAttribute('data-pid') || null;
+                    const tid = e.currentTarget.getAttribute('data-tid') || null;
                     const { start, end } = getWeekRange(currentDate);
                     
                     let query = supabase.from('time_entries').delete().eq('employee_id', currentEmployeeId)
@@ -408,7 +413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (openPickerBtn) openPickerBtn.addEventListener('click', togglePopup);
         };
 
-        // 5. EVENT BINDING STATIK
+        // 5. EVENT BINDING STATIK & CUSTOM DROPDOWN
         const prevWeekBtn = document.getElementById('prevWeekBtn');
         if (prevWeekBtn) {
             prevWeekBtn.addEventListener('click', () => {
@@ -417,6 +422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loadTimesheetData();
             });
         }
+        
         const nextWeekBtn = document.getElementById('nextWeekBtn');
         if (nextWeekBtn) {
             nextWeekBtn.addEventListener('click', () => {
@@ -425,19 +431,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loadTimesheetData();
             });
         }
+        
         const addNewRowBtn = document.getElementById('addNewRowBtn');
         if (addNewRowBtn) addNewRowBtn.addEventListener('click', togglePopup);
        
         // ==========================================
-        // FUNGSI COPY LAST WEEK (NATIVE SELECT DROPDOWN)
+        // FUNGSI COPY LAST WEEK (CUSTOM DROPDOWN)
         // ==========================================
-        const copyLastWeekSelect = document.getElementById('copyLastWeekSelect');
-        
         const executeCopyLastWeek = async (includeTime) => {
-            if (copyLastWeekSelect) {
-                copyLastWeekSelect.options[0].text = '⏳ Copying...';
-                copyLastWeekSelect.disabled = true;
-            }
+            const copyBtn = document.getElementById('copyLastWeekBtn');
+            const originalHtml = copyBtn.innerHTML;
+            if (copyBtn) copyBtn.innerHTML = '⏳ Copying...';
             
             try {
                 const lwDate = new Date(currentDate);
@@ -462,15 +466,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (!lwData || lwData.length === 0) {
                     alert(`Tiada rekod masa atau projek pada minggu lepas (${lwStart.toLocaleDateString('en-GB')} - ${lwEnd.toLocaleDateString('en-GB')}) untuk disalin.`);
-                    if(copyLastWeekSelect) { 
-                        copyLastWeekSelect.options[0].text = '📄 Copy last week ▼'; 
-                        copyLastWeekSelect.disabled = false; 
-                        copyLastWeekSelect.selectedIndex = 0; // Reset dropdown ke paparan asal
-                    }
+                    if(copyBtn) copyBtn.innerHTML = originalHtml;
                     return;
                 }
 
-                // KUMPULKAN MASA MENGIKUT PROJEK, TASK, DAN HARI
+                // KUMPULKAN MASA
                 const matrix = {};
                 lwData.forEach(entry => {
                     const pId = entry.project_id || 'null';
@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 });
 
-                // MASUKKAN DATA KE MINGGU SEMASA
+                // MASUKKAN DATA
                 for (const key in matrix) {
                     const row = matrix[key];
                     await saveTimeEntry(cwDays[0].toLocaleDateString('en-CA'), row.pid === 'null' ? null : row.pid, row.tid === 'null' ? null : row.tid, 0, true);
@@ -510,22 +510,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert("Gagal menyalin: " + err.message);
             }
             
-            if(copyLastWeekSelect) {
-                copyLastWeekSelect.options[0].text = '📄 Copy last week ▼';
-                copyLastWeekSelect.disabled = false;
-                copyLastWeekSelect.selectedIndex = 0; // Reset dropdown ke paparan asal
-            }
+            if(copyBtn) copyBtn.innerHTML = originalHtml;
         };
 
-        // Pasang "Telinga" pada Dropdown (Dengar perubahan pilihan pengguna)
-        if (copyLastWeekSelect) {
-            copyLastWeekSelect.addEventListener('change', async (e) => {
-                const val = e.target.value;
-                if (val === 'activities') {
-                    await executeCopyLastWeek(false);
-                } else if (val === 'all') {
-                    await executeCopyLastWeek(true);
+        // Kawalan Menu Dropdown Copy Last Week
+        const copyBtn = document.getElementById('copyLastWeekBtn');
+        const copyMenu = document.getElementById('copyLastWeekMenu');
+
+        if (copyBtn && copyMenu) {
+            copyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                copyMenu.style.display = copyMenu.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!copyBtn.contains(e.target) && !copyMenu.contains(e.target)) {
+                    copyMenu.style.display = 'none';
                 }
+            });
+
+            document.getElementById('btnCopyActivitiesOnly')?.addEventListener('click', async () => {
+                copyMenu.style.display = 'none';
+                await executeCopyLastWeek(false);
+            });
+
+            document.getElementById('btnCopyActivitiesAndTime')?.addEventListener('click', async () => {
+                copyMenu.style.display = 'none';
+                await executeCopyLastWeek(true);
             });
         }
 
@@ -535,7 +546,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 6. INITIALIZATION (Mula muat data)
         const { data: empData } = await supabase.from('employees').select('id').eq('email', session.user.email).maybeSingle();
         
-        // Tarik data Tags dari pangkalan data secara senyap semasa sistem dimuatkan
         try {
             const { data: tagsData } = await supabase.from('tags').select('*');
             tagsDataList = tagsData || [];
@@ -547,7 +557,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadTimesheetData();
         } else {
             const tb = document.getElementById('timesheetTableBody');
-            if (tb) tb.innerHTML = `<tr><td colspan="12" style="padding:20px; text-align:center; color:red;">Akaun e-mel anda tiada dalam sistem Team.</td></tr>`;
+            if (tb) tb.innerHTML = `<tr><td colspan="13" style="padding:20px; text-align:center; color:red;">Akaun e-mel anda tiada dalam sistem Team.</td></tr>`;
         }
 
     } catch (error) {
