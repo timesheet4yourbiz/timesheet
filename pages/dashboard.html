@@ -82,70 +82,72 @@
             </div>
         </div>
 
-        <!-- TEAM ACTIVITIES (DENGAN SORTING & PAGINATION) -->
-        <div class="glacier-card" style="margin-top: 0;">
-            <h3 class="chart-header" style="font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; margin-bottom: 16px; margin-top: 0;">Team Activities</h3>
-            
-            <div class="table-container">
-                <table class="team-table">
-                    <thead>
-                        <tr>
-                            <!-- Pengepala dengan ciri Sorting -->
-                            <th class="sortable-header" data-sort="member" style="width:30%;">
-                                <div class="sort-content">
-                                    TEAM MEMBER <span class="sort-icon">⇕</span>
-                                </div>
-                            </th>
-                            <th class="sortable-header" data-sort="activity" style="width:40%;">
-                                <div class="sort-content">
-                                    LATEST ACTIVITY <span class="sort-icon">⇕</span>
-                                </div>
-                            </th>
-                            <th class="sortable-header" data-sort="tracked" style="width:30%;">
-                                <div class="sort-content">
-                                    TOTAL TRACKED <span class="sort-icon">⇕</span>
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody id="teamActivitiesBody">
-                        <tr><td colspan="3" style="text-align:center; color:#94a3b8; padding: 20px;">Memuatkan rekod pekerja...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- ================= BAR PAGINATION PREMIUM ================= -->
-            <div class="glacier-pagination">
-                <!-- Pilihan Jumlah Rekod (Kiri) -->
-                <div class="page-size-selector">
-                    <select id="recordsPerPage" class="pagination-select">
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                        <option value="400">400</option>
-                        <option value="all">ALL</option>
-                    </select>
-                </div>
-
-                <!-- Kawalan Halaman (Kanan) -->
-                <div class="page-controls">
-                    <span class="page-text">Page</span>
-                    
-                    <div class="page-buttons">
-                        <button class="page-btn" id="btnFirst" title="First Page">«</button>
-                        <button class="page-btn" id="btnPrev" title="Previous Page">‹</button>
-                        
-                        <input type="number" id="currentPageInput" value="1" min="1" class="page-input">
-                        
-                        <button class="page-btn" id="btnNext" title="Next Page">›</button>
-                        <button class="page-btn" id="btnLast" title="Last Page">»</button>
-                    </div>
-
-                    <span class="page-text">dari <span id="totalPages" style="font-weight: 600; color: #0f172a;">--</span> Total page</span>
-                    <span class="total-records-text">[Total <span id="totalRecords" style="font-weight: 600; color: #0f172a;">--</span> recorded]</span>
-                </div>
-            </div>
+        <!-- TEAM ACTIVITIES (REKAAN PREMIUM BARU) -->
+<div class="glacier-card" style="margin-top: 0; padding: 0; overflow: hidden;">
+    
+    <!-- Header Kad (Sama macam gambar) -->
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#3b82f6" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">Team Activities</h3>
         </div>
+        
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <select style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; font-size: 0.85rem; color: #475569; cursor: pointer;">
+                <option>All Teams</option>
+            </select>
+            <select style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; font-size: 0.85rem; color: #475569; cursor: pointer;">
+                <option>All Status</option>
+            </select>
+            <a href="reports.html" style="color: #3b82f6; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-left: 8px;">View All →</a>
+        </div>
+    </div>
+
+    <!-- Jadual Utama 8 Lajur -->
+    <div class="table-container">
+        <table class="team-table" style="min-width: 1000px; border-bottom: none;">
+            <thead>
+                <tr>
+                    <th style="width: 40px; text-align: center;">#</th>
+                    <th class="sortable-header" data-sort="member">Employee <span class="sort-icon">⇕</span></th>
+                    <th class="sortable-header" data-sort="activity">Latest Activity <span class="sort-icon">⇕</span></th>
+                    <th>Project</th>
+                    <th>Task</th>
+                    <th>Today</th>
+                    <th class="sortable-header" data-sort="tracked">Total <span class="sort-icon">⇕</span></th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="teamActivitiesBody">
+                <tr><td colspan="8" style="text-align:center; color:#94a3b8; padding: 24px;">Memuatkan rekod pekerja...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bar Pagination -->
+    <div class="glacier-pagination" style="padding: 16px 24px; border-top: 1px solid #e2e8f0; margin-top: 0;">
+        <div class="page-size-selector">
+            <select id="recordsPerPage" class="pagination-select">
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="all">ALL</option>
+            </select>
+        </div>
+        <div class="page-controls">
+            <span class="page-text">Halaman</span>
+            <div class="page-buttons">
+                <button class="page-btn" id="btnFirst" title="First Page">«</button>
+                <button class="page-btn" id="btnPrev" title="Previous Page">‹</button>
+                <input type="number" id="currentPageInput" value="1" min="1" class="page-input">
+                <button class="page-btn" id="btnNext" title="Next Page">›</button>
+                <button class="page-btn" id="btnLast" title="Last Page">»</button>
+            </div>
+            <span class="page-text">dari <span id="totalPages" style="font-weight: 600; color: #0f172a;">--</span> halaman</span>
+            <span class="total-records-text">[Jumlah <span id="totalRecords" style="font-weight: 600; color: #0f172a;">--</span> rekod]</span>
+        </div>
+    </div>
+</div>
 
     </div>
     
