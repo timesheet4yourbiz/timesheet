@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Tasks - WorkTime</title>
+    <!-- Rujukan Tunggal ke style.css -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        
+        <main class="main-content">
+            <div class="top-header">
+                <h1 class="page-title">Project Details</h1>
+                <span id="userEmail" style="color:#64748b; font-size:0.85rem;">Loading...</span>
+            </div>
+
+            <div class="content-area">
+                <!-- Header Projek -->
+                <div style="margin-bottom: 32px;">
+                    <a href="projects.html" style="color: #0ea5e9; font-size: 0.9rem; text-decoration: none; display: inline-block; margin-bottom: 12px; font-weight: 600;">← Back to Projects</a>
+                    <h2 id="pdName" style="margin: 0 0 8px 0; font-size: 2rem; color: var(--text-main); font-weight: 700;">Loading...</h2>
+                    <div id="pdClient" style="color: #64748b; font-size: 1rem;">-</div>
+                </div>
+
+                <!-- Tabs Menu -->
+                <div style="display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+                    <div style="padding: 12px 24px; border-bottom: 3px solid #1d4ed8; color: #1d4ed8; font-weight: 700; font-size: 0.85rem; cursor: pointer;">TASKS</div>
+                    <div style="padding: 12px 24px; color: #64748b; font-size: 0.85rem; font-weight: 600; cursor: pointer;">ACCESS</div>
+                    <div style="padding: 12px 24px; color: #64748b; font-size: 0.85rem; font-weight: 600; cursor: pointer;">STATUS</div>
+                    <div style="padding: 12px 24px; color: #64748b; font-size: 0.85rem; font-weight: 600; cursor: pointer;">FORECAST</div>
+                    <div style="padding: 12px 24px; color: #64748b; font-size: 0.85rem; font-weight: 600; cursor: pointer;">NOTE</div>
+                    <div style="padding: 12px 24px; color: #64748b; font-size: 0.85rem; font-weight: 600; cursor: pointer;">SETTINGS</div>
+                </div>
+
+                <!-- Bar Tindakan: Search & Add Task (GLACIER CARD) -->
+                <div class="glacier-card" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 16px 24px;">
+                    <div style="display: flex; gap: 15px; width: 40%;">
+                        <select style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; color: #475569; outline: none; background: white;">
+                            <option>Show active</option>
+                        </select>
+                        <div style="flex: 1; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; align-items: center; padding: 0 12px; background: white;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" placeholder="Search by name" style="border: none; outline: none; padding: 10px; width: 100%; font-size: 0.9rem; background: transparent;">
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <button id="loadTemplateBtn" style="padding: 10px 16px; background: white; border: 1px solid #10b981; color: #10b981; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                            📑 Load Template
+                        </button>
+                        <div style="display: flex; gap: 0;">
+                            <input type="text" id="newTaskInput" placeholder="Add new Task" style="padding: 10px 16px; border: 1px solid #cbd5e1; border-right: none; outline: none; border-radius: 8px 0 0 8px; width: 250px;">
+                            <button id="addTaskBtn" class="btn-primary" style="border-radius: 0 8px 8px 0 !important; padding: 10px 24px !important;">ADD</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Jadual Task (GLACIER CARD) -->
+                <div class="glacier-card" style="padding: 0; overflow: hidden;">
+                    <div style="background: #f8fafc; padding: 16px 24px; font-size: 0.85rem; color: #64748b; border-bottom: 1px solid var(--border-color); font-weight: 600;">Tasks</div>
+                    <table class="team-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Assignees</th>
+                                <th style="text-align: right; padding-right: 24px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tasksTableBody">
+                            <tr><td colspan="3" style="text-align: center; padding: 24px; color: #888;">Loading tasks...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="../js/project-details.js"></script>
+</body>
+</html>
