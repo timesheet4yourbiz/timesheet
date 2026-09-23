@@ -348,20 +348,23 @@ body.sidebar-collapsed .eye-closed { display: block; }
 
 
 /* =========================================================
-   10. STATUS BADGES & TIME TEXT (TEAM ACTIVITIES)
+   11. STATUS BADGES & ICONS (KLON V2)
 ========================================================= */
-/* Warna Teks Masa (Latest Activity) */
-.time-red { color: #ef4444; font-weight: 600; }
-.time-orange { color: #f59e0b; font-weight: 600; }
-.time-grey { color: #94a3b8; font-weight: 500; }
+.badge-status { 
+    padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; 
+    font-weight: 600; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; 
+}
+.badge-inprogress { background: #ecfdf5; color: #10b981; }
+.badge-inprogress::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
+.badge-inaday { background: #fff7ed; color: #f59e0b; }
+.badge-inaday::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
+.badge-hoursago { background: #f1f5f9; color: #64748b; }
+.badge-hoursago::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #64748b; }
+.badge-noactivity { background: #fef2f2; color: #ef4444; }
+.badge-noactivity::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
 
-/* Tambahan Badges Khas */
-.status-norecord { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-.status-norecord::before { content: '◉'; font-size: 0.8rem; color: #ef4444; margin-right: 4px; line-height: 0; }
-
-.status-tracked { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-.status-tracked::before { content: '◉'; font-size: 0.8rem; color: #3b82f6; margin-right: 4px; line-height: 0; }
-
-/* Kemas kini Badge sedia ada supaya guna ikon '◉' ala-ala gambar */
-.status-active::before { content: '◉'; font-size: 0.8rem; color: #22c55e; margin-right: 4px; line-height: 0; background: transparent; width: auto; height: auto; border-radius: 0; }
-.status-idle::before { content: '◉'; font-size: 0.8rem; color: #f59e0b; margin-right: 4px; line-height: 0; background: transparent; width: auto; height: auto; border-radius: 0; }
+.proj-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.timer-active-dot { 
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%; 
+    background: #ef4444; margin-left: 8px; vertical-align: middle;
+}
