@@ -4,156 +4,149 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - WorkTime</title>
+    <!-- Rujuk kepada style.css utama -->
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { margin: 0; background: #f4f7f6; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; color: #334155; }
-        .main-content { position: absolute; top: 0; left: 250px; right: 0; padding: 24px 32px; min-height: 100vh; box-sizing: border-box; }
-        
-        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
-        .page-title { margin: 0; font-size: 1.5rem; font-weight: 600; color: #0f172a; }
-        .header-controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .control-select, .control-btn { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; color: #475569; background: white; outline: none; cursor: pointer; height: 36px; box-sizing: border-box; }
-        .control-btn:hover { background: #f8fafc; }
-        
-        .kpi-section { display: flex; gap: 24px; margin-bottom: 24px; background: white; padding: 16px 24px; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-        .kpi-item { flex: 1; border-right: 1px solid #e2e8f0; }
-        .kpi-item:last-child { border-right: none; }
-        .kpi-label { font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .kpi-value { font-size: 1.5rem; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        .chart-card { background: white; border-radius: 6px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-        .chart-header { font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; margin-bottom: 16px; margin-top: 0; }
-        .main-chart-container { height: 350px; width: 100%; position: relative; }
-
-        .distribution-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-bottom: 24px; }
-        .donut-container { height: 250px; position: relative; display: flex; justify-content: center; align-items: center; }
-        .donut-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
-        .donut-center-val { font-size: 1.2rem; font-weight: 700; color: #0f172a; }
-        .donut-center-lbl { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; }
-        
-        .ranking-list { max-height: 250px; overflow-y: auto; padding-right: 10px; }
-        .ranking-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding: 12px 0; border-bottom: 1px dashed #e2e8f0; }
-        .ranking-item:last-child { border-bottom: none; }
-        .r-name { flex: 2; color: #334155; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .r-dur { flex: 1; text-align: right; color: #64748b; font-family: monospace; font-size: 0.9rem;}
-        .r-perc { width: 60px; text-align: right; color: #94a3b8; font-size: 0.8rem; }
-        .color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-
-        .table-container { width: 100%; overflow-x: auto; }
-        .team-table { width: 100%; border-collapse: collapse; text-align: left; }
-        .team-table th { font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; padding: 12px 0; border-bottom: 1px solid #e2e8f0; }
-        .team-table td { padding: 16px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; vertical-align: top; }
-        
-        .member-info { display: flex; align-items: center; gap: 12px; }
-        .avatar { width: 36px; height: 36px; border-radius: 50%; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem; }
-        .m-name { font-weight: 600; color: #334155; }
-        .m-email { color: #94a3b8; font-size: 0.75rem; }
-        
-        .act-title { font-weight: 500; color: #334155; margin-bottom: 4px; }
-        .act-proj { color: #64748b; font-size: 0.8rem; }
-        
-        .prog-bar-bg { width: 100%; max-width: 200px; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; margin-top: 6px; display: flex; }
-        .prog-bar-segment { height: 100%; }
-        
-        .btn-chase { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-chase:hover { background: #fecaca; }
-    </style>
 </head>
 <body>
     <div id="sidebar-container"></div>
         
-        <div class="main-content">
-            <!-- TOP HEADER -->
-            <div class="top-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h1 class="page-title" style="margin: 0; font-size: 1.5rem; color: #0f172a;">Dashboard</h1>
+    <div class="main-content">
+        <!-- TOP HEADER -->
+        <div class="top-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
+            <h1 class="page-title" style="margin: 0; font-size: 1.5rem; color: #0f172a; font-weight: 600;">Dashboard</h1>
+            
+            <div class="header-controls" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <!-- Dropdown Project -->
+                <select id="filterProject" style="padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; outline: none; background: white;">
+                    <option value="ALL">All Projects</option>
+                </select>
                 
-                <div class="header-controls" style="display: flex; gap: 10px; align-items: center;">
-                    <!-- Dropdown Project -->
-                    <select id="filterProject" style="padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; outline: none; background: white;">
-                        <option value="ALL">All Projects</option>
-                    </select>
-                    
-                    <!-- Dropdown Team -->
-                    <select id="filterTeam" style="padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; outline: none; background: white;">
-                        <option value="ALL">All Teams</option>
-                    </select>
-                    
-                    <!-- Kotak Tarikh & Butang Next/Prev -->
-                    <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 4px; background: white; overflow: hidden; align-items: center;">
-                        <div style="padding: 8px 15px; border-right: 1px solid #cbd5e1; color: #475569; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
-                            📅 <span id="dashDateRangeText">Memuatkan...</span>
-                        </div>
-                        <button id="prevDashBtn" style="padding: 8px 12px; background: white; border: none; border-right: 1px solid #cbd5e1; cursor: pointer; color: #64748b;">&lt;</button>
-                        <button id="nextDashBtn" style="padding: 8px 12px; background: white; border: none; cursor: pointer; color: #64748b;">&gt;</button>
+                <!-- Dropdown Team -->
+                <select id="filterTeam" style="padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 4px; color: #475569; outline: none; background: white;">
+                    <option value="ALL">All Teams</option>
+                </select>
+                
+                <!-- Kotak Tarikh & Butang Next/Prev -->
+                <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 4px; background: white; overflow: hidden; align-items: center;">
+                    <div style="padding: 8px 15px; border-right: 1px solid #cbd5e1; color: #475569; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+                        📅 <span id="dashDateRangeText">Memuatkan...</span>
                     </div>
+                    <button id="prevDashBtn" style="padding: 8px 12px; background: white; border: none; border-right: 1px solid #cbd5e1; cursor: pointer; color: #64748b; font-weight: bold;">&lt;</button>
+                    <button id="nextDashBtn" style="padding: 8px 12px; background: white; border: none; cursor: pointer; color: #64748b; font-weight: bold;">&gt;</button>
                 </div>
             </div>
+        </div>
 
         <!-- SUMMARY KPI -->
-        <div class="kpi-section">
-            <div class="kpi-item">
-                <div class="kpi-label">Total Time</div>
-                <div class="kpi-value" id="kpiTotalTime">--:--</div>
+        <div class="kpi-section" style="display: flex; gap: 24px; margin-bottom: 24px; background: white; padding: 16px 24px; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+            <div class="kpi-item" style="flex: 1; border-right: 1px solid #e2e8f0;">
+                <div class="kpi-label" style="font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">Total Time</div>
+                <div class="kpi-value" id="kpiTotalTime" style="font-size: 1.5rem; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">--:--</div>
             </div>
-            <div class="kpi-item">
-                <div class="kpi-label">Top Project</div>
-                <div class="kpi-value" id="kpiTopProject">--</div>
+            <div class="kpi-item" style="flex: 1; border-right: 1px solid #e2e8f0;">
+                <div class="kpi-label" style="font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">Top Project</div>
+                <div class="kpi-value" id="kpiTopProject" style="font-size: 1.5rem; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">--</div>
             </div>
-            <div class="kpi-item">
-                <div class="kpi-label">Top Client</div>
-                <div class="kpi-value" id="kpiTopClient">--</div>
+            <div class="kpi-item" style="flex: 1;">
+                <div class="kpi-label" style="font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">Top Client</div>
+                <div class="kpi-value" id="kpiTopClient" style="font-size: 1.5rem; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">--</div>
             </div>
         </div>
 
         <!-- MAIN CHART -->
-        <div class="chart-card">
-            <h3 class="chart-header">Time by Day</h3>
-            <div class="main-chart-container">
+        <div class="chart-card" style="background: white; border-radius: 6px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+            <h3 class="chart-header" style="font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; margin-bottom: 16px; margin-top: 0;">Time by Day</h3>
+            <div class="main-chart-container" style="height: 350px; width: 100%; position: relative;">
                 <canvas id="stackedBarChart"></canvas>
             </div>
         </div>
 
         <!-- PROJECT DISTRIBUTION -->
-        <div class="distribution-grid">
-            <div class="chart-card" style="margin-bottom:0;">
-                <h3 class="chart-header">Project Distribution</h3>
-                <div class="donut-container">
+        <div class="distribution-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-bottom: 24px;">
+            <div class="chart-card" style="margin-bottom:0; background: white; border-radius: 6px; border: 1px solid #e2e8f0; padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                <h3 class="chart-header" style="font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; margin-bottom: 16px; margin-top: 0;">Project Distribution</h3>
+                <div class="donut-container" style="height: 250px; position: relative; display: flex; justify-content: center; align-items: center;">
                     <canvas id="donutChart"></canvas>
-                    <div class="donut-center-text">
-                        <div class="donut-center-val" id="donutTotal">--:--</div>
-                        <div class="donut-center-lbl">Total</div>
+                    <div class="donut-center-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
+                        <div class="donut-center-val" id="donutTotal" style="font-size: 1.2rem; font-weight: 700; color: #0f172a;">--:--</div>
+                        <div class="donut-center-lbl" style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">Total</div>
                     </div>
                 </div>
             </div>
-            <div class="chart-card" style="margin-bottom:0;">
-                <h3 class="chart-header">Project Ranking</h3>
-                <div class="ranking-list" id="projectRankingList">
+            <div class="chart-card" style="margin-bottom:0; background: white; border-radius: 6px; border: 1px solid #e2e8f0; padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                <h3 class="chart-header" style="font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; margin-bottom: 16px; margin-top: 0;">Project Ranking</h3>
+                <div class="ranking-list" id="projectRankingList" style="max-height: 250px; overflow-y: auto; padding-right: 10px;">
                     <div style="color:#94a3b8; text-align:center; padding: 20px;">Memuatkan...</div>
                 </div>
             </div>
         </div>
 
-        <!-- TEAM ACTIVITIES -->
-        <div class="chart-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                <h3 class="chart-header" style="margin:0;">Team Activities</h3>
-            </div>
+        <!-- TEAM ACTIVITIES (DENGAN SORTING & PAGINATION) -->
+        <div class="glacier-card" style="margin-top: 0;">
+            <h3 class="chart-header" style="font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; margin-bottom: 16px; margin-top: 0;">Team Activities</h3>
+            
             <div class="table-container">
                 <table class="team-table">
                     <thead>
                         <tr>
-                            <th style="width:30%;">Team Member</th>
-                            <th style="width:40%;">Latest Activity</th>
-                            <th style="width:30%;">Total Tracked</th>
+                            <!-- Pengepala dengan ciri Sorting -->
+                            <th class="sortable-header" data-sort="member" style="width:30%;">
+                                <div class="sort-content">
+                                    TEAM MEMBER <span class="sort-icon">⇕</span>
+                                </div>
+                            </th>
+                            <th class="sortable-header" data-sort="activity" style="width:40%;">
+                                <div class="sort-content">
+                                    LATEST ACTIVITY <span class="sort-icon">⇕</span>
+                                </div>
+                            </th>
+                            <th class="sortable-header" data-sort="tracked" style="width:30%;">
+                                <div class="sort-content">
+                                    TOTAL TRACKED <span class="sort-icon">⇕</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="teamActivitiesBody">
-                        <tr><td colspan="3" style="text-align:center; color:#94a3b8;">Memuatkan rekod pekerja...</td></tr>
+                        <tr><td colspan="3" style="text-align:center; color:#94a3b8; padding: 20px;">Memuatkan rekod pekerja...</td></tr>
                     </tbody>
                 </table>
             </div>
+
+            <!-- ================= BAR PAGINATION PREMIUM ================= -->
+            <div class="glacier-pagination">
+                <!-- Pilihan Jumlah Rekod (Kiri) -->
+                <div class="page-size-selector">
+                    <select id="recordsPerPage" class="pagination-select">
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                        <option value="400">400</option>
+                        <option value="all">ALL</option>
+                    </select>
+                </div>
+
+                <!-- Kawalan Halaman (Kanan) -->
+                <div class="page-controls">
+                    <span class="page-text">Halaman</span>
+                    
+                    <div class="page-buttons">
+                        <button class="page-btn" id="btnFirst" title="First Page">«</button>
+                        <button class="page-btn" id="btnPrev" title="Previous Page">‹</button>
+                        
+                        <input type="number" id="currentPageInput" value="1" min="1" class="page-input">
+                        
+                        <button class="page-btn" id="btnNext" title="Next Page">›</button>
+                        <button class="page-btn" id="btnLast" title="Last Page">»</button>
+                    </div>
+
+                    <span class="page-text">dari <span id="totalPages" style="font-weight: 600; color: #0f172a;">--</span> jumlah halaman</span>
+                    <span class="total-records-text">[Jumlah <span id="totalRecords" style="font-weight: 600; color: #0f172a;">--</span> rekod]</span>
+                </div>
+            </div>
         </div>
+
     </div>
     
     <script type="module" src="../js/dashboard.js"></script>
