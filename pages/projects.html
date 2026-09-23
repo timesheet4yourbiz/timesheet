@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - WorkTime</title>
+    <!-- Rujukan Tunggal ke style.css -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        
+        <main class="main-content">
+            <div class="top-header">
+                <h1 class="page-title">Projects</h1>
+                <span id="userEmail" style="color:#64748b; font-size:0.85rem;">Loading...</span>
+            </div>
+
+            <div class="content-area">
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 24px;">
+                    <button id="openModalBtn" class="btn-primary" style="padding: 10px 24px !important;">CREATE NEW PROJECT</button>
+                </div>
+
+                <!-- FILTER BAR (GLACIER CARD) -->
+                <div class="glacier-card" style="padding: 16px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+                    <span style="color: #64748b; font-weight: 700; letter-spacing: 0.5px; font-size: 0.8rem;">FILTER</span>
+                    <select style="border: none; background: transparent; color: #475569; cursor: pointer; outline: none; font-weight: 500;"><option>Active</option></select>
+                    <select style="border: none; background: transparent; color: #475569; cursor: pointer; outline: none; font-weight: 500;"><option>Client</option></select>
+                    <select style="border: none; background: transparent; color: #475569; cursor: pointer; outline: none; font-weight: 500;"><option>Access</option></select>
+                    <select style="border: none; background: transparent; color: #475569; cursor: pointer; outline: none; font-weight: 500;"><option>Billing</option></select>
+                    
+                    <div style="flex: 1; border-left: 1px solid var(--border-color); padding-left: 24px; display: flex; align-items: center; gap: 10px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" placeholder="Find by name" style="width: 100%; border: none; outline: none; background: transparent; font-size: 0.9rem;">
+                    </div>
+                    
+                    <button style="border: 1px solid #0ea5e9; background: white; color: #0ea5e9; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer;">APPLY FILTER</button>
+                </div>
+
+                <!-- JADUAL PROJEK (GLACIER CARD) -->
+                <div class="glacier-card" style="padding: 0; overflow: hidden;">
+                    <div style="background: #f8fafc; padding: 16px 24px; display: flex; justify-content: space-between; font-size: 0.85rem; color: #64748b; border-bottom: 1px solid var(--border-color); font-weight: 600;">
+                        <span>Projects</span>
+                        <span style="cursor: pointer; color: #0ea5e9;">Export ▼</span>
+                    </div>
+                    
+                    <div style="overflow-x: auto;">
+                        <table class="team-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"><input type="checkbox"></th>
+                                    <th>Name</th>
+                                    <th>Client</th>
+                                    <th>Tracked</th>
+                                    <th>Amount</th>
+                                    <th>Progress</th>
+                                    <th>Access</th>
+                                    <th style="text-align: right; padding-right: 24px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsList">
+                                <tr><td colspan="8" style="padding: 2rem; text-align: center; color: #888;">Loading projects...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL CENTER -->
+    <div id="projectModal" class="modal-overlay">
+        <div class="modal-content" style="height: auto; margin: auto; border-radius: 12px; display: flex; flex-direction: column; justify-content: center;">
+            <div class="modal-header">
+                <h3 class="modal-title">Create new Project</h3>
+                <button id="closeModalBtn" class="close-btn">&times;</button>
+            </div>
+            
+            <div class="form-row" style="margin-bottom: 24px;">
+                <input type="text" id="projectNameInput" class="form-input" placeholder="Enter Project name">
+                <select id="clientSelect" class="form-select">
+                    <option value="">Select client</option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button id="cancelBtn" style="background: #e2e8f0; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancel</button>
+                <button id="saveProjectBtn" class="btn-primary" style="padding: 10px 24px !important;">CREATE</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/projects.js"></script>
+</body>
+</html>
