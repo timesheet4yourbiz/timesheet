@@ -129,11 +129,25 @@ body {
     border-top: 1px solid var(--border-color);
 }
 
-/* --- TOPBAR --- */
+/* --- TETAPAN RANGKA UTAMA (GLOBAL) --- */
+#sidebar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100vh;
+    z-index: 999;
+    background-color: var(--bg-surface);
+}
+
 .main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    position: absolute;
+    top: 0;
+    left: 250px; /* Tolak semua kandungan ke kanan sejauh 250px */
+    right: 0;
+    min-height: 100vh;
+    padding: 24px 32px;
+    background-color: var(--bg-body);
     overflow-y: auto;
 }
 
