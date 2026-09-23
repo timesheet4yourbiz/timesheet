@@ -93,39 +93,42 @@
             
             <!-- ================= VIEW: MEMBERS ================= -->
             <div id="membersView">
-                <div class="toolbar">
-                    <div class="filter-group">
-                        <input type="text" id="searchMember" class="control-input" placeholder="Search by name or email...">
-                        <select id="filterRole" class="control-select">
-                            <option value="all">All Roles</option>
-                            <option value="Admin">Admin</option>
-                            <option value="Manager">Manager</option>
-                            <option value="Supervisor">Supervisor</option>
-                            <option value="Employee">Employee</option>
-                        </select>
-                        <select id="filterStatus" class="control-select">
-                            <option value="all">All Status</option>
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
+                <div class="glacier-card">
+                    
+                    <div class="glacier-header" style="flex-wrap: wrap;">
+                        <!-- Kumpulan Carian & Filter -->
+                        <div class="filter-group" style="display: flex; gap: 10px;">
+                            <input type="text" id="searchMember" placeholder="Search by name or email...">
+                            <select id="filterRole" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; background: white; color: #475569; font-size: 0.9rem;">
+                                <option value="all">All Roles</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Supervisor">Supervisor</option>
+                                <option value="Employee">Employee</option>
+                            </select>
+                            <select id="filterStatus" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; background: white; color: #475569; font-size: 0.9rem;">
+                                <option value="all">All Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+
+                        <!-- Kumpulan Butang Tindakan -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;">
+                            <button id="btnImportExcel" title="Upload Excel" style="background-color: #059669; color: white; border: none; padding: 10px 12px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <path d="M8 13h2"/>
+                                    <path d="M8 17h8"/>
+                                    <path d="M14 13h2"/>
+                                </svg>
+                            </button>
+                            <button class="btn-primary" id="btnAddMember" style="padding: 10px 16px;">+ ADD NEW MEMBER</button>
+                        </div>
                     </div>
 
-                    <div style="display: flex; align-items: center;">
-                        <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;">
-                        <button id="btnImportExcel" title="Upload Excel" style="background-color: #059669; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px; transition: background-color 0.2s;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                                <path d="M8 13h2"/>
-                                <path d="M8 17h8"/>
-                                <path d="M14 13h2"/>
-                            </svg>
-                        </button>
-                        <button class="btn-primary" id="btnAddMember">+ ADD NEW MEMBER</button>
-                    </div>
-                </div>
-
-                <div class="table-card">
                     <div class="table-container">
                         <table class="team-table">
                             <thead>
@@ -146,7 +149,7 @@
                     </div>
                     
                     <!-- ================= BAR PAGINATION ================= -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-top: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.85rem; color: #64748b;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid #e2e8f0; margin-top: 10px; font-size: 0.85rem; color: #64748b;">
                         <div id="paginationInfo">Showing 1-10 of 0 members</div>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <button id="btnPrevPage" style="padding: 6px 14px; background: #e2e8f0; color: #475569; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;" disabled>Previous</button>
@@ -154,9 +157,9 @@
                             <button id="btnNextPage" style="padding: 6px 14px; background: #0ea5e9; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Next</button>
                         </div>
                     </div>
-                </div> <!-- Penutup table-card -->
-            </div> <!-- Penutup membersView -->
 
+                </div> <!-- Penutup glacier-card -->
+            </div>
             <!-- ================= VIEW: GROUPS ================= -->
             <div id="groupsView" style="display: none;">
                 <!-- Kotak Glacier Mula -->
