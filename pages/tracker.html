@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Tracker - WorkTime</title>
+    <!-- Rujukan Tunggal ke style.css -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+        
+        <main class="main-content">
+            <div class="top-header">
+                <h1 class="page-title">Time Tracker</h1>
+                <span id="userEmail" style="color:#64748b; font-size:0.85rem;">Loading...</span>
+            </div>
+
+            <div class="content-area">
+                
+                <!-- KOTAK TIME TRACKER BARU (GLACIER STYLE) -->
+                <div class="glacier-card" style="padding: 0; display: flex; align-items: center; margin-bottom: 24px; overflow: hidden; gap: 0;">
+                    
+                    <!-- 1. Description -->
+                    <input type="text" id="taskDescInput" placeholder="What have you worked on?" style="flex: 1; padding: 15px 24px; border: none; outline: none; font-size: 0.95rem; color: #334155; background: transparent;">
+                    
+                    <!-- 2. Project & Task Select -->
+                    <div style="display: flex; align-items: center; padding: 0 15px; border-left: 1px dashed #cbd5e1; gap: 5px;">
+                        <select id="projectSelect" style="border:none; background:transparent; outline:none; color:#0ea5e9; font-weight:600; cursor:pointer; max-width:150px; font-size:0.9rem;">
+                            <option value="">⊕ Select Project</option>
+                        </select>
+                        <select id="taskSelect" style="border:none; background:transparent; outline:none; color:#64748b; font-weight:500; cursor:pointer; max-width:150px; font-size:0.85rem; display:none;">
+                            <option value="">Select Task</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 3. Tags & Billable -->
+                    <div style="display: flex; align-items: center; padding: 0 15px; border-left: 1px dashed #cbd5e1; gap: 5px;">
+                        <span style="color: #cbd5e1; font-size: 1.1rem;">🏷️</span>
+                        <select id="tagSelect" style="border:none; background:transparent; outline:none; color:#64748b; font-weight:500; cursor:pointer; width:100px; font-size:0.85rem;">
+                            <option value="">Select Tag</option>
+                        </select>
+                    </div>
+                    <div style="padding: 0 15px; border-left: 1px dashed #cbd5e1; color: #cbd5e1; cursor: pointer; font-weight: bold; font-size: 1.1rem;" title="Billable">$</div>
+                    
+                    <!-- 4. Start & End Time -->
+                    <div style="display: flex; align-items: center; padding: 0 15px; border-left: 1px dashed #cbd5e1; gap: 5px; color: #475569; font-size: 0.9rem;">
+                        <input type="text" id="startTimeInput" placeholder="10:21 PM" style="width: 70px; border: none; outline: none; text-align: center; color: #475569; background: transparent;"> - 
+                        <input type="text" id="endTimeInput" placeholder="10:21 PM" style="width: 70px; border: none; outline: none; text-align: center; color: #475569; background: transparent;">
+                    </div>
+                    
+                    <!-- 5. Date -->
+                    <div style="padding: 0 15px; border-left: 1px dashed #cbd5e1; display: flex; align-items: center; gap: 5px; color: #475569; cursor: pointer; font-size: 0.9rem;">
+                        📅 Today
+                    </div>
+                    
+                    <!-- 6. Timer Display -->
+                    <div id="timerDisplay" style="padding: 0 20px; border-left: 1px dashed #cbd5e1; font-size: 1.2rem; font-weight: 600; color: #334155; min-width: 90px; text-align: center;">
+                        0:00:00
+                    </div>
+                    
+                    <!-- 7. Buttons -->
+                    <button id="timerBtn" class="btn-primary" style="height: 56px; border-radius: 0 !important; padding: 0 30px !important;">START</button>
+                    <div style="padding: 0 15px; color: #cbd5e1; font-size: 1.2rem; cursor: pointer; background: white; border-left: 1px solid var(--border-color); height: 56px; display: flex; align-items: center;">≡</div>
+                </div>
+
+                <!-- SENARAI REKOD -->
+                <div id="entriesContainer">
+                    <div style="padding:20px; text-align:center; color:#888;">Memuatkan rekod...</div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Pautan JS -->
+    <script type="module" src="../js/tracker.js"></script>
+</body>
+</html>
