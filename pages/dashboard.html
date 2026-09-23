@@ -82,40 +82,59 @@
             </div>
         </div>
 
-        <!-- TEAM ACTIVITIES (REKAAN PREMIUM BARU) -->
+        <!-- TEAM ACTIVITIES (100% KLON IMEJ BARU) -->
 <div class="glacier-card" style="margin-top: 0; padding: 0; overflow: hidden;">
     
-    <!-- Header Kad (Sama macam gambar) -->
+    <!-- Header Kad & Controls -->
     <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 16px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#3b82f6" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">Team Activities</h3>
+            <div style="background: #eef2ff; padding: 8px; border-radius: 8px; display: flex;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#3b82f6" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a;">Team Activities</h3>
+                <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">Live and historical activity of your team members</div>
+            </div>
         </div>
         
         <div style="display: flex; gap: 12px; align-items: center;">
-            <select style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; font-size: 0.85rem; color: #475569; cursor: pointer;">
-                <option>All Teams</option>
-            </select>
-            <select style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; font-size: 0.85rem; color: #475569; cursor: pointer;">
+            <!-- Search -->
+            <div style="display: flex; align-items: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 10px; background: white; height: 36px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="searchMemberInput" placeholder="Search member.." style="border: none; outline: none; padding: 6px; font-size: 0.85rem; width: 130px;">
+            </div>
+            <!-- Selects -->
+            <select style="padding: 0 12px; height: 36px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; font-size: 0.85rem; color: #0f172a; font-weight: 500;">
                 <option>All Status</option>
             </select>
-            <a href="reports.html" style="color: #3b82f6; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-left: 8px;">View All →</a>
+            <select style="padding: 0 12px; height: 36px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; font-size: 0.85rem; color: #0f172a; font-weight: 500;">
+                <option>All Projects</option>
+            </select>
+            <!-- View Toggles -->
+            <div style="display: flex; align-items: center; gap: 8px; margin-left: 8px;">
+                <span style="font-size: 0.85rem; font-weight: 600; color: #0f172a;">View</span>
+                <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; height: 36px;">
+                    <button style="border: none; background: #3b82f6; color: white; padding: 0 12px; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg></button>
+                    <button style="border: none; border-left: 1px solid #cbd5e1; background: white; color: #64748b; padding: 0 12px; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="18" y="3" width="4" height="18"></rect><rect x="10" y="8" width="4" height="13"></rect><rect x="2" y="13" width="4" height="8"></rect></svg></button>
+                    <button style="border: none; border-left: 1px solid #cbd5e1; background: white; color: #64748b; padding: 0 12px; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Jadual Utama 8 Lajur -->
+    <!-- Jadual -->
     <div class="table-container">
-        <table class="team-table" style="min-width: 1000px; border-bottom: none;">
+        <table class="team-table" style="min-width: 1200px; border-bottom: none;">
             <thead>
-                <tr>
+                <tr style="font-size: 0.7rem; letter-spacing: 0.5px;">
                     <th style="width: 40px; text-align: center;">#</th>
-                    <th class="sortable-header" data-sort="member">Employee <span class="sort-icon">⇕</span></th>
-                    <th class="sortable-header" data-sort="activity">Latest Activity <span class="sort-icon">⇕</span></th>
-                    <th>Project</th>
-                    <th>Task</th>
-                    <th>Today</th>
-                    <th class="sortable-header" data-sort="tracked">Total <span class="sort-icon">⇕</span></th>
-                    <th>Status</th>
+                    <th>TEAM MEMBER</th>
+                    <th>LATEST ACTIVITY</th>
+                    <th>STATUS</th>
+                    <th style="text-align: center;">CURRENT TIMER</th>
+                    <th>TOTAL TRACKED<br><span style="font-weight: 500; font-size: 0.65rem;" id="tableDateRange">(AUG 31 - SEP 6, 2026)</span></th>
+                    <th style="width: 250px;">WEEKLY BREAKDOWN</th>
+                    <th style="text-align: center;">ACTIONS</th>
                 </tr>
             </thead>
             <tbody id="teamActivitiesBody">
@@ -124,31 +143,25 @@
         </table>
     </div>
 
-    <!-- Bar Pagination -->
-    <div class="glacier-pagination" style="padding: 16px 24px; border-top: 1px solid #e2e8f0; margin-top: 0;">
-        <div class="page-size-selector">
-            <select id="recordsPerPage" class="pagination-select">
+    <!-- Pagination Bawah -->
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid #e2e8f0; font-size: 0.85rem; color: #64748b;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span>Show</span>
+            <select id="recordsPerPage" style="padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; background: white; font-size: 0.85rem; color: #0f172a;">
+                <option value="10">10</option>
                 <option value="20">20</option>
                 <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="all">ALL</option>
             </select>
+            <span>entries</span>
         </div>
-        <div class="page-controls">
-            <span class="page-text">Halaman</span>
-            <div class="page-buttons">
-                <button class="page-btn" id="btnFirst" title="First Page">«</button>
-                <button class="page-btn" id="btnPrev" title="Previous Page">‹</button>
-                <input type="number" id="currentPageInput" value="1" min="1" class="page-input">
-                <button class="page-btn" id="btnNext" title="Next Page">›</button>
-                <button class="page-btn" id="btnLast" title="Last Page">»</button>
-            </div>
-            <span class="page-text">dari <span id="totalPages" style="font-weight: 600; color: #0f172a;">--</span> halaman</span>
-            <span class="total-records-text">[Jumlah <span id="totalRecords" style="font-weight: 600; color: #0f172a;">--</span> rekod]</span>
+        
+        <div style="display: flex; align-items: center; gap: 4px;">
+            <button id="btnPrev" style="padding: 4px 10px; border-radius: 4px; border: 1px solid #cbd5e1; background: white; color: #64748b; cursor: pointer;">«</button>
+            <button id="currentPageDisplay" style="padding: 4px 12px; border-radius: 4px; border: none; background: #3b82f6; color: white; font-weight: 600;">1</button>
+            <button id="btnNext" style="padding: 4px 10px; border-radius: 4px; border: 1px solid #cbd5e1; background: white; color: #64748b; cursor: pointer;">»</button>
         </div>
     </div>
 </div>
-
     </div>
     
     <script type="module" src="../js/dashboard.js"></script>
