@@ -311,3 +311,39 @@ body {
 .btn-start.stop-mode:hover { background-color: #dc2626; }
 .btn-chase { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
 .btn-chase:hover { background: #fecaca; }
+
+
+/* =========================================================
+   9. FUNGSI HIDE/COLLAPSE SIDEBAR (MATA)
+========================================================= */
+/* Animasi lembut apabila sidebar dilipat */
+#sidebar-container, .main-content {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Apabila kelas .sidebar-collapsed aktif di body */
+body.sidebar-collapsed #sidebar-container { width: 80px; }
+body.sidebar-collapsed .main-content { left: 80px; }
+
+/* Sembunyikan elemen teks */
+body.sidebar-collapsed .hide-on-collapse {
+    display: none !important;
+}
+
+/* Betulkan susunan logo, avatar & butang apabila tiada teks */
+body.sidebar-collapsed .sidebar-header {
+    padding: 1.5rem 0;
+    justify-content: center;
+    flex-direction: column;
+    gap: 15px;
+}
+body.sidebar-collapsed .sidebar-profile { justify-content: center; padding: 1.5rem 0; }
+body.sidebar-collapsed .nav-item { justify-content: center; padding: 12px 0; }
+body.sidebar-collapsed .btn-logout { justify-content: center; }
+
+/* Kawalan Ikon Mata Terbuka & Tertutup */
+.eye-closed { display: none; }
+body.sidebar-collapsed .eye-open { display: none; }
+body.sidebar-collapsed .eye-closed { display: block; }
+
+
