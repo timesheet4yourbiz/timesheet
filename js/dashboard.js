@@ -550,21 +550,21 @@ document.addEventListener('click', async (e) => {
         if (chaseBtn.disabled) return;
         chaseBtn.disabled = true;
         const originalText = chaseBtn.innerHTML;
-        chaseBtn.innerHTML = '⏳ Menghantar...';
+        chaseBtn.innerHTML = '⏳ Sending...';
 
         try {
             await supabase.from('notifications').insert([{
                 employee_id: empId,
-                title: 'Peringatan Timesheet',
-                message: 'Sila lengkapkan rekod masa (timesheet) anda untuk hari ini.',
+                title: 'Timesheet Reminder',
+                message: 'Please complete your timesheet record for today.',
                 is_read: false
             }]);
 
-            alert(`🔔 Peringatan mesra berjaya dihantar kepada ${empName}!`);
+            alert(`🔔 Reminder sent successfully to ${empName}!`);
 
         } catch (err) {
-            console.error("Ralat hantar peringatan:", err);
-            alert(`Peringatan telah difagkan untuk ${empName}.`);
+            console.error("Error sending reminder:", err);
+            alert(`Reminder flagged for ${empName}.`);
         } finally {
             chaseBtn.disabled = false;
             chaseBtn.innerHTML = originalText;
