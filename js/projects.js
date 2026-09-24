@@ -110,20 +110,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return `
                     <tr style="border-bottom: 1px solid var(--border-color); background: white;">
                         
-                        <!-- Kotak Checkbox (Dihadkan lebarnya supaya tak menolak nama projek) -->
-                        <td style="padding: 15px 10px 15px 8px; width: 40px;">
+                        <!-- Kotak Checkbox (Lebar dilaras, padding dikemas) -->
+                        <td style="padding: 15px 10px 15px 24px; width: 50px; text-align: center;">
                             <input type="checkbox" style="cursor: pointer;">
                         </td>
                         
-                        <!-- Nama Projek (Padding kiri diubah ke 0 supaya rapat dengan dinding/checkbox) -->
-                        <td style="padding: 15px 20px 15px 0; font-weight: 500; color: #1e293b; white-space: nowrap;">
-    <span style="display:inline-block; width:8px; height:8px; background:#0ea5e9; border-radius:50%; margin-right:8px;"></span>
-    <a href="project-details.html?id=${p.id}" style="text-decoration: none; color: inherit; cursor: pointer;">
-        ${p.project_name || p.project_code || 'Tiada Nama'}
-    </a>
-</td>
+                        <!-- Nama Projek (Jarak yang selesa dari checkbox) -->
+                        <td style="padding: 15px 20px 15px 10px; font-weight: 500; color: #1e293b; white-space: nowrap;">
+                            <span style="display:inline-block; width:8px; height:8px; background:#0ea5e9; border-radius:50%; margin-right:8px;"></span>
+                            <a href="project-details.html?id=${p.id}" style="text-decoration: none; color: inherit; cursor: pointer;">
+                                ${p.project_name || p.project_code || 'Tiada Nama'}
+                            </a>
+                        </td>
                         
-                        <!-- Client (Kini memaparkan nama sebenar) -->
+                        <!-- Client -->
                         <td style="padding: 15px 20px; color: #475569; font-weight: 500;">
                             ${clientName}
                         </td>
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <td style="padding: 15px; color: #64748b;">-</td>
                         <td style="padding: 15px; color: #334155;">Public</td>
                         
-                        <td style="padding: 15px 20px; text-align: right;">
+                        <td style="padding: 15px 24px; text-align: right;">
                             <button class="del-project-btn" data-id="${p.id}" style="border:none; background:none; color:#ef4444; cursor:pointer; font-weight: 500;">Delete</button>
                         </td>
                     </tr>
