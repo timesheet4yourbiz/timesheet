@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const projectNameInput = document.getElementById('projectNameInput');
     const clientSelect = document.getElementById('clientSelect');
+    
+    // Elemen Carian Baru
+    const searchProjectInput = document.getElementById('searchProjectInput');
+    const applyFilterBtn = document.getElementById('applyFilterBtn');
 
     await loadProjects();
     await loadClientsDropdown();
@@ -47,19 +51,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!pName) return alert('Sila masukkan nama projek.');
             saveProjectBtn.disabled = true;
             saveProjectBtn.textContent = 'CREATING...';
-            const autoCode = 'PRJ-' + Math.floor(1000 + Math.random() * 9000);
-            // Bina payload secara selamat
-            // Bina payload secara aman tanpa pembuatan kode PRJ
+            
             const payload = { 
                 project_name: pName,
                 status: 'ACTIVE'
             };
             
-            // Hanya masukkan client_id jika pengguna benar-benar memilih client
             if (pClient && pClient !== "") {
                 payload.client_id = pClient;
             }
-            console.log("Menghantar data projek:", payload);
+            
             const { data, error } = await supabase.from('projects').insert([payload]).select();
             saveProjectBtn.disabled = false;
             saveProjectBtn.textContent = 'CREATE';
@@ -67,9 +68,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert('Ralat mencipta projek: ' + error.message);
                 console.error("Ralat Insert:", error);
             } else {
-                console.log('Projek berjaya disimpan ke Supabase:', data);
                 closeModal();
-                await loadProjects(); // Muat semula senarai
+                await loadProjects(); 
             }
         });
     }
@@ -82,14 +82,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    async function loadProjects() {
-        console.log("Memuat turun senarai projek bersama Client...");
+    // FUNGSI MUAT TURUN YANG TELAH DIKEMAS KINI (Boleh terima parameter carian)
+    async function loadProjects(searchTerm = '') {
+        if (projectsList) projectsList.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color: #64748b;">Loading projects...</td></tr>`;
         
-        // Kita aktifkan semula '.select('*, clients(client_name)')' untuk tarik nama client
-        const { data, error } = await supabase
+        let query = supabase
             .from('projects')
             .select('*, clients(client_name)')
             .order('created_at', { ascending: false });
+        
+        // Jika ada perkataan carian, kita guna fungsi .ilike dari Supabase
+        if (searchTerm) {
+            query = query.ilike('project_name', `%${searchTerm}%`);
+        }
+        
+        const { data, error } = await query;
         
         if (error) {
             console.error("Ralat muat turun projek:", error);
@@ -98,41 +105,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (!data || data.length === 0) {
-            if (projectsList) projectsList.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color: #888;">No projects found. Create one to get started.</td></tr>';
+            if (projectsList) projectsList.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color: #888;">${searchTerm ? 'Tiada projek dijumpai.' : 'No projects found. Create one to get started.'}</td></tr>`;
             return;
         }
 
         if (projectsList) {
             projectsList.innerHTML = data.map(p => {
-                // Tarik nama client jika wujud, jika tiada letak '-'
                 const clientName = p.clients ? p.clients.client_name : '-';
-
                 return `
                     <tr style="border-bottom: 1px solid var(--border-color); background: white;">
-                        
-                        <!-- Kotak Checkbox (Lebar dilaras, padding dikemas) -->
                         <td style="padding: 15px 10px 15px 24px; width: 50px; text-align: center;">
                             <input type="checkbox" style="cursor: pointer;">
                         </td>
-                        
-                        <!-- Nama Projek (Jarak yang selesa dari checkbox) -->
                         <td style="padding: 15px 20px 15px 10px; font-weight: 500; color: #1e293b; white-space: nowrap;">
                             <span style="display:inline-block; width:8px; height:8px; background:#0ea5e9; border-radius:50%; margin-right:8px;"></span>
                             <a href="project-details.html?id=${p.id}" style="text-decoration: none; color: inherit; cursor: pointer;">
                                 ${p.project_name || p.project_code || 'Tiada Nama'}
                             </a>
                         </td>
-                        
-                        <!-- Client -->
-                        <td style="padding: 15px 20px; color: #475569; font-weight: 500;">
-                            ${clientName}
-                        </td>
-                        
+                        <td style="padding: 15px 20px; color: #475569; font-weight: 500;">${clientName}</td>
                         <td style="padding: 15px; color: #64748b;">0.00h</td>
                         <td style="padding: 15px; color: #64748b;">0.00 MYR</td>
                         <td style="padding: 15px; color: #64748b;">-</td>
                         <td style="padding: 15px; color: #334155;">Public</td>
-                        
                         <td style="padding: 15px 24px; text-align: right;">
                             <button class="del-project-btn" data-id="${p.id}" style="border:none; background:none; color:#ef4444; cursor:pointer; font-weight: 500;">Delete</button>
                         </td>
@@ -144,10 +139,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btn.addEventListener('click', async (e) => {
                     if (confirm('Padam projek ini?')) {
                         await supabase.from('projects').delete().eq('id', e.target.getAttribute('data-id'));
-                        loadProjects();
+                        // Muat semula dengan mengekalkan carian semasa
+                        loadProjects(searchProjectInput ? searchProjectInput.value.trim() : '');
                     }
                 });
             });
         }
+    }
+
+    // EVENT LISTENER UNTUK FUNGSI CARIAN
+    if (applyFilterBtn && searchProjectInput) {
+        // Tapis apabila butang diklik
+        applyFilterBtn.addEventListener('click', () => {
+            loadProjects(searchProjectInput.value.trim());
+        });
+
+        // Tapis apabila butang 'Enter' ditekan
+        searchProjectInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                loadProjects(searchProjectInput.value.trim());
+            }
+        });
+
+        // Autorefresh jika pengguna memadamkan teks (kosong)
+        searchProjectInput.addEventListener('input', (e) => {
+            if (e.target.value.trim() === '') {
+                loadProjects();
+            }
+        });
     }
 });
