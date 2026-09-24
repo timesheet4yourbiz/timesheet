@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         };
 
-        const togglePopup = async (e) => {
+       const togglePopup = async (e) => {
             if(popup.style.display === 'block') { popup.style.display = 'none'; return; }
             
             const rect = e.currentTarget.getBoundingClientRect();
@@ -200,7 +200,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             let pList = `
                 <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
-                    <input type="text" placeholder="🔍 Search Project or Client" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:4px; outline:none; box-sizing:border-box; font-size:0.85rem;">
+                    <!-- KOTAK CARIAN DENGAN ID -->
+                    <input id="tsProjectSearch" type="text" placeholder="🔍 Search Project or Client" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:4px; outline:none; box-sizing:border-box; font-size:0.85rem;">
                 </div>
                 <div style="padding: 10px 15px; font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; font-weight: 600; display: flex; justify-content: space-between; background: #f8fafc;">
                     <span>NO CLIENT</span>
@@ -216,7 +217,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     pList += `
                         <div class="proj-header" data-id="${p.id}" data-hastasks="${hasTasks}" style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; border-bottom: 1px solid #f1f5f9; cursor:pointer;">
-                            <span style="color:#475569; font-size:0.85rem; display:flex; align-items:center; gap:8px;">
+                            <!-- CLASS proj-title-text DITAMBAH -->
+                            <span class="proj-title-text" style="color:#475569; font-size:0.85rem; display:flex; align-items:center; gap:8px;">
                                 <span style="display:inline-block; width:6px; height:6px; background:#ef4444; border-radius:50%;"></span>
                                 ${p.project_name}
                             </span>
@@ -237,6 +239,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 pList += `<div style="padding:15px; text-align:center; color:#94a3b8; font-size:0.85rem;">Tiada Projek</div>`;
             }
             popup.innerHTML = pList + `</div>`;
+
+            // ==========================================
+            // EVENT LISTENER FUNGSI CARIAN LIVE
+            // ==========================================
+            const searchInput = document.getElementById('tsProjectSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const term = e.target.value.toLowerCase();
+                    document.querySelectorAll('.proj-header').forEach(header => {
+                        const titleText = header.querySelector('.proj-title-text').textContent.toLowerCase();
+                        const pid = header.getAttribute('data-id');
+                        const taskContainer = document.getElementById('tasks-' + pid);
+                        
+                        if (titleText.includes(term)) {
+                            header.style.display = 'flex'; // Tunjuk
+                        } else {
+                            header.style.display = 'none'; // Sembunyi
+                            if (taskContainer) taskContainer.style.display = 'none'; 
+                        }
+                    });
+                });
+                
+                // Automatik fokus ke kotak carian bila pop-up dibuka
+                setTimeout(() => searchInput.focus(), 50);
+            }
 
             document.querySelectorAll('.proj-header').forEach(item => {
                 item.addEventListener('click', async (e) => {
@@ -267,7 +294,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             });
         };
-
         const loadTimesheetData = async () => {
             const tBody = document.getElementById('timesheetTableBody');
             const tFoot = document.getElementById('timesheetFootRow');
