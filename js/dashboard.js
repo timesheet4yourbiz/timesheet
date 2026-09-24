@@ -507,7 +507,7 @@ function renderTeamActivities() {
                         
                         <div class="action-menu-popup" style="display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); width: 180px; z-index: 99; text-align: left; overflow: hidden;">
                             <div class="action-menu-item chase-btn" data-empid="${member.id}" data-empname="${member.name}" style="padding: 10px 14px; font-size: 0.85rem; color: #1e293b; cursor: pointer; font-weight: 500; transition: background 0.2s;">
-                                🔔 Hantar Peringatan
+                                🔔 Send Reminder
                             </div>
                         </div>
                     </div>
