@@ -371,11 +371,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            let htmlContent = '';
+           let htmlContent = '';
             let dayTotals = { 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0 };
             let grandTotal = 0;
 
-            for (const [key, rowData] of Object.entries(matrix)) {
+            // Mengubah matrix menjadi array dan menyortirnya dari A-Z (alfabetis)
+            const sortedRows = Object.values(matrix).sort((a, b) => {
+                const nameA = a.projectName.toUpperCase();
+                const nameB = b.projectName.toUpperCase();
+                if (nameA < nameB) return -1;
+                if (nameA > nameB) return 1;
+                return 0;
+            });
+
+            for (const rowData of sortedRows) {
                 let rowTotal = 0;
                 const displayTask = rowData.taskName && rowData.taskName !== 'No Task' ? `<br><span style="color:#64748b; font-size: 0.75rem;">${rowData.taskName}</span>` : '';
                 
