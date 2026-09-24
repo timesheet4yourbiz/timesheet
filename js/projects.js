@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let query = supabase
             .from('projects')
             .select('*, clients(client_name)')
-            .order('created_at', { ascending: false });
+            .order('project_name', { ascending: true });
         
         if (searchTerm) {
             query = query.ilike('project_name', `%${searchTerm}%`);
