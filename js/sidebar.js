@@ -69,7 +69,7 @@ export async function loadSidebar() {
             </div>
 
             <nav class="sidebar-nav">
-                <div class="nav-section-title hide-on-collapse">ANALYZE</div>
+                <div class="nav-section-title hide-on-collapse">INSIGHTS</div>
                 <a href="tracker.html" class="nav-item ${currentPath.includes('tracker.html') ? 'active' : ''}" title="TIME CLOCK">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     <span class="hide-on-collapse">TIME CLOCK</span>
@@ -87,7 +87,7 @@ export async function loadSidebar() {
                     <span class="hide-on-collapse">ANALYTICS</span>
                 </a>
 
-                <div class="nav-section-title hide-on-collapse">MANAGE</div>
+                <div class="nav-section-title hide-on-collapse">ADMINISTRATION</div>
                 <a href="projects.html" class="nav-item ${currentPath.includes('projects.html') ? 'active' : ''}" title="PROJECTS">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                     <span class="hide-on-collapse">PROJECTS</span>
