@@ -2,7 +2,7 @@ import { supabase } from './supabase.js';
 import { loadSidebar } from './sidebar.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Tunggu sidebar siap semak pangkat (Admin / Staff)
+    // 1. Tunggu sidebar siap semak pangkat pengguna (Admin / Staff)
     await loadSidebar();
 
     const { data: { session } } = await supabase.auth.getSession();
@@ -23,11 +23,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const projectNameInput = document.getElementById('projectNameInput');
     const clientSelect = document.getElementById('clientSelect');
-
+    
+    // Elemen Carian
     const searchProjectInput = document.getElementById('searchProjectInput');
     const applyFilterBtn = document.getElementById('applyFilterBtn');
 
-    // 2. KUNCI BUTANG CREATE (Kelabu jika BUKAN Admin)
+    // 2. KUNCI BUTANG "CREATE NEW PROJECT" (Jadi Kelabu jika BUKAN Admin)
     if (openModalBtn) {
         if (window.currentUserIsAdmin === false) {
             openModalBtn.style.backgroundColor = '#cbd5e1'; // Warna kelabu
@@ -81,6 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             saveProjectBtn.textContent = 'CREATE';
             if (error) {
                 alert('Ralat mencipta projek: ' + error.message);
+                console.error("Ralat Insert:", error);
             } else {
                 closeModal();
                 await loadProjects(); 
@@ -96,6 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // FUNGSI MUAT TURUN PROJEK
     async function loadProjects(searchTerm = '') {
         if (projectsList) projectsList.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color: #64748b;">Loading projects...</td></tr>`;
         
@@ -111,12 +114,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { data, error } = await query;
         
         if (error) {
+            console.error("Ralat muat turun projek:", error);
             if (projectsList) projectsList.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color: red;">Ralat: ${error.message}</td></tr>`;
             return;
         }
 
         if (!data || data.length === 0) {
-            if (projectsList) projectsList.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color: #888;">${searchTerm ? 'Tiada projek dijumpai.' : 'No projects found.'}</td></tr>`;
+            if (projectsList) projectsList.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color: #888;">${searchTerm ? 'Tiada projek dijumpai.' : 'No projects found. Create one to get started.'}</td></tr>`;
             return;
         }
 
@@ -124,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             projectsList.innerHTML = data.map(p => {
                 const clientName = p.clients ? p.clients.client_name : '-';
                 
-                // 3. KUNCI BUTANG DELETE (View Only jika BUKAN Admin)
+                // 3. KUNCI LAJUR ACTION (Ubah 'Delete' jadi 'View Only' jika BUKAN Admin)
                 const actionColumnHtml = (window.currentUserIsAdmin === false)
                     ? `<span style="color:#cbd5e1; font-size:0.8rem; font-weight:500; cursor:not-allowed;">View Only</span>`
                     : `<button class="del-project-btn" data-id="${p.id}" style="border:none; background:none; color:#ef4444; cursor:pointer; font-weight: 500;">Delete</button>`;
@@ -163,6 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // EVENT LISTENER CARIAN
     if (applyFilterBtn && searchProjectInput) {
         applyFilterBtn.addEventListener('click', () => {
             loadProjects(searchProjectInput.value.trim());
