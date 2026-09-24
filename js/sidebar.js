@@ -72,7 +72,7 @@ export async function loadSidebar() {
                 <div class="nav-section-title hide-on-collapse">ANALYZE</div>
                 <a href="tracker.html" class="nav-item ${currentPath.includes('tracker.html') ? 'active' : ''}" title="TIME CLOCK">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <span class="hide-on-collapse">TIME TRACKER</span>
+                    <span class="hide-on-collapse">TIME CLOCK</span>
                 </a>
                 <a href="timesheet.html" class="nav-item ${currentPath.includes('timesheet.html') ? 'active' : ''}" title="TIMESHEET">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -84,7 +84,7 @@ export async function loadSidebar() {
                 </a>
                 <a href="reports.html" class="nav-item ${currentPath.includes('reports.html') ? 'active' : ''}" title="REPORTS">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                    <span class="hide-on-collapse">REPORTS</span>
+                    <span class="hide-on-collapse">ANALYTICS</span>
                 </a>
 
                 <div class="nav-section-title hide-on-collapse">MANAGE</div>
