@@ -80,7 +80,7 @@ export async function loadSidebar() {
                 </a>
                 <a href="dashboard.html" class="nav-item ${currentPath.includes('dashboard.html') ? 'active' : ''}" title="DASHBOARD">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
-                    <span class="hide-on-collapse">DASHBOARD</span>
+                    <span class="hide-on-collapse">OVERVIEW</span>
                 </a>
                 <a href="reports.html" class="nav-item ${currentPath.includes('reports.html') ? 'active' : ''}" title="REPORTS">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
