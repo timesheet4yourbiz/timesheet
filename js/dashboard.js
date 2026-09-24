@@ -1,3 +1,4 @@
+import { initNotificationBell } from './notifications.js';
 import { supabase } from './supabase.js';
 import { loadSidebar } from './sidebar.js';
 
