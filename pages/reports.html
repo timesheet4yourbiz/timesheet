@@ -127,15 +127,33 @@
         .report-table tr.total-row td { border-top: 2px solid #0284c7; border-bottom: 2px solid #0284c7; }
         .report-table tr.total-row td.grand-total-cell { font-size: 1rem; color: #0369a1; }
 
-        @media print {
-            @page { size: A4 portrait; margin: 10mm; }
+/*        @media print { */
+/*            @page { size: A4 portrait; margin: 10mm; } */
+/*            body { background: white !important; } */
+/*            #sidebar-container, .topbar, .report-control-bar { display: none !important; } */
+ /*           .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; } */
+/*            .content-area { padding: 0 !important; } */
+/*            .report-wrapper { max-width: 100% !important; width: 100% !important; } */
+/*            .report-paper { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; } */
+/*        } */
+
+
+@media print {
+            @page { size: A4 landscape; margin: 10mm; }
             body { background: white !important; }
             #sidebar-container, .topbar, .report-control-bar { display: none !important; }
             .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
             .content-area { padding: 0 !important; }
             .report-wrapper { max-width: 100% !important; width: 100% !important; }
             .report-paper { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+          
+            .report-table { font-size: 0.75rem !important; width: 100% !important; page-break-inside: auto; }
+            .report-table tr { page-break-inside: avoid; page-break-after: auto; }
+            .report-table th, .report-table td { padding: 8px !important; }
         }
+
+
+        
     </style>
 </head>
 <body>
