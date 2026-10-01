@@ -139,27 +139,29 @@
 
 
 @media print {
-            @page { size: A4 landscape; margin: 5mm; }
+            /* 1. ubah: Margin kertas 10mm */
+            @page { size: A4 landscape; margin: 10mm; } 
+            
             body { background: white !important; }
             #sidebar-container, .topbar, .report-control-bar { display: none !important; }
             .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
-            .content-area { padding: 0 !important; }
-            .report-wrapper { max-width: 100% !important; width: 100% !important; }
+            .content-area { padding: 0 !important; width: 100% !important; }
+            .report-wrapper { max-width: 100% !important; width: 100% !important; margin: 0 !important; }
             .report-paper { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
             
-            /* Ubahsuai khas untuk jadual supaya muat dan tidak terpotong */
+            /* 2. Paksa jadual kembang penuh kiri ke kanan supaya selari dengan margin 10mm */
             .report-table { 
                 width: 100% !important; 
-                min-width: 100% !important; /* Batalkan saiz lebar paksaan */
-                font-size: 0.65rem !important; /* Kecilkan saiz tulisan */
+                max-width: 100% !important;
+                font-size: 0.70rem !important; 
                 page-break-inside: auto; 
             }
             .report-table tr { page-break-inside: avoid; page-break-after: auto; }
             .report-table th, .report-table td { 
-                padding: 4px 6px !important; /* Rapatkan ruang antara teks dan garisan */
+                padding: 6px !important; 
             }
             .report-table th span.date-range {
-                font-size: 0.55rem !important; /* Kecilkan sedikit tarikh */
+                font-size: 0.60rem !important;
             }
             .company-title { font-size: 1.2rem !important; }
         }
