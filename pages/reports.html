@@ -139,33 +139,53 @@
 
 
 @media print {
-            /* 1. ubah: Margin kertas 10mm */
-            @page { size: A4 landscape; margin: 30mm; } 
+            /* TETAPAN BARU: Margin Atas(10mm), Kanan(10mm), Bawah(10mm), Kiri(5mm) */
+            @page { size: A4 landscape; margin: 10mm 10mm 10mm 5mm; } 
             
-            body { background: white !important; }
+            body { background: white !important; margin: 0 !important; padding: 0 !important; }
             #sidebar-container, .topbar, .report-control-bar { display: none !important; }
-            .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
-            .content-area { padding: 0 !important; width: 100% !important; }
-            .report-wrapper { max-width: 100% !important; width: 100% !important; margin: 0 !important; }
-            .report-paper { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
             
-            /* 2. Paksa jadual kembang penuh kiri ke kanan supaya selari dengan margin 10mm */
+            /* Buang segala ruang kosong (padding/margin) dari bekas utama */
+            .app-container, .main-content, .content-area { 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                width: 100% !important; 
+                max-width: 100% !important;
+            }
+            .report-wrapper { 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                width: 100% !important; 
+                max-width: 100% !important; 
+            }
+            .report-paper { 
+                border: none !important; 
+                box-shadow: none !important; 
+                padding: 0 !important; 
+                margin: 0 !important;
+                width: 100% !important; 
+                max-width: 100% !important; 
+            }
+            
+            /* Saiz jadual dipadatkan dan ditarik rapat ke kiri */
             .report-table { 
                 width: 100% !important; 
                 max-width: 100% !important;
-                font-size: 0.70rem !important; 
+                min-width: 100% !important;
+                font-size: 0.65rem !important; /* Dikecilkan sedikit supaya muat */
                 page-break-inside: auto; 
+                margin-left: 0 !important;
             }
             .report-table tr { page-break-inside: avoid; page-break-after: auto; }
             .report-table th, .report-table td { 
-                padding: 6px !important; 
+                padding: 4px 5px !important; /* Rapatkan lagi ruang sel jadual */
             }
             .report-table th span.date-range {
-                font-size: 0.60rem !important;
+                font-size: 0.55rem !important;
             }
-            .company-title { font-size: 1.2rem !important; }
+            .company-title { font-size: 1.1rem !important; }
+            .report-header { margin-bottom: 12px !important; padding-bottom: 8px !important; }
         }
-
 
         
     </style>
