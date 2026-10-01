@@ -139,19 +139,22 @@
 
 
 @media print {
-            /* TETAPAN BARU: Margin Atas(10mm), Kanan(10mm), Bawah(10mm), Kiri(5mm) */
-            @page { size: A4 landscape; margin: 10mm 10mm 10mm 5mm; } 
+            /* Margin: Atas(10mm), Kanan(10mm), Bawah(10mm), Kiri(15mm untuk tebuk lubang) */
+            @page { size: A4 landscape; margin: 10mm 10mm 10mm 15mm; } 
             
-            body { background: white !important; margin: 0 !important; padding: 0 !important; }
+            body, html { background: white !important; margin: 0 !important; padding: 0 !important; }
             #sidebar-container, .topbar, .report-control-bar { display: none !important; }
             
-            /* Buang segala ruang kosong (padding/margin) dari bekas utama */
+            /* KUNCI UTAMA: Matikan tolakan (margin-left) dari sidebar halimunan */
             .app-container, .main-content, .content-area { 
                 margin: 0 !important; 
                 padding: 0 !important; 
                 width: 100% !important; 
                 max-width: 100% !important;
+                margin-left: 0 !important; /* Paksa reset ke kiri */
+                left: 0 !important;
             }
+            
             .report-wrapper { 
                 margin: 0 !important; 
                 padding: 0 !important; 
@@ -167,23 +170,23 @@
                 max-width: 100% !important; 
             }
             
-            /* Saiz jadual dipadatkan dan ditarik rapat ke kiri */
+            /* Jadual kembang 100% */
             .report-table { 
                 width: 100% !important; 
                 max-width: 100% !important;
                 min-width: 100% !important;
-                font-size: 0.65rem !important; /* Dikecilkan sedikit supaya muat */
+                font-size: 0.70rem !important; 
                 page-break-inside: auto; 
-                margin-left: 0 !important;
+                margin: 0 !important;
             }
             .report-table tr { page-break-inside: avoid; page-break-after: auto; }
             .report-table th, .report-table td { 
-                padding: 4px 5px !important; /* Rapatkan lagi ruang sel jadual */
+                padding: 5px 6px !important; 
             }
             .report-table th span.date-range {
-                font-size: 0.55rem !important;
+                font-size: 0.60rem !important;
             }
-            .company-title { font-size: 1.1rem !important; }
+            .company-title { font-size: 1.2rem !important; margin: 0 !important; }
             .report-header { margin-bottom: 12px !important; padding-bottom: 8px !important; }
         }
 
