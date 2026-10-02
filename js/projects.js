@@ -2,7 +2,6 @@ import { supabase } from './supabase.js';
 import { loadSidebar } from './sidebar.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Tunggu sidebar siap semak pangkat pengguna (Admin / Staff)
     await loadSidebar();
 
     const { data: { session } } = await supabase.auth.getSession();
@@ -20,15 +19,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeModalBtn = document.getElementById('closeModalBtn');
     const cancelBtn = document.getElementById('cancelBtn');
     const saveProjectBtn = document.getElementById('saveProjectBtn');
-    
     const projectNameInput = document.getElementById('projectNameInput');
     const clientSelect = document.getElementById('clientSelect');
-    
-    // Elemen Carian
     const searchProjectInput = document.getElementById('searchProjectInput');
     const applyFilterBtn = document.getElementById('applyFilterBtn');
 
-    // 2. KUNCI BUTANG "CREATE NEW PROJECT" (Jadi Kelabu jika BUKAN Admin)
     if (openModalBtn) {
         if (window.currentUserIsAdmin === false) {
             openModalBtn.style.backgroundColor = '#cbd5e1'; 
@@ -37,7 +32,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             openModalBtn.style.cursor = 'not-allowed';
             openModalBtn.style.boxShadow = 'none';
             openModalBtn.title = 'Hanya Admin dibenarkan menambah projek baru';
-            
             openModalBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 alert('Akses Terhad: Hanya Admin yang dibenarkan menambah projek baru.');
@@ -68,25 +62,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             saveProjectBtn.disabled = true;
             saveProjectBtn.textContent = 'CREATING...';
             
-            const payload = { 
-                project_name: pName,
-                status: 'ACTIVE'
-            };
+            const payload = { project_name: pName, status: 'ACTIVE' };
+            if (pClient && pClient !== "") payload.client_id = pClient;
             
-            if (pClient && pClient !== "") {
-                payload.client_id = pClient;
-            }
-            
-            const { data, error } = await supabase.from('projects').insert([payload]).select();
+            const { error } = await supabase.from('projects').insert([payload]);
             saveProjectBtn.disabled = false;
             saveProjectBtn.textContent = 'CREATE';
-            if (error) {
-                alert('Ralat mencipta projek: ' + error.message);
-                console.error("Ralat Insert:", error);
-            } else {
-                closeModal();
-                await loadProjects(); 
-            }
+            if (error) { alert('Ralat mencipta projek: ' + error.message); } 
+            else { closeModal(); await loadProjects(); }
         });
     }
 
@@ -98,64 +81,62 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // FUNGSI MUAT TURUN PROJEK BESERTA KIRAAN MASA
     async function loadProjects(searchTerm = '') {
         if (projectsList) projectsList.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color: #64748b;">Loading projects...</td></tr>';
         
-        let query = supabase
-            .from('projects')
-            .select('*, clients(client_name)')
-            .order('project_name', { ascending: true });
-        
-        if (searchTerm) {
-            query = query.ilike('project_name', '%' + searchTerm + '%');
-        }
+        let query = supabase.from('projects').select('*, clients(client_name)').order('project_name', { ascending: true });
+        if (searchTerm) query = query.ilike('project_name', '%' + searchTerm + '%');
         
         const { data: projectsData, error } = await query;
-        
-        if (error) {
-            console.error("Ralat muat turun projek:", error);
-            if (projectsList) projectsList.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color: red;">Ralat: ' + error.message + '</td></tr>';
+        if (error || !projectsData || projectsData.length === 0) {
+            if (projectsList) projectsList.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color: #888;">Tiada projek dijumpai.</td></tr>';
             return;
         }
 
-        if (!projectsData || projectsData.length === 0) {
-            if (projectsList) projectsList.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color: #888;">' + (searchTerm ? 'Tiada projek dijumpai.' : 'No projects found. Create one to get started.') + '</td></tr>';
-            return;
-        }
+        // MENGATASI HAD 1000 BARIS (PAGINATION LOOP)
+        let allTimeEntries = [];
+        let from = 0;
+        const step = 999;
+        let hasMore = true;
 
-        // AMBIL DATA MASA DARI time_entries UNTUK KIRAAN
-        const { data: timeEntries, error: timeErr } = await supabase
-            .from('time_entries')
-            .select('project_id, duration_seconds')
-            .eq('status', 'STOPPED');
+        while (hasMore) {
+            const { data: tData, error: tErr } = await supabase
+                .from('time_entries')
+                .select('project_id, duration_seconds')
+                .eq('status', 'STOPPED')
+                .range(from, from + step);
+
+            if (tErr) break;
+            if (tData && tData.length > 0) {
+                allTimeEntries = allTimeEntries.concat(tData);
+                if (tData.length <= step) hasMore = false;
+                else from += step + 1;
+            } else {
+                hasMore = false;
+            }
+        }
 
         let projectHours = {};
-        if (timeEntries && timeEntries.length > 0) {
-            timeEntries.forEach(entry => {
-                const pid = entry.project_id;
+        allTimeEntries.forEach(entry => {
+            const pid = entry.project_id;
+            if (pid) {
                 if (!projectHours[pid]) projectHours[pid] = 0;
                 projectHours[pid] += (entry.duration_seconds || 0);
-            });
-        }
+            }
+        });
 
         if (projectsList) {
             projectsList.innerHTML = projectsData.map(p => {
                 const clientName = p.clients ? p.clients.client_name : '-';
-                
-                // Tukar total seconds kepada Jam (contoh: 382.5)
                 const totalSeconds = projectHours[p.id] || 0;
                 const totalHours = (totalSeconds / 3600).toFixed(1);
                 
-                // 3. KUNCI LAJUR ACTION
                 const actionColumnHtml = (window.currentUserIsAdmin === false)
                     ? '<span style="color:#cbd5e1; font-size:0.8rem; font-weight:500; cursor:not-allowed;">View Only</span>'
                     : '<button class="del-project-btn" data-id="' + p.id + '" style="border:none; background:none; color:#ef4444; cursor:pointer; font-weight: 500;">Delete</button>';
 
                 return '<tr style="border-bottom: 1px solid var(--border-color); background: white;">' +
-                        '<td style="padding: 15px 10px 15px 24px; width: 50px; text-align: center;">' +
-                            '<input type="checkbox" style="cursor: pointer;">' +
-                        '</td>' +
+                        '<td style="padding: 15px 10px 15px 24px; width: 50px; text-align: center;"><input type="checkbox" style="cursor: pointer;"></td>' +
                         '<td style="padding: 15px 20px 15px 10px; font-weight: 500; color: #1e293b; white-space: nowrap;">' +
                             '<span style="display:inline-block; width:8px; height:8px; background:#0ea5e9; border-radius:50%; margin-right:8px;"></span>' +
                             '<a href="project-details.html?id=' + p.id + '" style="text-decoration: none; color: inherit; cursor: pointer;">' +
@@ -167,9 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         '<td style="padding: 15px; color: #64748b;">0.00 MYR</td>' +
                         '<td style="padding: 15px; color: #64748b;">-</td>' +
                         '<td style="padding: 15px; color: #334155;">Public</td>' +
-                        '<td style="padding: 15px 24px; text-align: right;">' +
-                            actionColumnHtml +
-                        '</td>' +
+                        '<td style="padding: 15px 24px; text-align: right;">' + actionColumnHtml + '</td>' +
                     '</tr>';
             }).join('');
 
@@ -184,23 +163,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // EVENT LISTENER CARIAN
     if (applyFilterBtn && searchProjectInput) {
-        applyFilterBtn.addEventListener('click', () => {
-            loadProjects(searchProjectInput.value.trim());
-        });
-
+        applyFilterBtn.addEventListener('click', () => loadProjects(searchProjectInput.value.trim()));
         searchProjectInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                loadProjects(searchProjectInput.value.trim());
-            }
+            if (e.key === 'Enter') { e.preventDefault(); loadProjects(searchProjectInput.value.trim()); }
         });
-
         searchProjectInput.addEventListener('input', (e) => {
-            if (e.target.value.trim() === '') {
-                loadProjects();
-            }
+            if (e.target.value.trim() === '') loadProjects();
         });
     }
 });
