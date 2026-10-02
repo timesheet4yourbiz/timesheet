@@ -42,7 +42,7 @@ async function populateFilters() {
         const { data: projs } = await supabase.from('projects').select('id, project_name').order('project_name');
         const projSelect = document.getElementById('filterProject');
         if (projs && projSelect) {
-            projs.forEach(p => { projSelect.innerHTML += '(BUKA)option value="' + p.id + '"(TUTUP)' + p.project_name + '(BUKA)/option(TUTUP)'; });
+            projs.forEach(p => { projSelect.innerHTML += '<option value="' + p.id + '">' + p.project_name + '</option>'; });
         }
     } catch (e) {}
 
@@ -50,7 +50,7 @@ async function populateFilters() {
         let { data: groups } = await supabase.from('groups').select('*');
         const groupSelect = document.getElementById('filterGroup');
         if (groups && groupSelect) {
-            groups.forEach(g => { groupSelect.innerHTML += '(BUKA)option value="' + g.id + '"(TUTUP)' + g.group_name + '(BUKA)/option(TUTUP)'; });
+            groups.forEach(g => { groupSelect.innerHTML += '<option value="' + g.id + '">' + g.group_name + '</option>'; });
         }
     } catch (e) {}
 
@@ -60,7 +60,7 @@ async function populateFilters() {
         if (emps && userSelect) {
             emps.forEach(e => {
                 const displayName = e.name || e.email.split('@')[0];
-                userSelect.innerHTML += '(BUKA)option value="' + e.id + '"(TUTUP)' + displayName + '(BUKA)/option(TUTUP)';
+                userSelect.innerHTML += '<option value="' + e.id + '">' + displayName + '</option>';
             });
         }
     } catch (e) {}
@@ -111,7 +111,7 @@ async function generateReport() {
     
     const monthName = new Date(year, month - 1).toLocaleString('en-US', { month: 'long' }).toUpperCase();
     const badge = document.getElementById('badgeMonthYear');
-    if (badge) badge.innerHTML = monthName + '(BUKA)br(TUTUP)' + year;
+    if (badge) badge.innerHTML = monthName + '<br>' + year;
 
     const weeks = getWeekDates(year, month);
     weeks.forEach((w, i) => {
@@ -207,22 +207,22 @@ function renderTable(projectGroups, weeks) {
     let grandTotal = 0;
 
     if (Object.keys(projectGroups).length === 0) {
-        tbody.innerHTML = '(BUKA)tr(TUTUP)(BUKA)td colspan="7" style="color:#64748b; padding: 20px;"(TUTUP)No man-hour records found for this period/filter.(BUKA)/td(TUTUP)(BUKA)/tr(TUTUP)';
+        tbody.innerHTML = '<tr><td colspan="7" style="color:#64748b; padding: 20px;">No man-hour records found for this period/filter.</td></tr>';
     } else {
         Object.keys(projectGroups).sort().forEach(pName => {
             const row = projectGroups[pName];
             sumWeekly[0] += row.w1; sumWeekly[1] += row.w2; sumWeekly[2] += row.w3;
             sumWeekly[3] += row.w4; sumWeekly[4] += row.w5; grandTotal += row.total;
             
-            tbody.innerHTML += '(BUKA)tr(TUTUP)' +
-                '(BUKA)td class="project-name"(TUTUP)' + pName + '(BUKA)/td(TUTUP)' +
-                '(BUKA)td(TUTUP)' + row.w1.toFixed(1) + '(BUKA)/td(TUTUP)' +
-                '(BUKA)td(TUTUP)' + row.w2.toFixed(1) + '(BUKA)/td(TUTUP)' +
-                '(BUKA)td(TUTUP)' + row.w3.toFixed(1) + '(BUKA)/td(TUTUP)' +
-                '(BUKA)td(TUTUP)' + row.w4.toFixed(1) + '(BUKA)/td(TUTUP)' +
-                '(BUKA)td(TUTUP)' + (weeks[4].text !== 'N/A' ? row.w5.toFixed(1) : '-') + '(BUKA)/td(TUTUP)' +
-                '(BUKA)td style="font-weight:800; color:#0f172a;"(TUTUP)' + row.total.toFixed(1) + '(BUKA)/td(TUTUP)' +
-                '(BUKA)/tr(TUTUP)';
+            tbody.innerHTML += '<tr>' +
+                '<td class="project-name">' + pName + '</td>' +
+                '<td>' + row.w1.toFixed(1) + '</td>' +
+                '<td>' + row.w2.toFixed(1) + '</td>' +
+                '<td>' + row.w3.toFixed(1) + '</td>' +
+                '<td>' + row.w4.toFixed(1) + '</td>' +
+                '<td>' + (weeks[4].text !== 'N/A' ? row.w5.toFixed(1) : '-') + '</td>' +
+                '<td style="font-weight:800; color:#0f172a;">' + row.total.toFixed(1) + '</td>' +
+                '</tr>';
         });
     }
 
