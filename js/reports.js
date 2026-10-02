@@ -9,11 +9,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         await populateFilters();
 
-        document.getElementById('btnGenerate').addEventListener('click', generateReport);
-        document.getElementById('btnPrint').addEventListener('click', () => window.print());
-        document.getElementById('btnExcel').addEventListener('click', exportCSV);
+        document.getElementById('btnGenerate')?.addEventListener('click', generateReport);
+        document.getElementById('btnPrint')?.addEventListener('click', () => window.print());
+        document.getElementById('btnExcel')?.addEventListener('click', exportCSV);
 
-        // Auto generate laporan buat kali pertama
         await generateReport();
 
     } catch (err) {
@@ -26,35 +25,34 @@ async function populateFilters() {
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const currentMonth = new Date().getMonth();
     
-    months.forEach((m, i) => {
-        const option = document.createElement('option');
-        option.value = i + 1;
-        option.textContent = m;
-        if (i === currentMonth) option.selected = true;
-        monthSelect.appendChild(option);
-    });
-    document.getElementById('reportYear').value = new Date().getFullYear();
+    if (monthSelect) {
+        months.forEach((m, i) => {
+            const option = document.createElement('option');
+            option.value = i + 1;
+            option.textContent = m;
+            if (i === currentMonth) option.selected = true;
+            monthSelect.appendChild(option);
+        });
+    }
+    
+    const reportYear = document.getElementById('reportYear');
+    if (reportYear) reportYear.value = new Date().getFullYear();
 
     try {
         const { data: projs } = await supabase.from('projects').select('id, project_name').order('project_name');
         const projSelect = document.getElementById('filterProject');
         if (projs && projSelect) {
-            projs.forEach(p => {
-                projSelect.innerHTML += '<option value="' + p.id + '">' + p.project_name + '</option>';
-            });
+            projs.forEach(p => { projSelect.innerHTML += '(BUKA)option value="' + p.id + '"(TUTUP)' + p.project_name + '(BUKA)/option(TUTUP)'; });
         }
-    } catch (e) { console.warn("Ralat pilihan projek:", e); }
+    } catch (e) {}
 
     try {
-        let { data: groups, error } = await supabase.from('groups').select('*');
+        let { data: groups } = await supabase.from('groups').select('*');
         const groupSelect = document.getElementById('filterGroup');
         if (groups && groupSelect) {
-            groups.forEach(g => {
-                const gName = g.group_name || g.name || 'Group ' + g.id;
-                groupSelect.innerHTML += '<option value="' + g.id + '">' + gName + '</option>';
-            });
+            groups.forEach(g => { groupSelect.innerHTML += '(BUKA)option value="' + g.id + '"(TUTUP)' + g.group_name + '(BUKA)/option(TUTUP)'; });
         }
-    } catch (e) { console.warn("Ralat pilihan group:", e); }
+    } catch (e) {}
 
     try {
         const { data: emps } = await supabase.from('employees').select('id, name, email').order('name');
@@ -62,10 +60,10 @@ async function populateFilters() {
         if (emps && userSelect) {
             emps.forEach(e => {
                 const displayName = e.name || e.email.split('@')[0];
-                userSelect.innerHTML += '<option value="' + e.id + '">' + displayName + '</option>';
+                userSelect.innerHTML += '(BUKA)option value="' + e.id + '"(TUTUP)' + displayName + '(BUKA)/option(TUTUP)';
             });
         }
-    } catch (e) { console.warn("Ralat pilihan pengguna:", e); }
+    } catch (e) {}
 }
 
 function getWeekDates(year, month) {
@@ -113,7 +111,7 @@ async function generateReport() {
     
     const monthName = new Date(year, month - 1).toLocaleString('en-US', { month: 'long' }).toUpperCase();
     const badge = document.getElementById('badgeMonthYear');
-    if (badge) badge.innerHTML = monthName + '<br>' + year;
+    if (badge) badge.innerHTML = monthName + '(BUKA)br(TUTUP)' + year;
 
     const weeks = getWeekDates(year, month);
     weeks.forEach((w, i) => {
@@ -121,35 +119,47 @@ async function generateReport() {
         if(el) el.textContent = w.text || '-';
     });
 
-    // Ambil data bermula dari hari Isnin Minggu Pertama hingga hari Ahad Minggu Terakhir
-    const startDateIso = new Date(Date.UTC(weeks[0].start.getFullYear(), weeks[0].start.getMonth(), weeks[0].start.getDate(), 0, 0, 0)).toISOString();
-    const endDateIso = new Date(Date.UTC(weeks[4].end.getFullYear(), weeks[4].end.getMonth(), weeks[4].end.getDate(), 23, 59, 59)).toISOString();
+    // Format Tarikh Kebal Zon Masa (YYYY-MM-DD)
+    const sDt = weeks[0].start; const eDt = weeks[4].end;
+    const startStr = sDt.getFullYear() + '-' + String(sDt.getMonth()+1).padStart(2,'0') + '-' + String(sDt.getDate()).padStart(2,'0');
+    const endStr = eDt.getFullYear() + '-' + String(eDt.getMonth()+1).padStart(2,'0') + '-' + String(eDt.getDate()).padStart(2,'0');
 
-    let query = supabase
-        .from('time_entries')
-        .select('duration_seconds, work_date, start_time, employee_id, project_id, project:projects!fk_time_entries_project(project_name)')
-        .eq('status', 'STOPPED')
-        .gte('start_time', startDateIso)
-        .lte('start_time', endDateIso);
+    // MENGATASI HAD 1000 BARIS (PAGINATION LOOP)
+    let allEntries = [];
+    let from = 0;
+    const step = 999;
+    let hasMore = true;
 
-    // Penapis
-    if (selectedProject !== 'ALL') query = query.eq('project_id', selectedProject);
-    if (selectedUser !== 'ALL') query = query.eq('employee_id', selectedUser);
-
+    let empIds = null;
     if (selectedGroup !== 'ALL') {
-        const { data: groupEmps, error: geErr } = await supabase.from('employees').select('id').eq('group_id', selectedGroup);
-        if (!geErr && groupEmps && groupEmps.length > 0) {
-            const empIds = groupEmps.map(e => e.id);
-            query = query.in('employee_id', empIds);
-        } else {
-            query = query.eq('employee_id', '00000000-0000-0000-0000-000000000000');
-        }
+        const { data: groupEmps } = await supabase.from('employees').select('id').eq('group_id', selectedGroup);
+        if (groupEmps && groupEmps.length > 0) empIds = groupEmps.map(e => e.id);
+        else empIds = ['00000000-0000-0000-0000-000000000000']; 
     }
 
-    const { data: entries, error } = await query;
-    if (error) {
-        console.error("Ralat Carian Laporan:", error);
-        return;
+    while (hasMore) {
+        let query = supabase
+            .from('time_entries')
+            .select('duration_seconds, work_date, start_time, employee_id, project_id, project:projects!fk_time_entries_project(project_name)')
+            .eq('status', 'STOPPED')
+            .gte('work_date', startStr)
+            .lte('work_date', endStr)
+            .range(from, from + step);
+
+        if (selectedProject !== 'ALL') query = query.eq('project_id', selectedProject);
+        if (selectedUser !== 'ALL') query = query.eq('employee_id', selectedUser);
+        if (empIds) query = query.in('employee_id', empIds);
+
+        const { data, error } = await query;
+        if (error) break;
+
+        if (data && data.length > 0) {
+            allEntries = allEntries.concat(data);
+            if (data.length <= step) hasMore = false;
+            else from += step + 1;
+        } else {
+            hasMore = false;
+        }
     }
 
     let projectGroups = {};
@@ -159,12 +169,18 @@ async function generateReport() {
     const w4S = weeks[3].start.getTime(); const w4E = weeks[3].end.getTime();
     const w5S = weeks[4].start.getTime(); const w5E = weeks[4].end.getTime();
     
-    if (entries && entries.length > 0) {
-        entries.forEach(item => {
+    if (allEntries.length > 0) {
+        allEntries.forEach(item => {
             const pName = (item.project ? item.project.project_name : 'General Project').toUpperCase();
             if (!projectGroups[pName]) projectGroups[pName] = { w1: 0, w2: 0, w3: 0, w4: 0, w5: 0, total: 0 };
             
-            const dObj = new Date(item.work_date || item.start_time);
+            let dObj;
+            if (item.work_date) {
+                const pts = item.work_date.split('-');
+                dObj = new Date(parseInt(pts[0]), parseInt(pts[1])-1, parseInt(pts[2]));
+            } else {
+                dObj = new Date(item.start_time);
+            }
             dObj.setHours(0,0,0,0);
             const itemTime = dObj.getTime();
             const hrs = (item.duration_seconds || 0) / 3600;
@@ -184,27 +200,29 @@ async function generateReport() {
 
 function renderTable(projectGroups, weeks) {
     const tbody = document.getElementById('tableBodyProjects');
+    if (!tbody) return;
     tbody.innerHTML = '';
+    
     let sumWeekly = [0, 0, 0, 0, 0];
     let grandTotal = 0;
 
     if (Object.keys(projectGroups).length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="color:#64748b; padding: 20px;">No man-hour records found for this period/filter.</td></tr>';
+        tbody.innerHTML = '(BUKA)tr(TUTUP)(BUKA)td colspan="7" style="color:#64748b; padding: 20px;"(TUTUP)No man-hour records found for this period/filter.(BUKA)/td(TUTUP)(BUKA)/tr(TUTUP)';
     } else {
         Object.keys(projectGroups).sort().forEach(pName => {
             const row = projectGroups[pName];
             sumWeekly[0] += row.w1; sumWeekly[1] += row.w2; sumWeekly[2] += row.w3;
             sumWeekly[3] += row.w4; sumWeekly[4] += row.w5; grandTotal += row.total;
             
-            tbody.innerHTML += '<tr>' +
-                '<td class="project-name">' + pName + '</td>' +
-                '<td>' + row.w1.toFixed(1) + '</td>' +
-                '<td>' + row.w2.toFixed(1) + '</td>' +
-                '<td>' + row.w3.toFixed(1) + '</td>' +
-                '<td>' + row.w4.toFixed(1) + '</td>' +
-                '<td>' + (weeks[4].text !== 'N/A' ? row.w5.toFixed(1) : '-') + '</td>' +
-                '<td style="font-weight:800; color:#0f172a;">' + row.total.toFixed(1) + '</td>' +
-                '</tr>';
+            tbody.innerHTML += '(BUKA)tr(TUTUP)' +
+                '(BUKA)td class="project-name"(TUTUP)' + pName + '(BUKA)/td(TUTUP)' +
+                '(BUKA)td(TUTUP)' + row.w1.toFixed(1) + '(BUKA)/td(TUTUP)' +
+                '(BUKA)td(TUTUP)' + row.w2.toFixed(1) + '(BUKA)/td(TUTUP)' +
+                '(BUKA)td(TUTUP)' + row.w3.toFixed(1) + '(BUKA)/td(TUTUP)' +
+                '(BUKA)td(TUTUP)' + row.w4.toFixed(1) + '(BUKA)/td(TUTUP)' +
+                '(BUKA)td(TUTUP)' + (weeks[4].text !== 'N/A' ? row.w5.toFixed(1) : '-') + '(BUKA)/td(TUTUP)' +
+                '(BUKA)td style="font-weight:800; color:#0f172a;"(TUTUP)' + row.total.toFixed(1) + '(BUKA)/td(TUTUP)' +
+                '(BUKA)/tr(TUTUP)';
         });
     }
 
@@ -212,7 +230,8 @@ function renderTable(projectGroups, weeks) {
         const el = document.getElementById('totW' + (i+1));
         if(el) el.textContent = sumWeekly[i].toFixed(1);
     }
-    document.getElementById('totGrand').textContent = grandTotal.toFixed(1);
+    const tg = document.getElementById('totGrand');
+    if(tg) tg.textContent = grandTotal.toFixed(1);
 }
 
 function exportCSV() {
