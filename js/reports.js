@@ -66,39 +66,37 @@ async function populateFilters() {
     } catch (e) {}
 }
 
+// LOGIK BAHARU: MINGGU MENGIKUT HARI ISNIN (Menghalang Pertindihan)
 function getWeekDates(year, month) {
-    let firstDay = new Date(year, month - 1, 1);
-    let dayOfWeek = firstDay.getDay(); 
-    let diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    let startDate = new Date(year, month - 1, 1 + diffToMonday);
-
-    let lastDayOfMonth = new Date(year, month, 0);
-    let lastDayOfWeek = lastDayOfMonth.getDay();
-    let daysToNextSunday = lastDayOfWeek === 0 ? 0 : 7 - lastDayOfWeek;
-    let finalSunday = new Date(year, month - 1, lastDayOfMonth.getDate() + daysToNextSunday);
-
-    const formatFull = (d) => d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
-
     let weeks = [];
-    let currentStart = new Date(startDate);
-
-    for (let i = 0; i < 4; i++) {
-        let currentEnd = new Date(currentStart);
-        currentEnd.setDate(currentStart.getDate() + 6);
-        weeks.push({
-            start: new Date(currentStart),
-            end: new Date(currentEnd),
-            text: formatFull(currentStart) + ' - ' + formatFull(currentEnd)
-        });
-        currentStart.setDate(currentStart.getDate() + 7);
+    const formatFull = (dt) => dt.getDate() + '/' + (dt.getMonth() + 1) + '/' + dt.getFullYear();
+    
+    // Cari semua hari Isnin dalam bulan yang dipilih
+    for (let day = 1; day <= 31; day++) {
+        let d = new Date(year, month - 1, day);
+        if (d.getMonth() !== month - 1) break; // Berhenti jika masuk bulan depan
+        
+        if (d.getDay() === 1) { // 1 = Hari Isnin
+            let start = new Date(d);
+            start.setHours(0,0,0,0);
+            
+            let end = new Date(start);
+            end.setDate(start.getDate() + 6); // Tambah 6 hari untuk dapat Ahad
+            end.setHours(23,59,59,999);
+            
+            weeks.push({
+                start: start,
+                end: end,
+                text: formatFull(start) + ' - ' + formatFull(end)
+            });
+        }
     }
-
-    weeks.push({
-        start: new Date(currentStart),
-        end: new Date(finalSunday),
-        text: formatFull(currentStart) + ' - ' + formatFull(finalSunday)
-    });
-
+    
+    // Jika bulan tersebut hanya ada 4 minggu Isnin, letak 'N/A' untuk kotak minggu ke-5
+    while (weeks.length < 5) {
+        weeks.push({ start: null, end: null, text: 'N/A' });
+    }
+    
     return weeks;
 }
 
@@ -119,12 +117,14 @@ async function generateReport() {
         if(el) el.textContent = w.text || '-';
     });
 
-    // Format Tarikh Kebal Zon Masa (YYYY-MM-DD)
-    const sDt = weeks[0].start; const eDt = weeks[4].end;
+    const validWeeks = weeks.filter(w => w.start !== null);
+    if(validWeeks.length === 0) return;
+
+    const sDt = validWeeks[0].start; 
+    const eDt = validWeeks[validWeeks.length - 1].end;
     const startStr = sDt.getFullYear() + '-' + String(sDt.getMonth()+1).padStart(2,'0') + '-' + String(sDt.getDate()).padStart(2,'0');
     const endStr = eDt.getFullYear() + '-' + String(eDt.getMonth()+1).padStart(2,'0') + '-' + String(eDt.getDate()).padStart(2,'0');
 
-    // MENGATASI HAD 1000 BARIS (PAGINATION LOOP)
     let allEntries = [];
     let from = 0;
     const step = 999;
@@ -163,11 +163,11 @@ async function generateReport() {
     }
 
     let projectGroups = {};
-    const w1S = weeks[0].start.getTime(); const w1E = weeks[0].end.getTime();
-    const w2S = weeks[1].start.getTime(); const w2E = weeks[1].end.getTime();
-    const w3S = weeks[2].start.getTime(); const w3E = weeks[2].end.getTime();
-    const w4S = weeks[3].start.getTime(); const w4E = weeks[3].end.getTime();
-    const w5S = weeks[4].start.getTime(); const w5E = weeks[4].end.getTime();
+    const w1S = weeks[0].start ? weeks[0].start.getTime() : 0; const w1E = weeks[0].end ? weeks[0].end.getTime() : 0;
+    const w2S = weeks[1].start ? weeks[1].start.getTime() : 0; const w2E = weeks[1].end ? weeks[1].end.getTime() : 0;
+    const w3S = weeks[2].start ? weeks[2].start.getTime() : 0; const w3E = weeks[2].end ? weeks[2].end.getTime() : 0;
+    const w4S = weeks[3].start ? weeks[3].start.getTime() : 0; const w4E = weeks[3].end ? weeks[3].end.getTime() : 0;
+    const w5S = weeks[4].start ? weeks[4].start.getTime() : 0; const w5E = weeks[4].end ? weeks[4].end.getTime() : 0;
     
     if (allEntries.length > 0) {
         allEntries.forEach(item => {
@@ -185,11 +185,11 @@ async function generateReport() {
             const itemTime = dObj.getTime();
             const hrs = (item.duration_seconds || 0) / 3600;
             
-            if (itemTime >= w1S && itemTime <= w1E) projectGroups[pName].w1 += hrs;
-            else if (itemTime >= w2S && itemTime <= w2E) projectGroups[pName].w2 += hrs;
-            else if (itemTime >= w3S && itemTime <= w3E) projectGroups[pName].w3 += hrs;
-            else if (itemTime >= w4S && itemTime <= w4E) projectGroups[pName].w4 += hrs;
-            else if (itemTime >= w5S && itemTime <= w5E) projectGroups[pName].w5 += hrs;
+            if (weeks[0].start && itemTime >= w1S && itemTime <= w1E) projectGroups[pName].w1 += hrs;
+            else if (weeks[1].start && itemTime >= w2S && itemTime <= w2E) projectGroups[pName].w2 += hrs;
+            else if (weeks[2].start && itemTime >= w3S && itemTime <= w3E) projectGroups[pName].w3 += hrs;
+            else if (weeks[3].start && itemTime >= w4S && itemTime <= w4E) projectGroups[pName].w4 += hrs;
+            else if (weeks[4].start && itemTime >= w5S && itemTime <= w5E) projectGroups[pName].w5 += hrs;
             
             projectGroups[pName].total += hrs;
         });
@@ -207,7 +207,7 @@ function renderTable(projectGroups, weeks) {
     let grandTotal = 0;
 
     if (Object.keys(projectGroups).length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="color:#64748b; padding: 20px;">No man-hour records found for this period/filter.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="color:#64748b; padding: 20px; text-align:center;">No man-hour records found for this period/filter.</td></tr>';
     } else {
         Object.keys(projectGroups).sort().forEach(pName => {
             const row = projectGroups[pName];
@@ -219,7 +219,7 @@ function renderTable(projectGroups, weeks) {
                 '<td>' + row.w1.toFixed(1) + '</td>' +
                 '<td>' + row.w2.toFixed(1) + '</td>' +
                 '<td>' + row.w3.toFixed(1) + '</td>' +
-                '<td>' + row.w4.toFixed(1) + '</td>' +
+                '<td>' + (weeks[3].text !== 'N/A' ? row.w4.toFixed(1) : '-') + '</td>' +
                 '<td>' + (weeks[4].text !== 'N/A' ? row.w5.toFixed(1) : '-') + '</td>' +
                 '<td style="font-weight:800; color:#0f172a;">' + row.total.toFixed(1) + '</td>' +
                 '</tr>';
@@ -228,7 +228,10 @@ function renderTable(projectGroups, weeks) {
 
     for(let i = 0; i < 5; i++) {
         const el = document.getElementById('totW' + (i+1));
-        if(el) el.textContent = sumWeekly[i].toFixed(1);
+        if(el) {
+            if(weeks[i].text === 'N/A') el.textContent = '-';
+            else el.textContent = sumWeekly[i].toFixed(1);
+        }
     }
     const tg = document.getElementById('totGrand');
     if(tg) tg.textContent = grandTotal.toFixed(1);
